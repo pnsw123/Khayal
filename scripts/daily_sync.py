@@ -289,13 +289,33 @@ def fetch_new_tv(days: int) -> list[dict]:
 
 # ─── Upsert to Supabase ──────────────────────────────────────────────────────
 
+def existing_tmdb_ids(sb: Client, table: str) -> set[int]:
+    """Fetch all tmdb_ids already in the table so we can skip them."""
+    result = with_retry(
+        lambda: sb.table(table).select("tmdb_id").not_.is_("tmdb_id", "null").execute(),
+        label=f"fetch existing {table} tmdb_ids",
+    )
+    if result is None:
+        return set()
+    return {row["tmdb_id"] for row in (result.data or [])}
+
+
 def upsert_batch(sb: Client, table: str, rows: list[dict]) -> tuple[int, int]:
-    inserted = skipped = 0
-    for i in range(0, len(rows), BATCH_SIZE):
-        chunk = rows[i : i + BATCH_SIZE]
+    """Filter out already-existing tmdb_ids then plain-insert the new ones."""
+    if not rows:
+        return 0, 0
+
+    known = existing_tmdb_ids(sb, table)
+    new_rows = [r for r in rows if r.get("tmdb_id") and r["tmdb_id"] not in known]
+    already = len(rows) - len(new_rows)
+
+    inserted = 0
+    skipped  = already  # pre-existing count
+    for i in range(0, len(new_rows), BATCH_SIZE):
+        chunk = new_rows[i : i + BATCH_SIZE]
         result = with_retry(
-            lambda c=chunk: sb.table(table).upsert(c, on_conflict="tmdb_id", ignore_duplicates=True).execute(),
-            label=f"upsert {table} chunk {i//BATCH_SIZE + 1}",
+            lambda c=chunk: sb.table(table).insert(c).execute(),
+            label=f"insert {table} chunk {i//BATCH_SIZE + 1}",
         )
         if result is not None:
             inserted += len(chunk)

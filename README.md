@@ -20,7 +20,7 @@ A cinema index. Browse 10,000+ real films and TV shows, rate them, review them, 
 
 ## Where the data comes from
 
-Every movie, TV series, poster, backdrop, and trailer on KHAYAL is pulled from [**The Movie Database (TMDB)**](https://github.com/themoviedb). TMDB is a free, community-maintained database of films and TV used by Plex, Kodi, Radarr, Sonarr and many others.
+Every movie, TV series, poster, backdrop, and trailer on KHAYAL is pulled from [**The Movie Database (TMDB)**](https://www.themoviedb.org/). TMDB is a free, community-maintained database of films and TV used by Plex, Kodi, Radarr, Sonarr and many others.
 
 How it connects:
 
@@ -43,7 +43,7 @@ KHAYAL uses the TMDB API but is not endorsed by or affiliated with TMDB.
 | **Database + auth + storage** | [Supabase](https://supabase.com) (Postgres + RLS + email/password auth) | One managed service, no separate backend |
 | **Search** | Postgres full-text search (`tsvector` + GIN indexes) | Built into Postgres, fast enough at 10k rows |
 | **SQL Explorer** | A Postgres function that only accepts `SELECT` | Lets anyone safely run read-only queries from the browser |
-| **Data source** | [TMDB API v3](https://github.com/themoviedb) | Free, comprehensive, covers posters + trailers |
+| **Data source** | [TMDB API v3](https://www.themoviedb.org/) | Free, comprehensive, covers posters + trailers |
 | **Hosting** | [Vercel](https://vercel.com) (hobby tier) | Auto-deploy on every push to `main` |
 | **Daily data sync** | [GitHub Actions](https://github.com/features/actions) (cron) | Free scheduled runs to pull fresh TMDB titles |
 | **Fonts** | [Fraunces](https://github.com/undercasetype/Fraunces), [Inter](https://github.com/rsms/inter), [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono), [Reem Kufi](https://github.com/alif-type/reem-kufi) | Pairs a variable serif, clean sans, mono, and an Arabic geometric |
@@ -78,7 +78,7 @@ KHAYAL uses the TMDB API but is not endorsed by or affiliated with TMDB.
 
 ## Credits
 
-- **[TMDB](https://github.com/themoviedb)** — every title, poster, backdrop, and trailer
+- **[TMDB](https://www.themoviedb.org/)** — every title, poster, backdrop, and trailer
 - **[Supabase](https://github.com/supabase/supabase)** — Postgres, auth, RLS, Storage
 - **[Next.js](https://github.com/vercel/next.js)** — React framework + server components
 - **[Vercel](https://vercel.com)** — hosting + auto-deploy

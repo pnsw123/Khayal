@@ -38,6 +38,7 @@ from daily_sync import (
     BATCH_SIZE,
     POSTER_BASE,
     TV_STATUS_MAP,
+    existing_tmdb_ids,
     make_slug,
     transform_movie,
     transform_tv,
@@ -275,74 +276,102 @@ class TestWithRetry(unittest.TestCase):
 # 5. Upsert batching
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _mock_sb():
+def _mock_sb(existing_ids: list[int] = None):
+    """Mock Supabase client. existing_ids = tmdb_ids already in DB."""
     sb = MagicMock()
-    sb.table.return_value.upsert.return_value.execute.return_value = MagicMock()
+    existing = existing_ids or []
+    # existing_tmdb_ids() call
+    sb.table.return_value.select.return_value.not_.is_.return_value.execute.return_value = MagicMock(
+        data=[{"tmdb_id": i} for i in existing]
+    )
+    # insert() call
+    sb.table.return_value.insert.return_value.execute.return_value = MagicMock()
     return sb
+
+
+class TestExistingTmdbIds(unittest.TestCase):
+
+    def test_returns_set_of_ids(self):
+        sb = _mock_sb(existing_ids=[1, 2, 3])
+        result = existing_tmdb_ids(sb, "movies")
+        self.assertEqual(result, {1, 2, 3})
+
+    def test_empty_table_returns_empty_set(self):
+        sb = _mock_sb(existing_ids=[])
+        result = existing_tmdb_ids(sb, "movies")
+        self.assertEqual(result, set())
+
+    def test_db_failure_returns_empty_set(self):
+        sb = MagicMock()
+        sb.table.return_value.select.return_value.not_.is_.return_value.execute.side_effect = Exception("DB down")
+        with patch("daily_sync.time.sleep"):
+            result = existing_tmdb_ids(sb, "movies")
+        self.assertEqual(result, set())
+
 
 class TestUpsertBatch(unittest.TestCase):
 
-    def test_empty_rows_no_db_call(self):
+    def test_empty_rows_no_insert_call(self):
         sb = _mock_sb()
         ins, skp = upsert_batch(sb, "movies", [])
         self.assertEqual(ins, 0)
         self.assertEqual(skp, 0)
-        sb.table.assert_not_called()
+        sb.table.return_value.insert.assert_not_called()
 
-    def test_all_rows_inserted(self):
-        sb = _mock_sb()
-        rows = [{"tmdb_id": i} for i in range(10)]
+    def test_all_new_rows_inserted(self):
+        sb = _mock_sb(existing_ids=[])
+        rows = [{"tmdb_id": i} for i in range(1, 11)]
         ins, skp = upsert_batch(sb, "movies", rows)
         self.assertEqual(ins, 10)
         self.assertEqual(skp, 0)
 
+    def test_existing_rows_skipped(self):
+        sb = _mock_sb(existing_ids=[1, 2, 3])
+        rows = [{"tmdb_id": i} for i in range(1, 6)]  # 1-5, but 1,2,3 exist
+        ins, skp = upsert_batch(sb, "movies", rows)
+        self.assertEqual(ins, 2)   # only 4 and 5 inserted
+        self.assertEqual(skp, 3)   # 1, 2, 3 skipped
+
     def test_chunks_of_50(self):
-        sb = _mock_sb()
-        rows = [{"tmdb_id": i} for i in range(130)]
+        sb = _mock_sb(existing_ids=[])
+        rows = [{"tmdb_id": i} for i in range(1, 131)]
         upsert_batch(sb, "movies", rows)
-        # 130 rows → 3 chunks (50, 50, 30)
-        self.assertEqual(sb.table.return_value.upsert.call_count, 3)
+        # 130 new rows → 3 insert calls (50+50+30)
+        self.assertEqual(sb.table.return_value.insert.call_count, 3)
 
     def test_failed_chunk_counted_as_skipped(self):
-        sb = MagicMock()
-        sb.table.return_value.upsert.return_value.execute.side_effect = Exception("DB down")
-        rows = [{"tmdb_id": i} for i in range(5)]
+        sb = _mock_sb(existing_ids=[])
+        sb.table.return_value.insert.return_value.execute.side_effect = Exception("DB down")
+        rows = [{"tmdb_id": i} for i in range(1, 6)]
         with patch("daily_sync.time.sleep"):
             ins, skp = upsert_batch(sb, "movies", rows)
         self.assertEqual(ins, 0)
         self.assertEqual(skp, 5)
 
     def test_partial_failure_other_chunks_succeed(self):
-        sb = MagicMock()
+        sb = _mock_sb(existing_ids=[])
         chunk_calls = [0]
-        def upsert_side_effect(chunk, **kwargs):
+        def insert_side_effect(chunk):
             chunk_calls[0] += 1
             mock = MagicMock()
-            # Always fail chunk 2 (regardless of retry)
-            if chunk_calls[0] in (2, 3, 4):
+            if chunk_calls[0] in (2, 3, 4):   # chunk 2 fails all 3 retries
                 mock.execute.side_effect = Exception("transient")
             else:
                 mock.execute.side_effect = None
                 mock.execute.return_value = MagicMock()
             return mock
-        sb.table.return_value.upsert.side_effect = upsert_side_effect
-        rows = [{"tmdb_id": i} for i in range(150)]  # 3 chunks → chunk2 always fails all 3 retries
+        sb.table.return_value.insert.side_effect = insert_side_effect
+        rows = [{"tmdb_id": i} for i in range(1, 151)]
         with patch("daily_sync.time.sleep"):
             ins, skp = upsert_batch(sb, "movies", rows)
-        self.assertEqual(skp, 50)   # chunk 2 lost
-        self.assertEqual(ins, 100)  # chunks 1 + 3 saved
+        self.assertEqual(ins, 100)
+        self.assertEqual(skp, 50)
 
-    def test_upsert_called_with_tmdb_id_conflict_key(self):
-        sb = _mock_sb()
-        upsert_batch(sb, "movies", [{"tmdb_id": 1}])
-        call_kwargs = sb.table.return_value.upsert.call_args
-        self.assertEqual(call_kwargs.kwargs.get("on_conflict"), "tmdb_id")
-
-    def test_ignore_duplicates_flag_set(self):
-        sb = _mock_sb()
-        upsert_batch(sb, "movies", [{"tmdb_id": 1}])
-        call_kwargs = sb.table.return_value.upsert.call_args
-        self.assertTrue(call_kwargs.kwargs.get("ignore_duplicates"))
+    def test_rows_without_tmdb_id_skipped(self):
+        sb = _mock_sb(existing_ids=[])
+        rows = [{"tmdb_id": None}, {"title": "No ID"}, {"tmdb_id": 1}]
+        ins, skp = upsert_batch(sb, "movies", rows)
+        self.assertEqual(ins, 1)   # only the row with tmdb_id=1
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -363,7 +392,7 @@ FAKE_TV = [
 class TestEndToEnd(unittest.TestCase):
 
     def _run_sync(self, dry_run=False, days=14):
-        sb = _mock_sb()
+        sb = _mock_sb(existing_ids=[])
         with patch("daily_sync.fetch_new_movies", return_value=FAKE_MOVIES) as m_mov, \
              patch("daily_sync.fetch_new_tv",    return_value=FAKE_TV)     as m_tv,  \
              patch("daily_sync.init_tmdb",        return_value=MagicMock()),          \
@@ -391,17 +420,16 @@ class TestEndToEnd(unittest.TestCase):
 
     def test_movie_rows_sent_to_db(self):
         sb, _ = self._run_sync()
-        # Confirm movies data was actually passed to upsert
-        all_upsert_calls = sb.table.return_value.upsert.call_args_list
-        all_rows = [row for c in all_upsert_calls for row in c.args[0]]
+        all_insert_calls = sb.table.return_value.insert.call_args_list
+        all_rows = [row for c in all_insert_calls for row in c.args[0]]
         tmdb_ids = {r["tmdb_id"] for r in all_rows}
         self.assertIn(101, tmdb_ids)
         self.assertIn(102, tmdb_ids)
 
     def test_tv_rows_sent_to_db(self):
         sb, _ = self._run_sync()
-        all_upsert_calls = sb.table.return_value.upsert.call_args_list
-        all_rows = [row for c in all_upsert_calls for row in c.args[0]]
+        all_insert_calls = sb.table.return_value.insert.call_args_list
+        all_rows = [row for c in all_insert_calls for row in c.args[0]]
         tmdb_ids = {r["tmdb_id"] for r in all_rows}
         self.assertIn(201, tmdb_ids)
 
@@ -443,9 +471,12 @@ class TestResilience(unittest.TestCase):
     def test_supabase_down_skips_all_rows(self):
         """If every DB write fails, inserted=0 skipped=N — no crash."""
         sb = MagicMock()
-        sb.table.return_value.upsert.return_value.execute.side_effect = Exception("Supabase down")
+        # existing_tmdb_ids query succeeds with empty table
+        sb.table.return_value.select.return_value.not_.is_.return_value.execute.return_value = MagicMock(data=[])
+        # insert fails
+        sb.table.return_value.insert.return_value.execute.side_effect = Exception("Supabase down")
         with patch("daily_sync.time.sleep"):
-            ins, skp = upsert_batch(sb, "movies", [{"tmdb_id": i} for i in range(5)])
+            ins, skp = upsert_batch(sb, "movies", [{"tmdb_id": i} for i in range(1, 6)])
         self.assertEqual(ins, 0)
         self.assertEqual(skp, 5)
 
