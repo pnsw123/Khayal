@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import { useEffect, useRef, useState } from "react";
 import { MovieCard } from "@/components/movie-card";
 import { cn } from "@/lib/utils";
 import { Search, Play, LoaderCircle, Table2 } from "lucide-react";
@@ -49,7 +48,7 @@ function TabBtn({ active, onClick, icon, label }: { active: boolean; onClick: ()
 function FindTab() {
   const [q, setQ] = useState("");
   const [rows, setRows] = useState<SearchAllRow[]>([]);
-  const [pending, start] = useTransition();
+  const [pending, setPending] = useState(false);
   const reqIdRef = useRef(0);
 
   // Live search: 200ms debounce on `q`. Min 2 chars. Stale-response guard via reqId.
@@ -57,17 +56,27 @@ function FindTab() {
     const text = q.trim();
     if (text.length < 2) {
       setRows([]);
+      setPending(false);
       return;
     }
-    const handle = setTimeout(() => {
+    setPending(true);
+    const handle = setTimeout(async () => {
       const myId = ++reqIdRef.current;
-      start(async () => {
-        const sb = supabaseBrowser();
-        const { data } = await sb.rpc("search_all", { query_text: text, page_size: 30 });
-        // Drop result if a newer query has fired since we started.
-        if (myId !== reqIdRef.current) return;
-        setRows((data ?? []) as SearchAllRow[]);
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/search_all`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          },
+          body: JSON.stringify({ query_text: text, page_size: 30 }),
+        }
+      );
+      const data = res.ok ? await res.json() : [];
+      if (myId !== reqIdRef.current) return;
+      setRows((data ?? []) as SearchAllRow[]);
+      setPending(false);
     }, 200);
     return () => clearTimeout(handle);
   }, [q]);
@@ -131,16 +140,31 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
   const [sql, setSql] = useState(defaultQueries[0]?.query_text || "select title, release_date from movies order by release_date desc limit 10");
   const [rows, setRows] = useState<any[]>([]);
   const [err, setErr]   = useState<string | null>(null);
-  const [pending, start] = useTransition();
+  const [pending, setPending] = useState(false);
 
-  const run = () => {
+  const run = async () => {
     setErr(null);
-    start(async () => {
-      const sb = supabaseBrowser();
-      const { data, error } = await sb.rpc("run_query", { query_text: sql });
-      if (error) { setErr(error.message); setRows([]); return; }
-      setRows(Array.isArray(data) ? data : []);
-    });
+    setPending(true);
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/run_query`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        },
+        body: JSON.stringify({ query_text: sql }),
+      }
+    );
+    setPending(false);
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      setErr(e?.message || "Query failed.");
+      setRows([]);
+      return;
+    }
+    const data = await res.json();
+    setRows(Array.isArray(data) ? data : []);
   };
 
   const cols = rows.length ? Object.keys(rows[0]) : [];

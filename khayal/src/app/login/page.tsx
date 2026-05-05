@@ -28,13 +28,10 @@ export default async function LoginPage({
 
       <div className="relative w-full max-w-sm">
         <div className="text-center mb-10">
-          <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--saffron)] mb-4">
-            The Projectionist's Booth
-          </p>
           <h1 className="font-arabic text-4xl text-[var(--cream)] mb-1">خيال</h1>
-          <h2 className="font-display text-3xl text-[var(--cream)]">Step inside</h2>
+          <h2 className="font-display text-3xl text-[var(--cream)]">Welcome back</h2>
           <p className="mt-3 text-sm text-[var(--cream-muted)]">
-            Sign in to rate, review, and curate your own imagination.
+            Sign in to rate, review, and build your watchlist.
           </p>
         </div>
 
