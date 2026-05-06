@@ -60,7 +60,7 @@ A Python script fetches movies and TV shows and loads them into the database. A 
 ## Project Structure
 
 ```
-Movie-DB/
+KHAYAL/
 ├── khayal/               ← Next.js frontend (everything users see)
 │   └── src/
 │       ├── app/          ← Pages: /browse  /search  /movies/[slug]  /profile…
@@ -80,14 +80,22 @@ Movie-DB/
 
 ## Database — Supabase (PostgreSQL)
 
+**12 tables total.**
+
 | Table | Contents |
 |---|---|
 | `movies` | 7,400+ films — title, poster, runtime, age rating, trailer |
 | `tv_series` | 2,800+ shows — same fields + status (ongoing / ended) |
-| `ratings` | One rating (1–10) per user per title |
-| `reviews` | User reviews with spoiler toggle |
-| `lists` | Watchlists — public or private |
+| `movie_ratings` | One rating (1–10) per user per movie |
+| `tv_series_ratings` | Same for TV series |
+| `movie_reviews` | User reviews for movies with spoiler toggle |
+| `tv_series_reviews` | Same for TV series |
+| `user_lists` | Watchlists — public or private |
+| `user_list_movies` | Movies inside each watchlist |
+| `user_list_tv_series` | TV series inside each watchlist |
 | `profiles` | One row per signed-in user |
+| `recommendations` | Pre-computed similar titles |
+| `saved_queries` | User's saved SQL queries from the explorer |
 
 **Security:** Row-Level Security (RLS) ensures users can only edit their own data. The SQL explorer tab only allows `SELECT` — no one can modify the database from the browser.
 
