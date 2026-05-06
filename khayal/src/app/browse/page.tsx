@@ -104,13 +104,13 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
       {showShelves && shelfQueries.nowPlaying && (
         <>
           <Shelf
-            title="Now Playing"
-            kicker="الأفلام الجارية"
+            title="New Releases"
+            kicker="إصدارات جديدة"
             items={shelfQueries.nowPlaying}
             ratingByMovie={ratingByMovie}
           />
           <Shelf
-            title="On the Horizon"
+            title="Coming Soon"
             kicker="قريبًا"
             items={shelfQueries.upcoming!}
             ratingByMovie={ratingByMovie}
@@ -128,8 +128,8 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
             ratingByMovie={ratingByMovie}
           />
           <Shelf
-            title="Recent Additions"
-            kicker="أحدث المدخلات"
+            title="Just Added"
+            kicker="أحدث الإضافات"
             items={shelfQueries.recent!}
             ratingByMovie={ratingByMovie}
           />
@@ -137,7 +137,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
       )}
 
       {/* ─── Deep browse with filters ─── */}
-      <section className="mt-4">
+      <section id="films" className="mt-4">
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="font-display text-xl md:text-2xl text-[var(--cream)]">
             {filtersActive ? "Filtered results" : "All films"}
@@ -159,7 +159,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
           </div>
           {filtersActive && (
             <Link
-              href="/browse"
+              href="/browse#films"
               className="inline-flex items-center gap-1.5 text-[11px] font-mono tracking-wider uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors mt-1"
             >
               <X size={12} /> Clear filters
@@ -211,12 +211,12 @@ function Pagination({
     return q ? `/browse?${q}` : "/browse";
   };
 
-  // Compact range — first, last, current ± 1
+  // Show: first 2, current ± 2, last 2
   const pages: (number | "…")[] = [];
   const seen = new Set<number>();
   const add = (n: number) => { if (n >= 1 && n <= total && !seen.has(n)) { pages.push(n); seen.add(n); } };
   add(1); add(2);
-  add(current - 1); add(current); add(current + 1);
+  add(current - 2); add(current - 1); add(current); add(current + 1); add(current + 2);
   add(total - 1); add(total);
   pages.sort((a, b) => (a as number) - (b as number));
   const withGaps: (number | "…")[] = [];

@@ -21,6 +21,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CursorGlow />
         <Nav />
         <main className="flex-1">{children}</main>
+        <footer className="border-t border-[var(--taupe)]/15 mt-16">
+          <div className="mx-auto max-w-[1600px] px-6 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div>
+              <p className="font-display text-lg text-[var(--cream)]">KHAYAL <span className="font-arabic text-[var(--saffron)]">خيال</span></p>
+              <p className="text-xs text-[var(--cream-muted)] mt-1">A cinema index. Every film catalogued, none streamed.</p>
+            </div>
+            <div className="flex flex-wrap gap-x-8 gap-y-2 text-xs text-[var(--cream-muted)] font-mono tracking-wide">
+              <a href="/browse" className="hover:text-[var(--saffron)] transition-colors">Browse</a>
+              <a href="/search" className="hover:text-[var(--saffron)] transition-colors">Search</a>
+              <a href="/login"  className="hover:text-[var(--saffron)] transition-colors">Sign In</a>
+            </div>
+            <p className="text-xs text-[var(--cream-muted)]/50 font-mono">
+              Data from <a href="https://www.themoviedb.org" className="hover:text-[var(--saffron)] transition-colors">TMDB</a>
+              {" · "}© {new Date().getFullYear()} KHAYAL
+            </p>
+          </div>
+        </footer>
       </body>
     </html>
   );

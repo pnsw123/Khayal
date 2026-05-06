@@ -23,10 +23,10 @@ export default async function SearchPage() {
       />
       <div className="relative">
         <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--saffron)] mb-3">
-          Search the Reels
+          Search
         </p>
         <h1 className="font-display text-[clamp(2.25rem,4.5vw,3.75rem)] leading-[0.95] text-[var(--cream)] mb-10">
-          Find anything. Query anything.
+          What are you looking for?
         </h1>
         <SearchClient defaultQueries={defaultQueries ?? []} />
       </div>

@@ -16,11 +16,11 @@ export const LANGUAGES = [
 
 export const RATINGS = [
   { code: "",       label: "All Ratings" },
-  { code: "G",      label: "G" },
-  { code: "PG",     label: "PG" },
-  { code: "PG-13",  label: "PG-13" },
-  { code: "R",      label: "R" },
-  { code: "NC-17",  label: "NC-17" },
+  { code: "G",      label: "G — General Audiences" },
+  { code: "PG",     label: "PG — Parental Guidance" },
+  { code: "PG-13",  label: "PG-13 — Under 13 Cautioned" },
+  { code: "R",      label: "R — Restricted" },
+  { code: "NC-17",  label: "NC-17 — Adults Only" },
   { code: "NR",     label: "Not Rated" },
 ] as const;
 
