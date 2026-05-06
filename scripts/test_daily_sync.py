@@ -280,10 +280,19 @@ def _mock_sb(existing_ids: list[int] = None):
     """Mock Supabase client. existing_ids = tmdb_ids already in DB."""
     sb = MagicMock()
     existing = existing_ids or []
-    # existing_tmdb_ids() call
-    sb.table.return_value.select.return_value.not_.is_.return_value.execute.return_value = MagicMock(
-        data=[{"tmdb_id": i} for i in existing]
-    )
+
+    # Route select("tmdb_id") and select("slug") to different mock responses
+    def select_side_effect(col):
+        m = MagicMock()
+        if col == "tmdb_id":
+            m.not_.is_.return_value.execute.return_value = MagicMock(
+                data=[{"tmdb_id": i} for i in existing]
+            )
+        else:
+            m.not_.is_.return_value.execute.return_value = MagicMock(data=[])
+        return m
+
+    sb.table.return_value.select.side_effect = select_side_effect
     # insert() call
     sb.table.return_value.insert.return_value.execute.return_value = MagicMock()
     return sb
@@ -303,7 +312,9 @@ class TestExistingTmdbIds(unittest.TestCase):
 
     def test_db_failure_returns_empty_set(self):
         sb = MagicMock()
-        sb.table.return_value.select.return_value.not_.is_.return_value.execute.side_effect = Exception("DB down")
+        select_mock = MagicMock()
+        select_mock.not_.is_.return_value.execute.side_effect = Exception("DB down")
+        sb.table.return_value.select.return_value = select_mock
         with patch("daily_sync.time.sleep"):
             result = existing_tmdb_ids(sb, "movies")
         self.assertEqual(result, set())
