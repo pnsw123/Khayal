@@ -103,7 +103,9 @@ KHAYAL/
 
 ## UI Design — Google Stitch
 
-The full interface was designed in **Google Stitch** before any code was written — layout, color palette, components, and mobile views. The dark cinema aesthetic (black background, cream text, gold accent) was defined there and built with Tailwind CSS.
+| Browse | Detail | Search | Mobile |
+|:---:|:---:|:---:|:---:|
+| ![Stitch Browse](screenshots/stitch-browse.png) | ![Stitch Detail](screenshots/stitch-detail.png) | ![Stitch Search](screenshots/stitch-search.png) | ![Stitch Mobile](screenshots/stitch-mobile.png) |
 
 ---
 
