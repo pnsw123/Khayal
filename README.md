@@ -1,9 +1,9 @@
 # KHAYAL · خيال
 ### A Cinema Index — Database Systems Class Project
 
-🌐 **Live:** [movie-db-one-psi.vercel.app](https://movie-db-one-psi.vercel.app) &nbsp;|&nbsp; 💻 **Code:** [github.com/pnsw123/Movie-DB](https://github.com/pnsw123/Movie-DB)
+**Live:** [movie-db-one-psi.vercel.app](https://movie-db-one-psi.vercel.app) &nbsp;|&nbsp; **Code:** [github.com/pnsw123/Movie-DB](https://github.com/pnsw123/Movie-DB)
 
-> Think IMDb — browse 7,400+ real films and 2,800+ TV series, rate them, write reviews, build watchlists, and run your own SQL queries against a live database.
+> Browse 7,400+ real films and 2,800+ TV series, rate them, write reviews, build watchlists, and run your own SQL queries against a live database.
 
 ---
 
