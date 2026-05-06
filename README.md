@@ -103,9 +103,11 @@ KHAYAL/
 
 ## UI Design — Google Stitch
 
-| Browse | Detail | Search | Mobile |
-|:---:|:---:|:---:|:---:|
-| ![Stitch Browse](screenshots/stitch-browse.png) | ![Stitch Detail](screenshots/stitch-detail.png) | ![Stitch Search](screenshots/stitch-search.png) | ![Stitch Mobile](screenshots/stitch-mobile.png) |
+The full interface was designed inside Google Stitch — prompting the AI with layout requirements, color palette, and component specs before writing any code.
+
+| Starting a project | Writing the prompt | Stitch generating the UI |
+|:---:|:---:|:---:|
+| ![Stitch 1](screenshots/stitch-tool-1.png) | ![Stitch 2](screenshots/stitch-tool-2.png) | ![Stitch 3](screenshots/stitch-tool-3.png) |
 
 ---
 
