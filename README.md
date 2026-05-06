@@ -103,13 +103,11 @@ KHAYAL/
 
 ## UI Design — Google Stitch
 
-![Stitch Logo](screenshots/stitch-official-1.png)
+[Google Stitch](https://stitch.withgoogle.com) is a Google Labs AI design tool that generates full UI screens from text prompts — color systems, typography, layouts, and components in one shot.
 
-[Google Stitch](https://stitch.withgoogle.com) is an AI design tool that generates real UI screens from text prompts. You describe the layout, colors, and components — it produces a working design instantly.
+![KHAYAL designed in Google Stitch](screenshots/stitch-khayal-canvas.png)
 
-![Stitch Example](screenshots/stitch-official-2.png)
-
-We used Stitch to design every screen of KHAYAL before writing any code — the browse grid, movie detail page, search, and mobile views.
+*The KHAYAL design system and landing page variations generated inside the Stitch canvas.*
 
 ---
 
