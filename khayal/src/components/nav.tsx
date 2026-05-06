@@ -2,6 +2,7 @@ import Link from "next/link";
 import { currentUser, currentProfile } from "@/lib/auth";
 import { NavLink } from "./nav-link";
 import { TicketEnter, ProfileStub } from "./nav-controls";
+import { Clapperboard } from "lucide-react";
 
 /**
  * Index-style nav. Single compact row, no decorative microbar, no bulb
@@ -29,13 +30,19 @@ export async function Nav() {
   return (
     <header className="relative z-20 border-b border-[var(--taupe)]/15">
       <div className="mx-auto max-w-[1600px] px-6 h-16 flex items-center justify-between gap-6">
-        <Link href="/" className="group flex items-baseline gap-2 md:gap-3 shrink-0">
-          <span className="font-display text-[1.15rem] md:text-[1.3rem] leading-none tracking-[0.04em] md:tracking-[0.06em] text-[var(--cream)] group-hover:text-[var(--saffron-glow)] transition-colors">
-            KHAYAL
+        <Link href="/" className="group flex items-center gap-2.5 shrink-0">
+          {/* Icon mark */}
+          <span className="flex items-center justify-center w-8 h-8 rounded-sm bg-[var(--saffron)] text-[var(--ink)] group-hover:bg-[var(--saffron-glow)] transition-colors">
+            <Clapperboard size={16} strokeWidth={2.5} />
           </span>
-          <span className="hidden md:block h-5 w-px bg-[var(--taupe)]/40 self-center" />
-          <span className="font-arabic text-xl md:text-2xl leading-none text-[var(--saffron)] group-hover:text-[var(--saffron-glow)] transition-colors" dir="rtl">
-            خيال
+          {/* Wordmark */}
+          <span className="flex items-baseline gap-1.5">
+            <span className="font-display text-[1.2rem] leading-none tracking-[0.08em] text-[var(--cream)] group-hover:text-[var(--saffron)] transition-colors">
+              KHAYAL
+            </span>
+            <span className="font-arabic text-lg leading-none text-[var(--saffron)]/70 group-hover:text-[var(--saffron)] transition-colors" dir="rtl">
+              خيال
+            </span>
           </span>
         </Link>
 

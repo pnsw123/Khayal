@@ -25,7 +25,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto max-w-[1600px] px-6 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
               <p className="font-display text-lg text-[var(--cream)]">KHAYAL <span className="font-arabic text-[var(--saffron)]">خيال</span></p>
-              <p className="text-xs text-[var(--cream-muted)] mt-1">A cinema index. Every film catalogued, none streamed.</p>
             </div>
             <div className="flex flex-wrap gap-x-8 gap-y-2 text-xs text-[var(--cream-muted)] font-mono tracking-wide">
               <a href="/browse" className="hover:text-[var(--saffron)] transition-colors">Browse</a>

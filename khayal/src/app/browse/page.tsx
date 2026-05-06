@@ -71,9 +71,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
       {/* ─── Index masthead — compact, utilitarian ─── */}
       <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <p className="mb-2 text-[11px] font-mono tracking-[0.3em] uppercase text-[var(--saffron)]">
-            A cinema index
-          </p>
           <h1 className="font-display text-3xl md:text-4xl text-[var(--cream)]">
             What are you looking for?
           </h1>
