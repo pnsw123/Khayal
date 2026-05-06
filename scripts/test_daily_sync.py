@@ -40,6 +40,7 @@ from daily_sync import (
     TV_STATUS_MAP,
     existing_tmdb_ids,
     make_slug,
+    slug_exists,
     transform_movie,
     transform_tv,
     upsert_batch,
@@ -281,7 +282,7 @@ def _mock_sb(existing_ids: list[int] = None):
     sb = MagicMock()
     existing = existing_ids or []
 
-    # Route select("tmdb_id") and select("slug") to different mock responses
+    # Route select("tmdb_id") → returns existing ids; select("slug") → no collision
     def select_side_effect(col):
         m = MagicMock()
         if col == "tmdb_id":
@@ -289,7 +290,8 @@ def _mock_sb(existing_ids: list[int] = None):
                 data=[{"tmdb_id": i} for i in existing]
             )
         else:
-            m.not_.is_.return_value.execute.return_value = MagicMock(data=[])
+            # slug_exists check: .select("slug").eq(...).limit(1) → empty = no conflict
+            m.eq.return_value.limit.return_value.execute.return_value = MagicMock(data=[])
         return m
 
     sb.table.return_value.select.side_effect = select_side_effect

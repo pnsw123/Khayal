@@ -300,15 +300,15 @@ def existing_tmdb_ids(sb: Client, table: str) -> set[int]:
     return {row["tmdb_id"] for row in (result.data or [])}
 
 
-def existing_slugs(sb: Client, table: str) -> set[str]:
-    """Fetch all slugs already in the table so we can deduplicate."""
+def slug_exists(sb: Client, table: str, slug: str) -> bool:
+    """Check if a slug is already taken."""
     result = with_retry(
-        lambda: sb.table(table).select("slug").not_.is_("slug", "null").execute(),
-        label=f"fetch existing {table} slugs",
+        lambda: sb.table(table).select("slug").eq("slug", slug).limit(1).execute(),
+        label=f"check slug {slug}",
     )
     if result is None:
-        return set()
-    return {row["slug"] for row in (result.data or [])}
+        return False
+    return len(result.data or []) > 0
 
 
 def upsert_batch(sb: Client, table: str, rows: list[dict]) -> tuple[int, int]:
@@ -317,15 +317,18 @@ def upsert_batch(sb: Client, table: str, rows: list[dict]) -> tuple[int, int]:
         return 0, 0
 
     known  = existing_tmdb_ids(sb, table)
-    slugs  = existing_slugs(sb, table)
     new_rows = [r for r in rows if r.get("tmdb_id") and r["tmdb_id"] not in known]
     already = len(rows) - len(new_rows)
 
-    # Make slugs unique: if collision, append tmdb_id
+    # Resolve slug collisions against the live DB and within this batch
+    seen_slugs: set[str] = set()
     for r in new_rows:
-        if r.get("slug") in slugs:
-            r["slug"] = f"{r['slug']}-{r['tmdb_id']}"
-        slugs.add(r.get("slug", ""))
+        base = r.get("slug", "")
+        slug = base
+        if slug in seen_slugs or slug_exists(sb, table, slug):
+            slug = f"{base}-{r['tmdb_id']}"
+        r["slug"] = slug
+        seen_slugs.add(slug)
 
     inserted = 0
     skipped  = already  # pre-existing count
