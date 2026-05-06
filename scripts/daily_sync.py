@@ -290,14 +290,29 @@ def fetch_new_tv(days: int) -> list[dict]:
 # ─── Upsert to Supabase ──────────────────────────────────────────────────────
 
 def existing_tmdb_ids(sb: Client, table: str) -> set[int]:
-    """Fetch all tmdb_ids already in the table so we can skip them."""
-    result = with_retry(
-        lambda: sb.table(table).select("tmdb_id").not_.is_("tmdb_id", "null").execute(),
-        label=f"fetch existing {table} tmdb_ids",
-    )
-    if result is None:
-        return set()
-    return {row["tmdb_id"] for row in (result.data or [])}
+    """Fetch ALL tmdb_ids from the table (paginated for large tables)."""
+    ids: set[int] = set()
+    page_size = 1000
+    start = 0
+    while True:
+        result = with_retry(
+            lambda s=start: (
+                sb.table(table)
+                .select("tmdb_id")
+                .not_.is_("tmdb_id", "null")
+                .range(s, s + page_size - 1)
+                .execute()
+            ),
+            label=f"fetch existing {table} tmdb_ids (offset {start})",
+        )
+        if result is None:
+            break
+        batch = result.data or []
+        ids.update(row["tmdb_id"] for row in batch)
+        if len(batch) < page_size:
+            break
+        start += page_size
+    return ids
 
 
 def slug_exists(sb: Client, table: str, slug: str) -> bool:

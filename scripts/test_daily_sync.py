@@ -286,9 +286,17 @@ def _mock_sb(existing_ids: list[int] = None):
     def select_side_effect(col):
         m = MagicMock()
         if col == "tmdb_id":
-            m.not_.is_.return_value.execute.return_value = MagicMock(
-                data=[{"tmdb_id": i} for i in existing]
-            )
+            # paginated: .not_.is_(...).range(...).execute() — returns all on first page, empty on second
+            page_calls = [0]
+            def range_side_effect(s, e):
+                r = MagicMock()
+                if page_calls[0] == 0:
+                    r.execute.return_value = MagicMock(data=[{"tmdb_id": i} for i in existing])
+                else:
+                    r.execute.return_value = MagicMock(data=[])
+                page_calls[0] += 1
+                return r
+            m.not_.is_.return_value.range.side_effect = range_side_effect
         else:
             # slug_exists check: .select("slug").eq(...).limit(1) → empty = no conflict
             m.eq.return_value.limit.return_value.execute.return_value = MagicMock(data=[])
@@ -315,7 +323,7 @@ class TestExistingTmdbIds(unittest.TestCase):
     def test_db_failure_returns_empty_set(self):
         sb = MagicMock()
         select_mock = MagicMock()
-        select_mock.not_.is_.return_value.execute.side_effect = Exception("DB down")
+        select_mock.not_.is_.return_value.range.return_value.execute.side_effect = Exception("DB down")
         sb.table.return_value.select.return_value = select_mock
         with patch("daily_sync.time.sleep"):
             result = existing_tmdb_ids(sb, "movies")
