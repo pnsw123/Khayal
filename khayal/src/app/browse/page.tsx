@@ -127,12 +127,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
             items={shelfQueries.classics!}
             ratingByMovie={ratingByMovie}
           />
-          <Shelf
-            title="Just Added"
-            kicker="أحدث الإضافات"
-            items={shelfQueries.recent!}
-            ratingByMovie={ratingByMovie}
-          />
         </>
       )}
 
