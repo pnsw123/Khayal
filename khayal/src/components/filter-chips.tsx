@@ -26,7 +26,7 @@ export function FilterChips({ items, activeCode, paramKey, searchParams, classNa
             className={cn(
               "inline-flex items-center h-7 px-3 rounded-full text-[11px] font-mono tracking-wide transition-all whitespace-nowrap",
               active
-                ? "bg-[var(--saffron)] text-[var(--ink)] font-semibold shadow-[0_0_12px_-2px_var(--saffron)]"
+                ? "bg-[var(--saffron)] text-[var(--ink)] font-semibold"
                 : "bg-[var(--ink-high)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/30"
             )}
             scroll={false}

@@ -30,9 +30,10 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     .from("genres")
     .select("id, name, slug")
     .order("name", { ascending: true });
+  // Use genre name as code — lets us filter with .contains() on the genre_names[] array in the view
   const genres = [
     { code: "", label: "All Genres" },
-    ...(genreRows ?? []).map((g: any) => ({ code: String(g.id), label: g.name })),
+    ...(genreRows ?? []).map((g: any) => ({ code: g.name, label: g.name })),
   ];
   const today = new Date().toISOString().slice(0, 10);
   const sixtyDaysAgo = new Date(Date.now() - 60 * 86_400_000).toISOString().slice(0, 10);
@@ -50,26 +51,15 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   let gridData: any[] = [];
   let gridTotal = 0;
 
-  if (activeGenre) {
-    // Genre filter: join through movie_genres
-    const genreId = Number(activeGenre);
-    let q = sb
-      .from("movie_genres")
-      .select("movies_with_genres!inner(id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names)", { count: "exact" })
-      .eq("genre_id", genreId)
-      .range(from, to);
-    if (activeLang)   q = (q as any).eq("movies_with_genres.original_language", activeLang);
-    if (activeRating) q = (q as any).eq("movies_with_genres.age_rating", activeRating);
-    const { data, count } = await q;
-    gridData = (data ?? []).map((r: any) => r.movies_with_genres).filter(Boolean);
-    gridTotal = count ?? 0;
-  } else {
+  // Single query path — genre filter uses .contains() on genre_names[] array column
+  {
     let q = sb
       .from("movies_with_genres")
       .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names", { count: "exact" })
       .not("poster_url", "is", null)
       .order("release_date", { ascending: false, nullsFirst: false })
       .range(from, to);
+    if (activeGenre)  q = q.contains("genre_names", [activeGenre]);
     if (activeLang)   q = q.eq("original_language", activeLang);
     if (activeRating) q = q.eq("age_rating", activeRating);
     const { data, count } = await q;
@@ -101,8 +91,8 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="min-h-screen">
-      {/* ─── Sticky filter bar — 2 rows, single-line each with h-scroll ─── */}
-      <div className="sticky top-16 z-10 bg-[var(--ink)]/96 backdrop-blur-md border-b border-[var(--ink-high)]">
+      {/* ─── Filter bar — top of browse, not sticky ─── */}
+      <div className="border-b border-[var(--ink-high)] bg-[var(--ink)]">
         <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-2 space-y-1.5">
           {/* Row 1: Genre — horizontal scroll, no wrap */}
           <div className="flex items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>

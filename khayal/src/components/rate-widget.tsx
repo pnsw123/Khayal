@@ -98,7 +98,7 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
               className={cn(
                 "h-9 w-9 rounded-sm text-sm font-mono transition-all",
                 lit
-                  ? "bg-[var(--saffron)] text-[var(--ink)] shadow-[0_0_10px_-2px_var(--saffron)]"
+                  ? "bg-[var(--saffron)] text-[var(--ink)]"
                   : "bg-[var(--ink-lift)] text-[var(--cream-muted)] border border-[var(--taupe)]/20 hover:border-[var(--saffron)]/50 hover:text-[var(--cream)]"
               )}
             >

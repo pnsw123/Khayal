@@ -58,7 +58,7 @@ export function FeaturedReel({
         {/* Ink gradient + saffron edge glow on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink)]/98 via-[var(--ink)]/70 to-[var(--ink)]/20" />
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--ink)]/40 via-transparent to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-[var(--saffron)] opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-[0_0_30px_var(--saffron)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-[var(--saffron)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         <div className="relative h-full p-5 md:p-7 flex flex-col">
           <div className="flex items-start justify-between">

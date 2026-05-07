@@ -31,7 +31,7 @@ export function Trailer({ youtubeId, title, year, className }: TrailerProps) {
         className={cn(
           "group inline-flex items-center gap-2 h-11 px-4 rounded-sm",
           "bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium",
-          "hover:bg-[var(--saffron-glow)] transition-colors shadow-[0_0_18px_-6px_var(--saffron)]",
+          "hover:bg-[var(--saffron-glow)] transition-colors",
           className,
         )}
       >
@@ -49,7 +49,7 @@ export function Trailer({ youtubeId, title, year, className }: TrailerProps) {
         className={cn(
           "group relative inline-flex items-center gap-2 h-11 px-4 rounded-sm",
           "bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium",
-          "hover:bg-[var(--saffron-glow)] transition-colors shadow-[0_0_18px_-6px_var(--saffron)]",
+          "hover:bg-[var(--saffron-glow)] transition-colors",
           className,
         )}
       >

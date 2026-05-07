@@ -55,7 +55,6 @@ export function TicketEnter({ className }: { className?: string }) {
         "transition-all duration-300",
         "hover:bg-[var(--saffron-glow)]",
         "[clip-path:polygon(8px_0,calc(100%-8px)_0,100%_8px,100%_calc(100%-8px),calc(100%-8px)_100%,8px_100%,0_calc(100%-8px),0_8px)]",
-        "shadow-[0_0_22px_-6px_var(--saffron)]",
         className,
       )}
     >
@@ -76,7 +75,7 @@ export function ProfileStub({ initial }: { initial: string }) {
     <Link
       href="/profile"
       aria-label="Profile"
-      className="group relative inline-flex items-center justify-center h-11 w-11 bg-[var(--saffron)] text-[var(--ink)] font-display text-base hover:bg-[var(--saffron-glow)] transition-colors shadow-[0_0_20px_-6px_var(--saffron)]
+      className="group relative inline-flex items-center justify-center h-11 w-11 bg-[var(--saffron)] text-[var(--ink)] font-display text-base hover:bg-[var(--saffron-glow)] transition-colors
         [clip-path:polygon(8px_0,calc(100%-8px)_0,100%_8px,100%_calc(100%-8px),calc(100%-8px)_100%,8px_100%,0_calc(100%-8px),0_8px)]"
     >
       {initial}

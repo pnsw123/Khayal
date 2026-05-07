@@ -17,7 +17,7 @@ export function NavLink({ href, label }: { href: string; label: string }) {
     >
       {label}
       {active && (
-        <span className="absolute left-3 right-3 md:left-5 md:right-5 -bottom-[2px] h-[2px] bg-[var(--saffron)] rounded-full shadow-[0_0_12px_var(--saffron)]" />
+        <span className="absolute left-3 right-3 md:left-5 md:right-5 -bottom-[2px] h-[2px] bg-[var(--saffron)] rounded-full" />
       )}
     </Link>
   );

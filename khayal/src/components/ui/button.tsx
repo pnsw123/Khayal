@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:   "bg-[var(--saffron)] text-[var(--ink)] hover:bg-[var(--saffron-glow)] shadow-[0_1px_0_0_var(--saffron-glow)_inset,0_8px_20px_-6px_rgb(244_196_48/0.35)]",
+        default:   "bg-[var(--saffron)] text-[var(--ink)] hover:bg-[var(--saffron-glow)] shadow-sm",
         outline:   "border border-[var(--taupe)]/40 text-[var(--cream)] hover:bg-[var(--ink-lift)] hover:border-[var(--saffron)]/60",
         ghost:     "text-[var(--cream)] hover:bg-[var(--ink-lift)]",
         link:      "text-[var(--saffron)] underline-offset-4 hover:underline p-0 h-auto",

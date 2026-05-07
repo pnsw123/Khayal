@@ -40,7 +40,7 @@ function TabBtn({ active, onClick, icon, label }: { active: boolean; onClick: ()
       )}
     >
       {icon} {label}
-      {active && <span className="absolute left-3 right-3 -bottom-[1px] h-[2px] bg-[var(--saffron)] shadow-[0_0_12px_var(--saffron)]" />}
+      {active && <span className="absolute left-3 right-3 -bottom-[1px] h-[2px] bg-[var(--saffron)]" />}
     </button>
   );
 }
