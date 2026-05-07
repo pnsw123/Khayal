@@ -16,7 +16,7 @@ export interface FilterChipsProps {
  */
 export function FilterChips({ items, activeCode, paramKey, searchParams, className }: FilterChipsProps) {
   return (
-    <div className={cn("flex flex-wrap gap-1.5", className)}>
+    <div className={cn("flex gap-1.5", className)}>
       {items.map((it) => {
         const active = activeCode === it.code;
         return (
