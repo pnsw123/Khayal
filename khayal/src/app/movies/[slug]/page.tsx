@@ -153,7 +153,7 @@ export default async function MovieDetailPage({
                   <Link
                     key={g}
                     href={`/browse?genre=${encodeURIComponent(g)}`}
-                    className="px-3 py-1 rounded-full text-[11px] font-mono tracking-wide bg-[var(--ink-high)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/40 transition-colors"
+                    className="px-3 py-1 rounded-md text-[10px] font-mono tracking-[0.1em] uppercase bg-[var(--ink-high)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/40 transition-colors"
                   >
                     {g}
                   </Link>
@@ -285,7 +285,7 @@ export default async function MovieDetailPage({
                   className="p-5 rounded-lg bg-[var(--ink-lift)] border border-[var(--ink-high)] hover:border-[var(--taupe)]/50 transition-colors"
                 >
                   <header className="flex items-center gap-3 mb-3">
-                    <div className="h-9 w-9 rounded-full bg-[var(--saffron)] text-[var(--ink)] grid place-items-center font-display text-sm font-bold shrink-0">
+                    <div className="h-9 w-9 rounded-full bg-[var(--ink-high)] text-[var(--cream)] grid place-items-center font-display text-sm font-bold shrink-0">
                       {(r.display_name || r.username || "?").charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -300,7 +300,7 @@ export default async function MovieDetailPage({
                   )}
                   {r.contains_spoiler ? (
                     <details className="text-sm text-[var(--cream-muted)]">
-                      <summary className="cursor-pointer text-[var(--saffron)] hover:text-[var(--saffron-glow)]">
+                      <summary className="cursor-pointer text-[var(--accent-dim)] hover:text-[var(--cream)]">
                         Contains spoilers — click to reveal
                       </summary>
                       <p className="mt-2 whitespace-pre-wrap">{r.body}</p>

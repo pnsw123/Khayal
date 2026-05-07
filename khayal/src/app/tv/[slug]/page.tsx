@@ -137,7 +137,7 @@ export default async function TvDetailPage({
 
           {/* Info */}
           <div className="min-w-0 pb-2">
-            <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--saffron)] mb-4">Series · مسلسل</p>
+            <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--accent-dim)] mb-4">Series · مسلسل</p>
             <h1 className="font-display text-[clamp(2rem,5vw,4.5rem)] leading-[0.92] text-[var(--cream)] mb-5">
               {t.title}
             </h1>
@@ -210,9 +210,9 @@ export default async function TvDetailPage({
           ) : (
             <div className="grid md:grid-cols-2 gap-5">
               {reviews.map((r) => (
-                <article key={r.id} className="p-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--ink-high)] hover:border-[var(--saffron)]/40 transition-colors">
+                <article key={r.id} className="p-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--ink-high)] hover:border-[var(--taupe)]/60 transition-colors">
                   <header className="flex items-center gap-3 mb-3">
-                    <div className="h-8 w-8 rounded-full bg-[var(--saffron)] text-[var(--ink)] grid place-items-center font-display text-sm">
+                    <div className="h-8 w-8 rounded-full bg-[var(--ink-high)] text-[var(--cream)] grid place-items-center font-display text-sm">
                       {(r.display_name || r.username || "?").charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -225,7 +225,7 @@ export default async function TvDetailPage({
                   {r.headline && <h3 className="font-display text-lg text-[var(--cream)] mb-2">{r.headline}</h3>}
                   {r.contains_spoiler ? (
                     <details className="text-sm text-[var(--cream-muted)]">
-                      <summary className="cursor-pointer text-[var(--saffron)] hover:text-[var(--saffron-glow)]">Spoilers. Click to reveal.</summary>
+                      <summary className="cursor-pointer text-[var(--accent-dim)] hover:text-[var(--cream)]">Spoilers. Click to reveal.</summary>
                       <p className="mt-2 whitespace-pre-wrap">{r.body}</p>
                     </details>
                   ) : (

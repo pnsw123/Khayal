@@ -31,7 +31,7 @@ export function CursorGlow() {
       className="pointer-events-none fixed top-0 left-0 z-[5] h-[600px] w-[600px] will-change-transform"
       style={{
         background:
-          "radial-gradient(closest-side, rgba(244,196,48,0.09), rgba(244,196,48,0.025) 40%, transparent 72%)",
+          "radial-gradient(closest-side, rgba(100,120,220,0.07), rgba(100,120,220,0.02) 40%, transparent 72%)",
         filter: "blur(30px)",
       }}
     />

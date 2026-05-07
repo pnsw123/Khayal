@@ -36,11 +36,11 @@ function TabBtn({ active, onClick, icon, label }: { active: boolean; onClick: ()
       onClick={onClick}
       className={cn(
         "relative inline-flex items-center gap-2 px-5 py-3 text-sm tracking-wide transition-colors",
-        active ? "text-[var(--saffron)]" : "text-[var(--cream-muted)] hover:text-[var(--cream)]"
+        active ? "text-[var(--cream)]" : "text-[var(--cream-muted)] hover:text-[var(--cream)]"
       )}
     >
       {icon} {label}
-      {active && <span className="absolute left-3 right-3 -bottom-[1px] h-[2px] bg-[var(--saffron)]" />}
+      {active && <span className="absolute left-3 right-3 -bottom-[1px] h-[2px] bg-[var(--accent)]" />}
     </button>
   );
 }
@@ -94,12 +94,12 @@ function FindTab() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Title, phrase, idea…"
-          className="w-full h-14 pl-12 pr-12 rounded-md text-base bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--saffron)]/60"
+          className="w-full h-11 pl-11 pr-11 rounded-md text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--accent-dim)] transition-colors"
         />
         {pending && (
           <LoaderCircle
             size={16}
-            className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-[var(--saffron)]"
+            className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-[var(--cream-muted)]"
           />
         )}
       </form>
@@ -113,7 +113,7 @@ function FindTab() {
 
       {touched && rows.length === 0 && !pending && (
         <div className="py-16 text-center">
-          <p className="font-arabic text-3xl text-[var(--saffron)]/70 mb-3">لا خيال هنا</p>
+          <p className="font-arabic text-3xl text-[var(--cream-muted)]/50 mb-3">لا خيال هنا</p>
           <p className="font-display italic text-xl text-[var(--cream)]">No such fantasy.</p>
           <p className="mt-2 text-sm text-[var(--cream-muted)]">Try a different title or phrase.</p>
         </div>
@@ -206,11 +206,11 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
             value={sql}
             onChange={(e) => setSql(e.target.value)}
             spellCheck={false}
-            className="w-full h-44 p-4 rounded-md font-mono text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] focus:outline-none focus:border-[var(--saffron)]/60 resize-y"
+            className="w-full h-44 p-4 rounded-md font-mono text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] focus:outline-none focus:border-[var(--accent-dim)] transition-colors resize-y"
           />
           <button
             onClick={run}
-            className="absolute bottom-3 right-3 h-9 px-4 rounded-md bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--saffron-glow)] inline-flex items-center gap-2"
+            className="absolute bottom-3 right-3 h-9 px-4 rounded-md bg-[var(--accent)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--cream)] inline-flex items-center gap-2"
           >
             {pending ? <LoaderCircle size={13} className="animate-spin" /> : <Play size={13} />} Run
           </button>
@@ -233,7 +233,7 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
                 <thead className="bg-[var(--ink-lift)]">
                   <tr>
                     {cols.map((c) => (
-                      <th key={c} className="text-left px-4 py-3 font-mono text-[10px] tracking-[0.15em] uppercase text-[var(--saffron)] border-b border-[var(--taupe)]/15">
+                      <th key={c} className="text-left px-4 py-3 font-mono text-[10px] tracking-[0.15em] uppercase text-[var(--accent-dim)] border-b border-[var(--taupe)]/15">
                         {c}
                       </th>
                     ))}

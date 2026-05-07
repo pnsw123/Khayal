@@ -42,7 +42,7 @@ export async function Nav() {
             <span className="font-display text-[1.2rem] leading-none tracking-[0.08em] text-[var(--cream)] group-hover:text-[var(--accent)] transition-colors">
               KHAYAL
             </span>
-            <span className="font-arabic text-lg leading-none text-[var(--saffron)]/70 group-hover:text-[var(--saffron)] transition-colors" dir="rtl">
+            <span className="font-arabic text-lg leading-none text-[var(--cream-muted)] group-hover:text-[var(--accent-dim)] transition-colors" dir="rtl">
               خيال
             </span>
           </span>
