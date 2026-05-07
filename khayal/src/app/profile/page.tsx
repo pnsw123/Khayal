@@ -83,7 +83,17 @@ export default async function ProfilePage() {
             </p>
           </div>
         </div>
-        <SignOutButton />
+        <div className="flex items-center gap-3">
+          {profile?.username && (
+            <Link
+              href={`/users/${profile.username}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-[var(--taupe)]/30 font-mono text-[11px] tracking-wider uppercase text-[var(--cream-muted)] hover:border-[var(--saffron)]/50 hover:text-[var(--cream)] transition-colors"
+            >
+              <ArrowUpRight size={11} /> Public profile
+            </Link>
+          )}
+          <SignOutButton />
+        </div>
       </header>
 
       {/* Stats */}

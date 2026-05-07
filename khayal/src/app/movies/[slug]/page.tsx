@@ -10,6 +10,8 @@ import { ReviewForm } from "@/components/review-form";
 import { WhereToWatch } from "@/components/where-to-watch";
 import { AddToListButton } from "@/components/add-to-list";
 import { loadUserListsForTarget } from "@/lib/lists";
+import { CastRow } from "@/components/cast-row";
+import type { CastMember } from "@/components/cast-row";
 
 export const revalidate = 0;
 
@@ -55,16 +57,40 @@ export default async function MovieDetailPage({
   let myRating: number | null = null;
   let myReview: { id: number; headline: string | null; body: string; contains_spoiler: boolean } | null = null;
   let myLists: any[] = [];
+
+  const [castResult, ...userResults] = await Promise.all([
+    sb.from("movie_credits")
+      .select("person_id, role, character_name, job, credit_order, people(name, profile_path)")
+      .eq("movie_id", movie.id)
+      .order("credit_order", { ascending: true })
+      .limit(20),
+    user
+      ? sb.from("movie_ratings").select("rating").eq("movie_id", movie.id).eq("user_id", user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? sb.from("movie_reviews").select("id, headline, body, contains_spoiler").eq("movie_id", movie.id).eq("user_id", user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? loadUserListsForTarget(user.id, "movie", movie.id)
+      : Promise.resolve([]),
+  ]);
+
   if (user) {
-    const [{ data: r }, { data: rv }, lists] = await Promise.all([
-      sb.from("movie_ratings").select("rating").eq("movie_id", movie.id).eq("user_id", user.id).maybeSingle(),
-      sb.from("movie_reviews").select("id, headline, body, contains_spoiler").eq("movie_id", movie.id).eq("user_id", user.id).maybeSingle(),
-      loadUserListsForTarget(user.id, "movie", movie.id),
-    ]);
+    const [{ data: r }, { data: rv }, lists] = userResults as any;
     myRating = r?.rating ?? null;
     myReview = rv ?? null;
-    myLists = lists;
+    myLists = lists ?? [];
   }
+
+  const cast: CastMember[] = (castResult.data ?? []).map((c: any) => ({
+    person_id:      c.person_id,
+    name:           c.people?.name ?? "Unknown",
+    character_name: c.character_name,
+    profile_path:   c.people?.profile_path ?? null,
+    role:           c.role,
+    job:            c.job,
+    credit_order:   c.credit_order,
+  }));
 
   return (
     <div className="relative">
@@ -171,6 +197,9 @@ export default async function MovieDetailPage({
             existing={myReview}
           />
         </div>
+
+        {/* ─── Cast ─── */}
+        {cast.length > 0 && <CastRow cast={cast} />}
 
         {/* ─── Reviews list ─── */}
         <section className="pt-10 border-t border-[var(--taupe)]/15">

@@ -10,7 +10,7 @@ import { year } from "@/lib/utils";
 
 export const revalidate = 300;
 
-type Search = { lang?: string; rating?: string; page?: string };
+type Search = { lang?: string; rating?: string; genre?: string; page?: string };
 
 const PAGE_SIZE = 48;
 
@@ -19,10 +19,21 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const usp = new URLSearchParams(Object.entries(params).filter(([, v]) => !!v) as [string, string][]);
   const activeLang   = params.lang   ?? "";
   const activeRating = params.rating ?? "";
+  const activeGenre  = params.genre  ?? "";
   const page         = Math.max(1, Number(params.page ?? "1") || 1);
-  const filtersActive = hasAnyFilter(usp);
+  const filtersActive = hasAnyFilter(usp) || !!activeGenre;
 
   const sb = await supabaseServer();
+
+  // Fetch genres for filter row
+  const { data: genreRows } = await sb
+    .from("genres")
+    .select("id, name, slug")
+    .order("name", { ascending: true });
+  const genres = [
+    { code: "", label: "All Genres" },
+    ...(genreRows ?? []).map((g: any) => ({ code: String(g.id), label: g.name })),
+  ];
   const today = new Date().toISOString().slice(0, 10);
   const sixtyDaysAgo = new Date(Date.now() - 60 * 86_400_000).toISOString().slice(0, 10);
 
@@ -32,19 +43,41 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     ? await loadShelves(sb, today, sixtyDaysAgo)
     : { nowPlaying: null, upcoming: null, classics: null, world: null, recent: null, totals: null };
 
-  // Deep browse grid — uses movies_with_genres view for genre_names array
+  // Deep browse grid — genre filter uses movie_genres bridge
   const from = (page - 1) * PAGE_SIZE;
   const to   = from + PAGE_SIZE - 1;
-  let q = sb
-    .from("movies_with_genres")
-    .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names", { count: "exact" })
-    .not("poster_url", "is", null)
-    .order("release_date", { ascending: false, nullsFirst: false })
-    .range(from, to);
-  if (activeLang)   q = q.eq("original_language", activeLang);
-  if (activeRating) q = q.eq("age_rating", activeRating);
-  const { data: gridData, count: gridTotal } = await q;
-  const grid = (gridData ?? []) as (Movie & { genre_names: string[] })[];
+
+  let gridData: any[] = [];
+  let gridTotal = 0;
+
+  if (activeGenre) {
+    // Genre filter: join through movie_genres
+    const genreId = Number(activeGenre);
+    let q = sb
+      .from("movie_genres")
+      .select("movies_with_genres!inner(id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names)", { count: "exact" })
+      .eq("genre_id", genreId)
+      .range(from, to);
+    if (activeLang)   q = (q as any).eq("movies_with_genres.original_language", activeLang);
+    if (activeRating) q = (q as any).eq("movies_with_genres.age_rating", activeRating);
+    const { data, count } = await q;
+    gridData = (data ?? []).map((r: any) => r.movies_with_genres).filter(Boolean);
+    gridTotal = count ?? 0;
+  } else {
+    let q = sb
+      .from("movies_with_genres")
+      .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names", { count: "exact" })
+      .not("poster_url", "is", null)
+      .order("release_date", { ascending: false, nullsFirst: false })
+      .range(from, to);
+    if (activeLang)   q = q.eq("original_language", activeLang);
+    if (activeRating) q = q.eq("age_rating", activeRating);
+    const { data, count } = await q;
+    gridData = data ?? [];
+    gridTotal = count ?? 0;
+  }
+
+  const grid = gridData as (Movie & { genre_names: string[] })[];
   const totalPages = Math.max(1, Math.ceil((gridTotal ?? 0) / PAGE_SIZE));
 
   // Stats shared across rendered cards
@@ -141,6 +174,10 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         {/* Filter rail */}
         <div className="space-y-3 mb-8 pb-5 border-b border-[var(--taupe)]/15">
           <div className="flex items-center gap-4 flex-wrap">
+            <span className="shrink-0 font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] w-16">Genre</span>
+            <FilterChips items={genres} activeCode={activeGenre} paramKey="genre" searchParams={usp} />
+          </div>
+          <div className="flex items-center gap-4 flex-wrap">
             <span className="shrink-0 font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] w-16">Lang</span>
             <FilterChips items={LANGUAGES} activeCode={activeLang} paramKey="lang" searchParams={usp} />
           </div>
@@ -153,7 +190,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
               href="/browse#films"
               className="inline-flex items-center gap-1.5 text-[11px] font-mono tracking-wider uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors mt-1"
             >
-              <X size={12} /> Clear filters
+              <X size={12} /> Clear all filters
             </Link>
           )}
         </div>

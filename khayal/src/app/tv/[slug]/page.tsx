@@ -10,6 +10,10 @@ import { ReviewForm } from "@/components/review-form";
 import { WhereToWatch } from "@/components/where-to-watch";
 import { AddToListButton } from "@/components/add-to-list";
 import { loadUserListsForTarget } from "@/lib/lists";
+import { CastRow } from "@/components/cast-row";
+import type { CastMember } from "@/components/cast-row";
+import { SeasonsAccordion } from "@/components/seasons-accordion";
+import type { Season } from "@/components/seasons-accordion";
 
 export const revalidate = 0;
 
@@ -54,16 +58,46 @@ export default async function TvDetailPage({
   let myRating: number | null = null;
   let myReview: { id: number; headline: string | null; body: string; contains_spoiler: boolean } | null = null;
   let myLists: any[] = [];
+
+  const [castResult, seasonsResult, ...userResults] = await Promise.all([
+    sb.from("tv_credits")
+      .select("person_id, role, character_name, job, credit_order, people(name, profile_path)")
+      .eq("tv_series_id", t.id)
+      .order("credit_order", { ascending: true })
+      .limit(20),
+    sb.from("seasons")
+      .select("id, season_number, name, overview, air_date, episode_count, poster_url")
+      .eq("tv_series_id", t.id)
+      .order("season_number", { ascending: true }),
+    user
+      ? sb.from("tv_series_ratings").select("rating").eq("tv_series_id", t.id).eq("user_id", user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? sb.from("tv_series_reviews").select("id, headline, body, contains_spoiler").eq("tv_series_id", t.id).eq("user_id", user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? loadUserListsForTarget(user.id, "tv_series", t.id)
+      : Promise.resolve([]),
+  ]);
+
   if (user) {
-    const [{ data: r }, { data: rv }, lists] = await Promise.all([
-      sb.from("tv_series_ratings").select("rating").eq("tv_series_id", t.id).eq("user_id", user.id).maybeSingle(),
-      sb.from("tv_series_reviews").select("id, headline, body, contains_spoiler").eq("tv_series_id", t.id).eq("user_id", user.id).maybeSingle(),
-      loadUserListsForTarget(user.id, "tv_series", t.id),
-    ]);
+    const [{ data: r }, { data: rv }, lists] = userResults as any;
     myRating = r?.rating ?? null;
     myReview = rv ?? null;
-    myLists = lists;
+    myLists = lists ?? [];
   }
+
+  const cast: CastMember[] = (castResult.data ?? []).map((c: any) => ({
+    person_id:      c.person_id,
+    name:           c.people?.name ?? "Unknown",
+    character_name: c.character_name,
+    profile_path:   c.people?.profile_path ?? null,
+    role:           c.role,
+    job:            c.job,
+    credit_order:   c.credit_order,
+  }));
+
+  const seasons: Season[] = (seasonsResult.data ?? []) as Season[];
 
   return (
     <div className="relative">
@@ -151,6 +185,12 @@ export default async function TvDetailPage({
             existing={myReview}
           />
         </div>
+
+        {/* ─── Cast ─── */}
+        {cast.length > 0 && <CastRow cast={cast} />}
+
+        {/* ─── Seasons ─── */}
+        {seasons.length > 0 && <SeasonsAccordion seasons={seasons} />}
 
         <section className="pt-10 border-t border-[var(--taupe)]/15">
           <h2 className="font-display text-2xl text-[var(--cream)] mb-8">

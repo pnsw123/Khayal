@@ -58,33 +58,40 @@ def upsert_people(sb: Client, people: list[dict]) -> dict[int, int]:
 
 def process_credits(raw_credits: dict, our_id: int, id_key: str,
                     person_map: dict[int, int], top_cast: int) -> list[dict]:
-    """Build credit rows from TMDB credits response."""
+    """Build credit rows from TMDB credits response. Dedup by (id_key, person_id, role, job)."""
     links = []
+    seen: set[tuple] = set()
 
     # Cast
     for member in (raw_credits.get("cast") or [])[:top_cast]:
         pid = person_map.get(member.get("id"))
         if pid:
-            links.append({
-                id_key:          our_id,
-                "person_id":     pid,
-                "role":          "cast",
-                "character_name": (member.get("character") or "")[:200] or None,
-                "credit_order":  member.get("order", 999),
-            })
+            key = (our_id, pid, "cast", None)
+            if key not in seen:
+                seen.add(key)
+                links.append({
+                    id_key:          our_id,
+                    "person_id":     pid,
+                    "role":          "cast",
+                    "character_name": (member.get("character") or "")[:200] or None,
+                    "credit_order":  member.get("order", 999),
+                })
 
     # Director only from crew
     for member in (raw_credits.get("crew") or []):
         if member.get("job") == "Director":
             pid = person_map.get(member.get("id"))
             if pid:
-                links.append({
-                    id_key:      our_id,
-                    "person_id": pid,
-                    "role":      "crew",
-                    "job":       "Director",
-                    "credit_order": 0,
-                })
+                key = (our_id, pid, "crew", "Director")
+                if key not in seen:
+                    seen.add(key)
+                    links.append({
+                        id_key:      our_id,
+                        "person_id": pid,
+                        "role":      "crew",
+                        "job":       "Director",
+                        "credit_order": 0,
+                    })
             break  # one director is enough
 
     return links
