@@ -32,19 +32,19 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     ? await loadShelves(sb, today, sixtyDaysAgo)
     : { nowPlaying: null, upcoming: null, classics: null, world: null, recent: null, totals: null };
 
-  // Deep browse grid (filtered or latest, paginated)
+  // Deep browse grid — uses movies_with_genres view for genre_names array
   const from = (page - 1) * PAGE_SIZE;
   const to   = from + PAGE_SIZE - 1;
   let q = sb
-    .from("movies")
-    .select("id, title, slug, release_date, poster_url, backdrop_url, overview, original_language", { count: "exact" })
+    .from("movies_with_genres")
+    .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names", { count: "exact" })
     .not("poster_url", "is", null)
     .order("release_date", { ascending: false, nullsFirst: false })
     .range(from, to);
   if (activeLang)   q = q.eq("original_language", activeLang);
   if (activeRating) q = q.eq("age_rating", activeRating);
   const { data: gridData, count: gridTotal } = await q;
-  const grid = (gridData ?? []) as Movie[];
+  const grid = (gridData ?? []) as (Movie & { genre_names: string[] })[];
   const totalPages = Math.max(1, Math.ceil((gridTotal ?? 0) / PAGE_SIZE));
 
   // Stats shared across rendered cards
@@ -175,6 +175,10 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
                   posterUrl={m.poster_url}
                   rating={ratingByMovie.get(m.id) ?? null}
                   href={`/movies/${m.slug}`}
+                  genres={(m as any).genre_names ?? []}
+                  language={m.original_language}
+                  runtime={m.runtime_minutes}
+                  ageRating={m.age_rating}
                 />
               ))}
             </div>
@@ -259,6 +263,8 @@ function Pagination({
 
 // ─── Data loader for the shelves ─────────────────────────────────────────
 
+const SHELF_SELECT = "id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names";
+
 async function loadShelves(sb: any, today: string, sixtyDaysAgo: string) {
   const [
     { data: nowPlaying },
@@ -271,33 +277,33 @@ async function loadShelves(sb: any, today: string, sixtyDaysAgo: string) {
     { count: upcomingCount },
     { count: classicsCount },
   ] = await Promise.all([
-    sb.from("movies")
-      .select("id, title, slug, release_date, poster_url, backdrop_url, overview, original_language")
+    sb.from("movies_with_genres")
+      .select(SHELF_SELECT)
       .not("poster_url", "is", null)
       .gte("release_date", sixtyDaysAgo)
       .lte("release_date", today)
       .order("release_date", { ascending: false })
       .limit(15),
-    sb.from("movies")
-      .select("id, title, slug, release_date, poster_url, backdrop_url, overview, original_language")
+    sb.from("movies_with_genres")
+      .select(SHELF_SELECT)
       .not("poster_url", "is", null)
       .gt("release_date", today)
       .order("release_date", { ascending: true })
       .limit(15),
-    sb.from("movies")
-      .select("id, title, slug, release_date, poster_url, backdrop_url, overview, original_language")
+    sb.from("movies_with_genres")
+      .select(SHELF_SELECT)
       .not("poster_url", "is", null)
       .lt("release_date", "2000-01-01")
       .order("release_date", { ascending: false })
       .limit(15),
-    sb.from("movies")
-      .select("id, title, slug, release_date, poster_url, backdrop_url, overview, original_language")
+    sb.from("movies_with_genres")
+      .select(SHELF_SELECT)
       .not("poster_url", "is", null)
       .neq("original_language", "en")
       .order("release_date", { ascending: false })
       .limit(15),
-    sb.from("movies")
-      .select("id, title, slug, release_date, poster_url, backdrop_url, overview, original_language")
+    sb.from("movies_with_genres")
+      .select(SHELF_SELECT)
       .not("poster_url", "is", null)
       .order("created_at", { ascending: false })
       .limit(15),

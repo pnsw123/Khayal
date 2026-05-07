@@ -11,6 +11,8 @@ type SavedQuery = { id: number; title: string; query_text: string };
 interface SearchAllRow {
   id: number; type: "movie" | "tv"; title: string; slug: string;
   overview: string | null; poster_url: string | null; release_year: number | null; relevance: number;
+  age_rating: string | null; original_language: string | null;
+  runtime_minutes: number | null; genre_names: string[] | null;
 }
 
 export function SearchClient({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
@@ -126,6 +128,10 @@ function FindTab() {
               year={r.release_year ? String(r.release_year) : null}
               posterUrl={r.poster_url}
               href={r.type === "movie" ? `/movies/${r.slug}` : `/tv/${r.slug}`}
+              genres={r.genre_names ?? []}
+              language={r.original_language}
+              runtime={r.runtime_minutes}
+              ageRating={r.age_rating}
             />
           ))}
         </div>

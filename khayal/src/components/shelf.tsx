@@ -54,6 +54,10 @@ export function Shelf({ title, kicker, items, viewAllHref, ratingByMovie }: Shel
                 posterUrl={m.poster_url}
                 rating={ratingByMovie?.get(m.id) ?? null}
                 href={`/movies/${m.slug}`}
+                genres={(m as any).genre_names ?? []}
+                language={m.original_language}
+                runtime={m.runtime_minutes}
+                ageRating={m.age_rating}
               />
             </div>
           ))}
