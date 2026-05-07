@@ -4,6 +4,7 @@ import { Heart, Lock, Globe, ArrowUpRight } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import { currentUser, currentProfile } from "@/lib/auth";
 import { SignOutButton } from "./sign-out-button";
+import { AvatarUpload } from "./avatar-upload";
 
 export const metadata = { title: "Profile — KHAYAL" };
 export const revalidate = 0;
@@ -68,28 +69,32 @@ export default async function ProfilePage() {
     <div className="mx-auto max-w-6xl px-6 py-10">
       {/* Header */}
       <header className="flex items-start justify-between gap-6 mb-12 pb-10 border-b border-[var(--taupe)]/20">
-        <div>
-          <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--saffron)] mb-3">
-            Profile · المشاهِد
-          </p>
-          <h1 className="font-display text-5xl text-[var(--cream)]">{displayName}</h1>
-          {profile?.bio && <p className="mt-3 text-sm text-[var(--cream-muted)] max-w-md">{profile.bio}</p>}
-          <p className="mt-2 font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--cream-muted)]">
-            {user.email}
-          </p>
+        <div className="flex items-center gap-5">
+          <AvatarUpload
+            userId={user.id}
+            avatarUrl={profile?.avatar_url ?? null}
+            displayName={displayName}
+          />
+          <div>
+            <h1 className="font-display text-5xl text-[var(--cream)]">{displayName}</h1>
+            {profile?.bio && <p className="mt-2 text-sm text-[var(--cream-muted)] max-w-md">{profile.bio}</p>}
+            <p className="mt-1 font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--cream-muted)]">
+              {user.email}
+            </p>
+          </div>
         </div>
         <SignOutButton />
       </header>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-14">
+      <div className="flex gap-10 mb-14">
         {[
           { label: "Ratings", n: ratingCount ?? 0 },
           { label: "Reviews", n: reviewCount ?? 0 },
           { label: "Lists",   n: lists?.length ?? 0 },
         ].map((s) => (
-          <div key={s.label} className="p-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/15">
-            <p className="font-display text-3xl text-[var(--saffron)]">{s.n}</p>
+          <div key={s.label}>
+            <p className="font-display text-4xl text-[var(--saffron)]">{s.n}</p>
             <p className="mt-1 font-mono text-[11px] tracking-[0.25em] uppercase text-[var(--cream-muted)]">{s.label}</p>
           </div>
         ))}
