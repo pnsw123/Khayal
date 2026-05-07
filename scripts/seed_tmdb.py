@@ -30,7 +30,7 @@ from typing import Any, Iterable
 from dotenv import load_dotenv
 from slugify import slugify
 from supabase import Client, create_client
-from tmdbv3api import TMDb, Movie, TV
+from tmdbv3api import TMDb, Movie, TV, Genre
 
 # ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -125,6 +125,7 @@ def transform_movie(m: dict) -> dict | None:
         "overview":          (m.get("overview") or None) if m.get("overview") else None,
         "poster_url":        f"{POSTER_BASE}{m['poster_path']}"       if m.get("poster_path")   else None,
         "backdrop_url":      f"{BACKDROP_BASE}{m['backdrop_path']}"   if m.get("backdrop_path") else None,
+        "_genre_ids":        m.get("genre_ids") or [g.get("id") for g in (m.get("genres") or [])],
     }
 
 
@@ -211,6 +212,102 @@ def collect_tv_ids(target: int, sources: list[str]) -> list[int]:
         page += 1
 
     return list(ids)[:target]
+
+
+# ─── Genres ─────────────────────────────────────────────────────────────────
+
+def seed_genres(sb: Client) -> dict[int, int]:
+    """Seed genres table from TMDB. Returns {tmdb_genre_id: our_genre_id}."""
+    print("\n🏷️   Genres — fetching from TMDB...")
+    genre_api = Genre()
+    all_genres: dict[int, str] = {}
+
+    try:
+        for g in (genre_api.movie_list() or []):
+            all_genres[g.id] = g.name
+    except Exception as e:
+        print(f"   ⚠️  movie genre list failed: {e}")
+
+    try:
+        for g in (genre_api.tv_list() or []):
+            if g.id not in all_genres:
+                all_genres[g.id] = g.name
+    except Exception as e:
+        print(f"   ⚠️  tv genre list failed: {e}")
+
+    rows = [
+        {"name": name, "slug": slugify(name), "tmdb_id": tmdb_id}
+        for tmdb_id, name in all_genres.items()
+    ]
+
+    if rows:
+        sb.table("genres").upsert(rows, on_conflict="tmdb_id").execute()
+
+    # Build lookup map tmdb_id → our genre id
+    result = sb.table("genres").select("id,tmdb_id").execute()
+    mapping = {row["tmdb_id"]: row["id"] for row in (result.data or []) if row["tmdb_id"]}
+    print(f"✅   Genres done — {len(mapping)} genres in DB")
+    return mapping
+
+
+def seed_movie_genres(sb: Client, genre_map: dict[int, int]) -> None:
+    """Link existing movies to genres using tmdb_id."""
+    print("\n🔗   Movie genres — linking...")
+    movies = sb.table("movies").select("id,tmdb_id").not_.is_("tmdb_id", "null").execute()
+    api = Movie()
+    bridge_rows: list[dict] = []
+    count = 0
+
+    for movie in (movies.data or []):
+        try:
+            details = api.details(movie["tmdb_id"])
+            raw = _raw(details)
+            for gid in (raw.get("genre_ids") or [g.get("id") for g in (raw.get("genres") or [])]):
+                if gid and gid in genre_map:
+                    bridge_rows.append({"movie_id": movie["id"], "genre_id": genre_map[gid]})
+        except Exception:
+            pass
+
+        if len(bridge_rows) >= BATCH_SIZE * 10:
+            sb.table("movie_genres").upsert(bridge_rows, on_conflict="movie_id,genre_id").execute()
+            count += len(bridge_rows)
+            bridge_rows = []
+
+    if bridge_rows:
+        sb.table("movie_genres").upsert(bridge_rows, on_conflict="movie_id,genre_id").execute()
+        count += len(bridge_rows)
+
+    print(f"✅   Movie genres done — {count} links")
+
+
+def seed_tv_genres(sb: Client, genre_map: dict[int, int]) -> None:
+    """Link existing TV series to genres using tmdb_id."""
+    print("\n🔗   TV genres — linking...")
+    series = sb.table("tv_series").select("id,tmdb_id").not_.is_("tmdb_id", "null").execute()
+    api = TV()
+    bridge_rows: list[dict] = []
+    count = 0
+
+    for show in (series.data or []):
+        try:
+            details = api.details(show["tmdb_id"])
+            raw = _raw(details)
+            for gid in (raw.get("genre_ids") or [g.get("id") for g in (raw.get("genres") or [])]):
+                if gid and gid in genre_map:
+                    bridge_rows.append({"tv_series_id": show["id"], "genre_id": genre_map[gid]})
+        except Exception:
+            pass
+
+        if len(bridge_rows) >= BATCH_SIZE * 10:
+            sb.table("tv_genres").upsert(bridge_rows, on_conflict="tv_series_id,genre_id").execute()
+            count += len(bridge_rows)
+            bridge_rows = []
+
+    if bridge_rows:
+        sb.table("tv_genres").upsert(bridge_rows, on_conflict="tv_series_id,genre_id").execute()
+        count += len(bridge_rows)
+
+    print(f"✅   TV genres done — {count} links")
 
 
 # ─── Upsert ─────────────────────────────────────────────────────────────────
@@ -335,6 +432,12 @@ def main() -> None:
         seed_movies(sb, args.movies, sources, args.sleep)
     if args.tv > 0:
         seed_tv(sb, args.tv, sources, args.sleep)
+
+    # Always seed genres and link after content is in DB
+    genre_map = seed_genres(sb)
+    if genre_map:
+        seed_movie_genres(sb, genre_map)
+        seed_tv_genres(sb, genre_map)
 
 
 if __name__ == "__main__":

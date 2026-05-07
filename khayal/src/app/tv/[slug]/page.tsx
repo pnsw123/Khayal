@@ -13,6 +13,31 @@ import { loadUserListsForTarget } from "@/lib/lists";
 
 export const revalidate = 0;
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const sb = await supabaseServer();
+  const { data } = await sb.rpc("get_tv_detail", { p_slug: slug });
+  if (!data) return {};
+  const s = (data as any).series;
+  const yr = s.first_air_date ? `(${s.first_air_date.split("-")[0]})` : "";
+  return {
+    title:       `${s.title} ${yr} — KHAYAL`,
+    description: s.overview?.slice(0, 160) ?? `Watch ${s.title} on KHAYAL.`,
+    openGraph: {
+      title:       `${s.title} ${yr}`,
+      description: s.overview?.slice(0, 160),
+      images:      s.poster_url ? [{ url: s.poster_url }] : [],
+      type:        "video.tv_show",
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title:       `${s.title} ${yr}`,
+      description: s.overview?.slice(0, 160),
+      images:      s.poster_url ? [s.poster_url] : [],
+    },
+  };
+}
+
 export default async function TvDetailPage({
   params,
 }: { params: Promise<{ slug: string }> }) {

@@ -13,6 +13,31 @@ import { loadUserListsForTarget } from "@/lib/lists";
 
 export const revalidate = 0;
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const sb = await supabaseServer();
+  const { data } = await sb.rpc("get_movie_detail", { p_slug: slug });
+  if (!data) return {};
+  const m = (data as any).movie;
+  const yr = m.release_date ? `(${m.release_date.split("-")[0]})` : "";
+  return {
+    title:       `${m.title} ${yr} — KHAYAL`,
+    description: m.overview?.slice(0, 160) ?? `Watch ${m.title} on KHAYAL.`,
+    openGraph: {
+      title:       `${m.title} ${yr}`,
+      description: m.overview?.slice(0, 160),
+      images:      m.poster_url ? [{ url: m.poster_url }] : [],
+      type:        "video.movie",
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title:       `${m.title} ${yr}`,
+      description: m.overview?.slice(0, 160),
+      images:      m.poster_url ? [m.poster_url] : [],
+    },
+  };
+}
+
 export default async function MovieDetailPage({
   params,
 }: { params: Promise<{ slug: string }> }) {
