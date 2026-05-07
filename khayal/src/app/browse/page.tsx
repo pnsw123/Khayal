@@ -101,30 +101,27 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="min-h-screen">
-      {/* ─── Sticky filter bar at the very top ─── */}
-      <div className="sticky top-0 z-10 bg-[var(--ink)]/95 backdrop-blur-md border-b border-[var(--ink-high)]">
-        <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-3 space-y-2">
-          {/* Genre chips — most prominent */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            <span className="shrink-0 font-mono text-[9px] tracking-[0.25em] uppercase text-[var(--cream-muted)] pr-1">Genre</span>
+      {/* ─── Sticky filter bar — stays visible as you scroll ─── */}
+      <div className="sticky top-16 z-10 bg-[var(--ink)]/96 backdrop-blur-md border-b border-[var(--ink-high)]">
+        <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-2 space-y-1.5">
+          {/* Row 1: Genre */}
+          <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            <span className="shrink-0 font-mono text-[9px] tracking-widest uppercase text-[var(--cream-muted)]">Genre</span>
             <FilterChips items={genres} activeCode={activeGenre} paramKey="genre" searchParams={usp} />
           </div>
-          {/* Lang + Rating on second row */}
-          <div className="flex items-center gap-6 flex-wrap">
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-              <span className="shrink-0 font-mono text-[9px] tracking-[0.25em] uppercase text-[var(--cream-muted)] pr-1">Lang</span>
-              <FilterChips items={LANGUAGES} activeCode={activeLang} paramKey="lang" searchParams={usp} />
-            </div>
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-              <span className="shrink-0 font-mono text-[9px] tracking-[0.25em] uppercase text-[var(--cream-muted)] pr-1">Rating</span>
-              <FilterChips items={RATINGS} activeCode={activeRating} paramKey="rating" searchParams={usp} />
-            </div>
+          {/* Row 2: Lang · Rating · Clear */}
+          <div className="flex items-center gap-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            <span className="shrink-0 font-mono text-[9px] tracking-widest uppercase text-[var(--cream-muted)]">Lang</span>
+            <FilterChips items={LANGUAGES} activeCode={activeLang} paramKey="lang" searchParams={usp} />
+            <span className="shrink-0 h-3 w-px bg-[var(--ink-high)]" />
+            <span className="shrink-0 font-mono text-[9px] tracking-widest uppercase text-[var(--cream-muted)]">Rating</span>
+            <FilterChips items={RATINGS} activeCode={activeRating} paramKey="rating" searchParams={usp} />
             {filtersActive && (
               <Link
                 href="/browse"
-                className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[10px] font-mono tracking-wider uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors"
+                className="ml-2 shrink-0 inline-flex items-center gap-1 text-[10px] font-mono uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors"
               >
-                <X size={11} /> Clear
+                <X size={10} /> Clear
               </Link>
             )}
           </div>
