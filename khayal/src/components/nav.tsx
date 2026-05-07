@@ -15,10 +15,12 @@ export async function Nav() {
 
   const links = user
     ? [
+        { href: "/browse",   label: "Films"    },
         { href: "/search",   label: "Search"   },
         { href: "/profile",  label: "Profile"  },
       ]
     : [
+        { href: "/browse",   label: "Films"    },
         { href: "/search",   label: "Search"   },
       ];
 
@@ -28,7 +30,7 @@ export async function Nav() {
       .toUpperCase();
 
   return (
-    <header className="relative z-20 border-b border-[var(--taupe)]/15">
+    <header className="relative z-20 border-b border-[var(--ink-high)]">
       <div className="mx-auto max-w-[1600px] px-6 h-16 flex items-center justify-between gap-6">
         <Link href="/" className="group flex items-center gap-2.5 shrink-0">
           {/* Icon mark */}

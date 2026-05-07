@@ -16,7 +16,7 @@ export interface FilterChipsProps {
  */
 export function FilterChips({ items, activeCode, paramKey, searchParams, className }: FilterChipsProps) {
   return (
-    <div className={cn("flex flex-wrap gap-2", className)}>
+    <div className={cn("flex flex-wrap gap-1.5", className)}>
       {items.map((it) => {
         const active = activeCode === it.code;
         return (
@@ -24,10 +24,10 @@ export function FilterChips({ items, activeCode, paramKey, searchParams, classNa
             key={it.label}
             href={buildFilterHref(searchParams, paramKey, it.code)}
             className={cn(
-              "inline-flex items-center h-8 px-3 rounded-sm text-xs tracking-wide transition-all",
+              "inline-flex items-center h-7 px-3 rounded-full text-[11px] font-mono tracking-wide transition-all whitespace-nowrap",
               active
-                ? "bg-[var(--saffron)] text-[var(--ink)] shadow-[0_0_16px_-4px_var(--saffron)]"
-                : "bg-transparent text-[var(--cream-muted)] border border-[var(--taupe)]/25 hover:text-[var(--cream)] hover:border-[var(--saffron)]/50"
+                ? "bg-[var(--saffron)] text-[var(--ink)] font-semibold shadow-[0_0_12px_-2px_var(--saffron)]"
+                : "bg-[var(--ink-high)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/30"
             )}
             scroll={false}
           >

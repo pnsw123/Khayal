@@ -100,133 +100,133 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const totals = shelfQueries.totals;
 
   return (
-    <div className="mx-auto max-w-[1600px] px-6 py-10">
-      {/* ─── Index masthead — compact, utilitarian ─── */}
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="font-display text-3xl md:text-4xl text-[var(--cream)]">
-            What are you looking for?
-          </h1>
-        </div>
-
-        <Link
-          href="/search"
-          className="flex items-center gap-3 h-12 pl-4 pr-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--saffron)]/50 transition-colors w-full md:w-[420px]"
-        >
-          <Search size={16} className="text-[var(--saffron)]" />
-          <span className="flex-1 text-sm text-left">Search 3,000+ films & series…</span>
-          <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--ink)] border border-[var(--taupe)]/25">⌘K</kbd>
-        </Link>
-      </div>
-
-      {/* ─── Stats strip ─── */}
-      {totals && (
-        <div className="mb-12 flex flex-wrap items-center gap-x-8 gap-y-2 font-mono text-[11px] tracking-[0.2em] uppercase text-[var(--cream-muted)] border-y border-[var(--taupe)]/15 py-3">
-          <span><strong className="text-[var(--saffron)] font-display text-lg normal-case tracking-normal">{totals.movies.toLocaleString()}</strong> films</span>
-          <span><strong className="text-[var(--saffron)] font-display text-lg normal-case tracking-normal">{totals.tv.toLocaleString()}</strong> series</span>
-          <span><strong className="text-[var(--saffron)] font-display text-lg normal-case tracking-normal">{totals.upcoming}</strong> upcoming</span>
-          <span><strong className="text-[var(--saffron)] font-display text-lg normal-case tracking-normal">{totals.classics}</strong> pre-2000</span>
-          <span className="ml-auto text-[var(--cream-muted)]/60">ordered by release · newest first</span>
-        </div>
-      )}
-
-      {/* ─── Shelves (only on page 1 with no filter) ─── */}
-      {showShelves && shelfQueries.nowPlaying && (
-        <>
-          <Shelf
-            title="New Releases"
-            kicker="إصدارات جديدة"
-            items={shelfQueries.nowPlaying}
-            ratingByMovie={ratingByMovie}
-          />
-          <Shelf
-            title="Coming Soon"
-            kicker="قريبًا"
-            items={shelfQueries.upcoming!}
-            ratingByMovie={ratingByMovie}
-          />
-          <Shelf
-            title="World Cinema"
-            kicker="سينما العالم"
-            items={shelfQueries.world!}
-            ratingByMovie={ratingByMovie}
-          />
-          <Shelf
-            title="The Classics"
-            kicker="الكلاسيكيات"
-            items={shelfQueries.classics!}
-            ratingByMovie={ratingByMovie}
-          />
-        </>
-      )}
-
-      {/* ─── Deep browse with filters ─── */}
-      <section id="films" className="mt-4">
-        <div className="flex items-baseline justify-between mb-5">
-          <h2 className="font-display text-xl md:text-2xl text-[var(--cream)]">
-            {filtersActive ? "Filtered results" : "All films"}
-          </h2>
-          <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-[var(--cream-muted)]">
-            {grid.length} shown
-          </span>
-        </div>
-
-        {/* Filter rail */}
-        <div className="space-y-3 mb-8 pb-5 border-b border-[var(--taupe)]/15">
-          <div className="flex items-center gap-4 flex-wrap">
-            <span className="shrink-0 font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] w-16">Genre</span>
+    <div className="min-h-screen">
+      {/* ─── Sticky filter bar at the very top ─── */}
+      <div className="sticky top-0 z-10 bg-[var(--ink)]/95 backdrop-blur-md border-b border-[var(--ink-high)]">
+        <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-3 space-y-2">
+          {/* Genre chips — most prominent */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <span className="shrink-0 font-mono text-[9px] tracking-[0.25em] uppercase text-[var(--cream-muted)] pr-1">Genre</span>
             <FilterChips items={genres} activeCode={activeGenre} paramKey="genre" searchParams={usp} />
           </div>
-          <div className="flex items-center gap-4 flex-wrap">
-            <span className="shrink-0 font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] w-16">Lang</span>
-            <FilterChips items={LANGUAGES} activeCode={activeLang} paramKey="lang" searchParams={usp} />
+          {/* Lang + Rating on second row */}
+          <div className="flex items-center gap-6 flex-wrap">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+              <span className="shrink-0 font-mono text-[9px] tracking-[0.25em] uppercase text-[var(--cream-muted)] pr-1">Lang</span>
+              <FilterChips items={LANGUAGES} activeCode={activeLang} paramKey="lang" searchParams={usp} />
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+              <span className="shrink-0 font-mono text-[9px] tracking-[0.25em] uppercase text-[var(--cream-muted)] pr-1">Rating</span>
+              <FilterChips items={RATINGS} activeCode={activeRating} paramKey="rating" searchParams={usp} />
+            </div>
+            {filtersActive && (
+              <Link
+                href="/browse"
+                className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[10px] font-mono tracking-wider uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors"
+              >
+                <X size={11} /> Clear
+              </Link>
+            )}
           </div>
-          <div className="flex items-center gap-4 flex-wrap">
-            <span className="shrink-0 font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] w-16">Rating</span>
-            <FilterChips items={RATINGS} activeCode={activeRating} paramKey="rating" searchParams={usp} />
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-8">
+        {/* ─── Header row with search ─── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="font-display text-2xl md:text-3xl text-[var(--cream)]">
+              {filtersActive ? "Filtered results" : "Browse films"}
+            </h1>
+            {totals && !filtersActive && (
+              <p className="mt-1 font-mono text-[11px] tracking-[0.15em] text-[var(--cream-muted)]">
+                {totals.movies.toLocaleString()} films · {totals.tv.toLocaleString()} series
+              </p>
+            )}
+            {filtersActive && (
+              <p className="mt-1 font-mono text-[11px] tracking-[0.15em] text-[var(--cream-muted)]">
+                {gridTotal.toLocaleString()} results
+              </p>
+            )}
           </div>
-          {filtersActive && (
-            <Link
-              href="/browse#films"
-              className="inline-flex items-center gap-1.5 text-[11px] font-mono tracking-wider uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors mt-1"
-            >
-              <X size={12} /> Clear all filters
-            </Link>
-          )}
+          <Link
+            href="/search"
+            className="flex items-center gap-3 h-10 pl-4 pr-4 rounded-md bg-[var(--ink-lift)] border border-[var(--ink-high)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--taupe)] transition-colors w-full sm:w-[320px]"
+          >
+            <Search size={14} className="text-[var(--saffron)] shrink-0" />
+            <span className="flex-1 text-sm text-left truncate">Search films & series…</span>
+            <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--ink-high)] text-[var(--cream-muted)] shrink-0">⌘K</kbd>
+          </Link>
         </div>
 
-        {grid.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="font-arabic text-3xl text-[var(--saffron)]/70 mb-3">لا خيال هنا</p>
-            <p className="font-display italic text-xl text-[var(--cream)]">Nothing matches.</p>
-            <p className="mt-2 text-sm text-[var(--cream-muted)]">Try loosening a filter.</p>
-          </div>
-        ) : (
+        {/* ─── Shelves (only on page 1 with no filter) ─── */}
+        {showShelves && shelfQueries.nowPlaying && (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-5 gap-y-10">
-              {grid.map((m) => (
-                <MovieCard
-                  key={m.id}
-                  title={m.title}
-                  year={year(m.release_date)}
-                  posterUrl={m.poster_url}
-                  rating={ratingByMovie.get(m.id) ?? null}
-                  href={`/movies/${m.slug}`}
-                  genres={(m as any).genre_names ?? []}
-                  language={m.original_language}
-                  runtime={m.runtime_minutes}
-                  ageRating={m.age_rating}
-                />
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <Pagination current={page} total={totalPages} searchParams={usp} totalRows={gridTotal ?? 0} />
-            )}
+            <Shelf
+              title="New Releases"
+              kicker="إصدارات جديدة"
+              items={shelfQueries.nowPlaying}
+              ratingByMovie={ratingByMovie}
+            />
+            <Shelf
+              title="Coming Soon"
+              kicker="قريبًا"
+              items={shelfQueries.upcoming!}
+              ratingByMovie={ratingByMovie}
+            />
+            <Shelf
+              title="World Cinema"
+              kicker="سينما العالم"
+              items={shelfQueries.world!}
+              ratingByMovie={ratingByMovie}
+            />
+            <Shelf
+              title="The Classics"
+              kicker="الكلاسيكيات"
+              items={shelfQueries.classics!}
+              ratingByMovie={ratingByMovie}
+            />
           </>
         )}
-      </section>
+
+        {/* ─── Grid ─── */}
+        <section id="films" className={showShelves ? "mt-12 pt-10 border-t border-[var(--ink-high)]" : ""}>
+          {showShelves && (
+            <h2 className="font-display text-xl text-[var(--cream)] mb-6">All films</h2>
+          )}
+
+          {grid.length === 0 ? (
+            <div className="py-24 text-center">
+              <p className="font-arabic text-3xl text-[var(--saffron)]/50 mb-3">لا خيال هنا</p>
+              <p className="font-display italic text-xl text-[var(--cream)]/70">Nothing matches.</p>
+              <p className="mt-2 text-sm text-[var(--cream-muted)]">Try loosening a filter.</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
+                {grid.map((m) => (
+                  <MovieCard
+                    key={m.id}
+                    title={m.title}
+                    year={year(m.release_date)}
+                    posterUrl={m.poster_url}
+                    rating={ratingByMovie.get(m.id) ?? null}
+                    href={`/movies/${m.slug}`}
+                    genres={(m as any).genre_names ?? []}
+                    language={m.original_language}
+                    runtime={m.runtime_minutes}
+                    ageRating={m.age_rating}
+                  />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <Pagination current={page} total={totalPages} searchParams={usp} totalRows={gridTotal ?? 0} />
+              )}
+            </>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

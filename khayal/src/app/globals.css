@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
-/* ─── Saffron Marquee palette (locked from Stitch) ───────────────────────── */
+/* ─── Cinema Dark palette ─────────────────────────────────────────────────── */
 :root {
-  --ink:              #1b1111;
-  --ink-lift:         #281d1d;
-  --ink-high:         #3a2a2a;
-  --cream:            #f2dedd;
-  --cream-muted:      #c8b4b3;
-  --taupe:            #9a907a;
+  --ink:              #09090b;   /* zinc-950 — pure dark, no brown tint */
+  --ink-lift:         #18181b;   /* zinc-900 */
+  --ink-high:         #27272a;   /* zinc-800 */
+  --cream:            #fafafa;   /* zinc-50  */
+  --cream-muted:      #a1a1aa;   /* zinc-400 */
+  --taupe:            #52525b;   /* zinc-600 */
 
-  --saffron:          #f4c430;
-  --saffron-glow:     #ffe3a1;
-  --terracotta:       #ffb4a5;
-  --lamp:             #edec6f;
+  --saffron:          #f59e0b;   /* amber-500 — cinematic gold */
+  --saffron-glow:     #fbbf24;   /* amber-400 */
+  --terracotta:       #fb923c;   /* orange-400 */
+  --lamp:             #fef08a;   /* yellow-200 */
 
-  --danger:           #ff6b6b;
+  --danger:           #ef4444;   /* red-500 */
 }
 
 @theme inline {
@@ -56,9 +56,9 @@ html, body {
 
 ::selection { background: var(--saffron); color: var(--ink); }
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--ink); }
-::-webkit-scrollbar-thumb { background: var(--ink-high); border-radius: 6px; }
+::-webkit-scrollbar-thumb { background: var(--ink-high); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--taupe); }
 
 body::after {
@@ -69,7 +69,7 @@ body::after {
   z-index: 100;
   opacity: 0.065;
   mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.87 0 0 0 0 0.86 0 0 0 0.7 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.9 0 0 0 0 0.9 0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   animation: grainShift 8s steps(8) infinite;
 }
 @keyframes grainShift {

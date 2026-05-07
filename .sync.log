@@ -1,0 +1,18 @@
+2026-05-05 19:48:56  INFO     ━━━  KHAYAL daily sync  2026-05-05  (look-back 7 days)  ━━━
+2026-05-05 19:48:56  INFO     📽️   Fetching movies…
+2026-05-05 19:49:15  INFO          Found 69 movies
+2026-05-05 19:49:15  INFO          [dry] Swapped (2026-05-01)
+2026-05-05 19:49:15  INFO          [dry] The Devil Wears Prada 2 (2026-04-29)
+2026-05-05 19:49:15  INFO          [dry] Mortal Kombat II (2026-05-06)
+2026-05-05 19:49:15  INFO          [dry] Hokum (2026-04-29)
+2026-05-05 19:49:15  INFO          [dry] Je m'appelle Agneta (2026-04-28)
+2026-05-05 19:49:15  INFO          … and 64 more
+2026-05-05 19:49:15  INFO     📺   Fetching TV series…
+2026-05-05 19:49:18  INFO          Found 6 TV series
+2026-05-05 19:49:18  INFO          [dry] Widow's Bay (2026-04-28)
+2026-05-05 19:49:18  INFO          [dry] Half Man (2026-04-28)
+2026-05-05 19:49:18  INFO          [dry] Born with Luck (2026-05-04)
+2026-05-05 19:49:18  INFO          [dry] Lady Liberty (2026-04-28)
+2026-05-05 19:49:18  INFO          [dry] A Splendid Match (2026-05-03)
+2026-05-05 19:49:18  INFO          … and 1 more
+2026-05-05 19:49:18  INFO     ━━━  Done — movies:69  tv:6  date:2026-05-05  ━━━

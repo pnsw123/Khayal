@@ -63,10 +63,10 @@ export function MovieCard({
       <motion.div
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
         className={cn(
-          "relative aspect-[2/3] w-full rounded-[2px] overflow-hidden border transition-colors duration-300 shadow-[0_8px_30px_-14px_rgb(0_0_0/0.8)]",
+          "relative aspect-[2/3] w-full rounded-md overflow-hidden border transition-colors duration-300 shadow-[0_8px_30px_-14px_rgb(0_0_0/0.9)]",
           showPoster
-            ? "bg-[var(--ink-lift)] border-[var(--taupe)]/10 group-hover:border-[var(--saffron)]/50"
-            : "border-[var(--saffron)]/25 bg-[linear-gradient(145deg,var(--ink-lift)_0%,#2d1f1f_50%,#1b1111_100%)] group-hover:border-[var(--saffron)]/60"
+            ? "bg-[var(--ink-lift)] border-[var(--ink-high)] group-hover:border-[var(--saffron)]/60"
+            : "border-[var(--saffron)]/20 bg-[linear-gradient(145deg,var(--ink-lift)_0%,var(--ink-high)_100%)] group-hover:border-[var(--saffron)]/50"
         )}
       >
         {showPoster ? (
@@ -78,16 +78,11 @@ export function MovieCard({
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="absolute inset-0 flex flex-col p-4">
-            <div className="flex items-center gap-2 mb-auto">
-              <span className="font-arabic text-[var(--saffron)] text-base">خيال</span>
-              <span className="h-px flex-1 bg-[var(--saffron)]/30" />
-              <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-[var(--saffron)]/70">no reel</span>
-            </div>
-            <h4 className="font-display italic text-[var(--cream)] text-lg leading-tight line-clamp-4 mt-auto">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 gap-3">
+            <span className="font-arabic text-[var(--saffron)]/50 text-2xl">خيال</span>
+            <h4 className="font-display italic text-[var(--cream)]/80 text-sm leading-tight line-clamp-4 text-center">
               {title}
             </h4>
-            <div className="mt-3 h-px w-12 bg-[var(--saffron)]" />
           </div>
         )}
 
@@ -126,28 +121,25 @@ export function MovieCard({
       </motion.div>
 
       {/* ── Below poster ── */}
-      <div className="pt-2.5 pr-1 space-y-1.5">
-        {/* Genre + year row */}
+      <div className="pt-2.5 space-y-1">
+        {/* Title */}
+        <h3 className="font-sans text-[0.85rem] font-medium leading-snug text-[var(--cream)] line-clamp-2 group-hover:text-[var(--saffron-glow)] transition-colors">
+          {title}
+        </h3>
+        {/* Year + genres */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {year && (
-            <span className="font-mono text-[10px] tracking-[0.15em] text-[var(--cream-muted)]">
-              {year}
-            </span>
+            <span className="font-mono text-[10px] text-[var(--cream-muted)]">{year}</span>
           )}
-          {visibleGenres.map((g) => (
+          {visibleGenres.slice(0, 1).map((g) => (
             <span
               key={g}
-              className="px-1.5 py-0.5 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/20 font-mono text-[9px] tracking-[0.12em] uppercase text-[var(--cream-muted)]/70"
+              className="font-mono text-[9px] text-[var(--cream-muted)]/60"
             >
-              {g}
+              · {g}
             </span>
           ))}
         </div>
-
-        {/* Title */}
-        <h3 className="font-display text-[0.92rem] leading-snug text-[var(--cream)] line-clamp-2 group-hover:text-[var(--saffron-glow)] transition-colors">
-          {title}
-        </h3>
       </div>
     </Link>
   );
