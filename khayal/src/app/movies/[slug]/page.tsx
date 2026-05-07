@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock, Globe, Flag, CalendarDays, ArrowLeft, Film } from "lucide-react";
+import { Clock, Globe, CalendarDays, ArrowLeft, Film, Star } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import type { MovieDetail } from "@/lib/supabase";
 import { currentUser } from "@/lib/auth";
@@ -58,12 +58,13 @@ export default async function MovieDetailPage({
   let myReview: { id: number; headline: string | null; body: string; contains_spoiler: boolean } | null = null;
   let myLists: any[] = [];
 
-  const [castResult, ...userResults] = await Promise.all([
+  const [castResult, genreResult, ...userResults] = await Promise.all([
     sb.from("movie_credits")
       .select("person_id, role, character_name, job, credit_order, people(name, profile_path)")
       .eq("movie_id", movie.id)
       .order("credit_order", { ascending: true })
       .limit(20),
+    sb.from("movies_with_genres").select("genre_names").eq("id", movie.id).maybeSingle(),
     user
       ? sb.from("movie_ratings").select("rating").eq("movie_id", movie.id).eq("user_id", user.id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -92,76 +93,139 @@ export default async function MovieDetailPage({
     credit_order:   c.credit_order,
   }));
 
+  const genres: string[] = (genreResult.data as any)?.genre_names ?? [];
+  const avgRating = stats?.avg_rating ? Number(stats.avg_rating) : null;
+  const ratingCount = stats?.rating_count ?? 0;
+
   return (
-    <div className="relative">
-      {/* Backdrop hero */}
-      {movie.backdrop_url && (
-        <div className="absolute inset-x-0 top-0 h-[60vh] overflow-hidden" aria-hidden>
-          <img src={movie.backdrop_url} alt="" className="w-full h-full object-cover object-[50%_25%] opacity-25" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--ink)]/50 via-[var(--ink)]/85 to-[var(--ink)]" />
+    <div className="min-h-screen">
+      {/* ── Full-bleed backdrop ── */}
+      <div className="relative h-[55vh] min-h-[400px] overflow-hidden">
+        {movie.backdrop_url ? (
+          <>
+            <img
+              src={movie.backdrop_url}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover object-[50%_20%] scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--ink)] via-[var(--ink)]/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink)] via-[var(--ink)]/30 to-transparent" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--ink-lift)] to-[var(--ink)]" />
+        )}
+
+        {/* Back link sits in the backdrop */}
+        <div className="absolute top-6 left-0 right-0">
+          <div className="mx-auto max-w-[1400px] px-6">
+            <Link
+              href="/browse"
+              className="inline-flex items-center gap-2 text-[11px] font-mono tracking-[0.25em] uppercase text-[var(--cream-muted)] hover:text-[var(--cream)] transition-colors"
+            >
+              <ArrowLeft size={12} /> Back
+            </Link>
+          </div>
         </div>
-      )}
+      </div>
 
-      <div className="relative mx-auto max-w-[1400px] px-6 pt-8 pb-24">
-        <Link
-          href="/browse"
-          className="inline-flex items-center gap-2 text-[11px] font-mono tracking-[0.25em] uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors mb-8"
-        >
-          <ArrowLeft size={12} /> Back
-        </Link>
+      {/* ── Main content — overlaps backdrop ── */}
+      <div className="relative mx-auto max-w-[1400px] px-6 -mt-48 pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-8 lg:gap-12 items-end mb-12">
 
-        {/* ─── Title block ─── */}
-        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] lg:grid-cols-[300px_1fr] gap-8 lg:gap-12 mb-14">
           {/* Poster */}
-          <div className="aspect-[2/3] rounded-[2px] overflow-hidden border border-[var(--saffron)]/15 shadow-[0_20px_60px_-30px_rgb(0_0_0/0.9)] self-start">
+          <div className="relative aspect-[2/3] rounded-lg overflow-hidden border border-white/10 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.9)] self-end">
             {movie.poster_url ? (
               <img src={movie.poster_url} alt={movie.title} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-[var(--ink-lift)] text-[var(--cream-muted)]">
-                <Film size={48} />
+              <div className="w-full h-full flex items-center justify-center bg-[var(--ink-lift)]">
+                <Film size={48} className="text-[var(--cream-muted)]" />
               </div>
             )}
           </div>
 
-          {/* Right column */}
-          <div className="min-w-0">
-            <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--saffron)] mb-3">
-              Film · فيلم
-            </p>
-            <h1 className="font-display text-[clamp(2.25rem,4.5vw,4rem)] leading-[0.95] text-[var(--cream)] mb-4">
+          {/* Info */}
+          <div className="min-w-0 pb-2">
+            {/* Genre chips */}
+            {genres.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {genres.slice(0, 4).map((g) => (
+                  <Link
+                    key={g}
+                    href={`/browse?genre=${encodeURIComponent(g)}`}
+                    className="px-3 py-1 rounded-full text-[11px] font-mono tracking-wide bg-[var(--ink-high)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/40 transition-colors"
+                  >
+                    {g}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            <h1 className="font-display text-[clamp(2rem,5vw,4.5rem)] leading-[0.92] text-[var(--cream)] mb-5">
               {movie.title}
             </h1>
 
-            {/* Meta line */}
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6 text-sm text-[var(--cream-muted)]">
+            {/* Meta pills row */}
+            <div className="flex flex-wrap items-center gap-2 mb-6">
               {movie.release_date && (
-                <span className="flex items-center gap-1.5"><CalendarDays size={13} /> {year(movie.release_date)}</span>
+                <span className="flex items-center gap-1.5 text-sm text-[var(--cream-muted)]">
+                  <CalendarDays size={13} /> {year(movie.release_date)}
+                </span>
               )}
               {movie.runtime_minutes && (
-                <span className="flex items-center gap-1.5"><Clock size={13} /> {runtime(movie.runtime_minutes)}</span>
+                <span className="flex items-center gap-1.5 text-sm text-[var(--cream-muted)]">
+                  <span className="text-[var(--cream-muted)]/40">·</span>
+                  <Clock size={13} /> {runtime(movie.runtime_minutes)}
+                </span>
               )}
               {movie.age_rating && (
-                <span className="px-2 py-0.5 border border-[var(--taupe)]/40 text-xs font-mono tracking-wider uppercase">
-                  {movie.age_rating}
+                <span className="flex items-center gap-1.5 text-sm text-[var(--cream-muted)]">
+                  <span className="text-[var(--cream-muted)]/40">·</span>
+                  <span className="px-2 py-0.5 rounded border border-[var(--taupe)]/40 text-[11px] font-mono tracking-wider uppercase">
+                    {movie.age_rating}
+                  </span>
                 </span>
               )}
               {movie.original_language && (
-                <span className="flex items-center gap-1.5"><Globe size={13} /> {movie.original_language.toUpperCase()}</span>
-              )}
-              {movie.country && (
-                <span className="flex items-center gap-1.5"><Flag size={13} /> {movie.country}</span>
+                <span className="flex items-center gap-1.5 text-sm text-[var(--cream-muted)]">
+                  <span className="text-[var(--cream-muted)]/40">·</span>
+                  <Globe size={13} /> {movie.original_language.toUpperCase()}
+                </span>
               )}
             </div>
 
+            {/* Rating display */}
+            {avgRating && avgRating > 0 && (
+              <div className="flex items-baseline gap-3 mb-6">
+                <span className="font-display text-5xl text-[var(--cream)]">{avgRating.toFixed(1)}</span>
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4,5].map((i) => (
+                      <Star
+                        key={i}
+                        size={14}
+                        className={i <= Math.round(avgRating / 2)
+                          ? "fill-[var(--saffron)] text-[var(--saffron)]"
+                          : "text-[var(--taupe)]"}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-mono text-[10px] tracking-wider text-[var(--cream-muted)] uppercase">
+                    {ratingCount} {ratingCount === 1 ? "rating" : "ratings"}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Overview */}
             {movie.overview && (
-              <p className="max-w-2xl text-[15px] leading-relaxed text-[var(--cream)]/90 mb-8">
+              <p className="max-w-2xl text-[15px] leading-relaxed text-[var(--cream)]/80 mb-8">
                 {movie.overview}
               </p>
             )}
 
-            {/* Actions: rate + add to list */}
-            <div className="pt-6 border-t border-[var(--taupe)]/15 space-y-5">
+            {/* Actions */}
+            <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-[var(--ink-high)]">
               <RateWidget
                 userId={user?.id ?? null}
                 kind="movie"
@@ -169,21 +233,19 @@ export default async function MovieDetailPage({
                 initialRating={myRating}
                 slug={movie.slug}
               />
-              <div>
-                <AddToListButton
-                  userId={user?.id ?? null}
-                  kind="movie"
-                  targetId={movie.id}
-                  slug={movie.slug}
-                  initialLists={myLists}
-                />
-              </div>
+              <AddToListButton
+                userId={user?.id ?? null}
+                kind="movie"
+                targetId={movie.id}
+                slug={movie.slug}
+                initialLists={myLists}
+              />
             </div>
           </div>
         </div>
 
-        {/* ─── Where to watch + review form row ─── */}
-        <div className="grid md:grid-cols-[320px_1fr] gap-6 mb-14">
+        {/* ─── Where to watch + review form ─── */}
+        <div className="grid md:grid-cols-[300px_1fr] gap-6 mb-14">
           <WhereToWatch
             title={movie.title}
             year={year(movie.release_date)}
@@ -201,33 +263,33 @@ export default async function MovieDetailPage({
         {/* ─── Cast ─── */}
         {cast.length > 0 && <CastRow cast={cast} />}
 
-        {/* ─── Reviews list ─── */}
-        <section className="pt-10 border-t border-[var(--taupe)]/15">
+        {/* ─── Reviews ─── */}
+        <section className="pt-10 border-t border-[var(--ink-high)]">
           <div className="flex items-baseline justify-between mb-8">
             <h2 className="font-display text-2xl text-[var(--cream)]">
-              Reviews <span className="font-mono text-sm text-[var(--cream-muted)] ml-2">({reviews.length})</span>
+              Reviews
+              <span className="font-mono text-sm text-[var(--cream-muted)] ml-3">({reviews.length})</span>
             </h2>
-            <span className="font-mono text-[11px] tracking-[0.25em] uppercase text-[var(--cream-muted)]">مراجعات</span>
           </div>
 
           {reviews.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="font-display italic text-xl text-[var(--cream)]/70">No voices yet.</p>
-              <p className="mt-2 text-sm text-[var(--cream-muted)]">Be the first. Form is above.</p>
+            <div className="py-16 text-center">
+              <p className="font-display italic text-xl text-[var(--cream)]/50">No reviews yet.</p>
+              <p className="mt-2 text-sm text-[var(--cream-muted)]">Be the first — form is above.</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-5">
+            <div className="grid md:grid-cols-2 gap-4">
               {reviews.map((r) => (
                 <article
                   key={r.id}
-                  className="p-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/40 transition-colors"
+                  className="p-5 rounded-lg bg-[var(--ink-lift)] border border-[var(--ink-high)] hover:border-[var(--taupe)]/50 transition-colors"
                 >
                   <header className="flex items-center gap-3 mb-3">
-                    <div className="h-8 w-8 rounded-full bg-[var(--saffron)] text-[var(--ink)] grid place-items-center font-display text-sm">
+                    <div className="h-9 w-9 rounded-full bg-[var(--saffron)] text-[var(--ink)] grid place-items-center font-display text-sm font-bold shrink-0">
                       {(r.display_name || r.username || "?").charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm text-[var(--cream)]">{r.display_name || r.username || "anon"}</p>
+                      <p className="text-sm font-medium text-[var(--cream)]">{r.display_name || r.username || "anon"}</p>
                       <p className="font-mono text-[10px] tracking-wider text-[var(--cream-muted)]">
                         {new Date(r.created_at).toLocaleDateString()}
                       </p>
@@ -239,12 +301,12 @@ export default async function MovieDetailPage({
                   {r.contains_spoiler ? (
                     <details className="text-sm text-[var(--cream-muted)]">
                       <summary className="cursor-pointer text-[var(--saffron)] hover:text-[var(--saffron-glow)]">
-                        Spoilers. Click to reveal.
+                        Contains spoilers — click to reveal
                       </summary>
                       <p className="mt-2 whitespace-pre-wrap">{r.body}</p>
                     </details>
                   ) : (
-                    <p className="text-sm leading-relaxed text-[var(--cream)]/85 whitespace-pre-wrap line-clamp-6">
+                    <p className="text-sm leading-relaxed text-[var(--cream)]/80 whitespace-pre-wrap line-clamp-6">
                       {r.body}
                     </p>
                   )}

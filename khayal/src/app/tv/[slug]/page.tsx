@@ -100,57 +100,64 @@ export default async function TvDetailPage({
   const seasons: Season[] = (seasonsResult.data ?? []) as Season[];
 
   return (
-    <div className="relative">
-      {t.backdrop_url && (
-        <div className="absolute inset-x-0 top-0 h-[60vh] overflow-hidden" aria-hidden>
-          <img src={t.backdrop_url} alt="" className="w-full h-full object-cover object-[50%_25%] opacity-25" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--ink)]/50 via-[var(--ink)]/85 to-[var(--ink)]" />
+    <div className="min-h-screen">
+      {/* ── Full-bleed backdrop ── */}
+      <div className="relative h-[55vh] min-h-[400px] overflow-hidden">
+        {t.backdrop_url ? (
+          <>
+            <img src={t.backdrop_url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-[50%_20%] scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--ink)] via-[var(--ink)]/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink)] via-[var(--ink)]/30 to-transparent" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--ink-lift)] to-[var(--ink)]" />
+        )}
+        <div className="absolute top-6 left-0 right-0">
+          <div className="mx-auto max-w-[1400px] px-6">
+            <Link href="/browse" className="inline-flex items-center gap-2 text-[11px] font-mono tracking-[0.25em] uppercase text-[var(--cream-muted)] hover:text-[var(--cream)] transition-colors">
+              <ArrowLeft size={12} /> Back
+            </Link>
+          </div>
         </div>
-      )}
+      </div>
 
-      <div className="relative mx-auto max-w-[1400px] px-6 pt-8 pb-24">
-        <Link
-          href="/browse"
-          className="inline-flex items-center gap-2 text-[11px] font-mono tracking-[0.25em] uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors mb-8"
-        >
-          <ArrowLeft size={12} /> Back
-        </Link>
+      <div className="relative mx-auto max-w-[1400px] px-6 -mt-48 pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-8 lg:gap-12 items-end mb-12">
 
-        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] lg:grid-cols-[300px_1fr] gap-8 lg:gap-12 mb-14">
-          <div className="aspect-[2/3] rounded-[2px] overflow-hidden border border-[var(--saffron)]/15 shadow-[0_20px_60px_-30px_rgb(0_0_0/0.9)] self-start">
+          {/* Poster */}
+          <div className="relative aspect-[2/3] rounded-lg overflow-hidden border border-white/10 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.9)] self-end">
             {t.poster_url ? (
               <img src={t.poster_url} alt={t.title} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-[var(--ink-lift)] text-[var(--cream-muted)]">
-                <Film size={48} />
+              <div className="w-full h-full flex items-center justify-center bg-[var(--ink-lift)]">
+                <Film size={48} className="text-[var(--cream-muted)]" />
               </div>
             )}
           </div>
 
-          <div className="min-w-0">
-            <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--saffron)] mb-3">
-              Series · مسلسل
-            </p>
-            <h1 className="font-display text-[clamp(2.25rem,4.5vw,4rem)] leading-[0.95] text-[var(--cream)] mb-4">
+          {/* Info */}
+          <div className="min-w-0 pb-2">
+            <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--saffron)] mb-4">Series · مسلسل</p>
+            <h1 className="font-display text-[clamp(2rem,5vw,4.5rem)] leading-[0.92] text-[var(--cream)] mb-5">
               {t.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6 text-sm text-[var(--cream-muted)]">
+            <div className="flex flex-wrap items-center gap-2 mb-6">
               {t.first_air_date && (
-                <span className="flex items-center gap-1.5">
-                  <CalendarDays size={13} /> {year(t.first_air_date)}
-                  {t.last_air_date && t.last_air_date !== t.first_air_date ? `–${year(t.last_air_date)}` : ""}
+                <span className="flex items-center gap-1.5 text-sm text-[var(--cream-muted)]">
+                  <CalendarDays size={13} />
+                  {year(t.first_air_date)}{t.last_air_date && t.last_air_date !== t.first_air_date ? `–${year(t.last_air_date)}` : ""}
                 </span>
               )}
             </div>
 
             {t.overview && (
-              <p className="max-w-2xl text-[15px] leading-relaxed text-[var(--cream)]/90 mb-8">
+              <p className="max-w-2xl text-[15px] leading-relaxed text-[var(--cream)]/80 mb-8">
                 {t.overview}
               </p>
             )}
 
-            <div className="pt-6 border-t border-[var(--taupe)]/15 space-y-5">
+            <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-[var(--ink-high)]">
               <RateWidget
                 userId={user?.id ?? null}
                 kind="tv_series"
@@ -158,20 +165,18 @@ export default async function TvDetailPage({
                 initialRating={myRating}
                 slug={t.slug}
               />
-              <div>
-                <AddToListButton
-                  userId={user?.id ?? null}
-                  kind="tv_series"
-                  targetId={t.id}
-                  slug={t.slug}
-                  initialLists={myLists}
-                />
-              </div>
+              <AddToListButton
+                userId={user?.id ?? null}
+                kind="tv_series"
+                targetId={t.id}
+                slug={t.slug}
+                initialLists={myLists}
+              />
             </div>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-[320px_1fr] gap-6 mb-14">
+        <div className="grid md:grid-cols-[300px_1fr] gap-6 mb-14">
           <WhereToWatch
             title={t.title}
             year={year(t.first_air_date)}
@@ -192,7 +197,7 @@ export default async function TvDetailPage({
         {/* ─── Seasons ─── */}
         {seasons.length > 0 && <SeasonsAccordion seasons={seasons} />}
 
-        <section className="pt-10 border-t border-[var(--taupe)]/15">
+        <section className="pt-10 border-t border-[var(--ink-high)]">
           <h2 className="font-display text-2xl text-[var(--cream)] mb-8">
             Reviews <span className="font-mono text-sm text-[var(--cream-muted)] ml-2">({reviews.length})</span>
           </h2>
@@ -205,7 +210,7 @@ export default async function TvDetailPage({
           ) : (
             <div className="grid md:grid-cols-2 gap-5">
               {reviews.map((r) => (
-                <article key={r.id} className="p-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/40 transition-colors">
+                <article key={r.id} className="p-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--ink-high)] hover:border-[var(--saffron)]/40 transition-colors">
                   <header className="flex items-center gap-3 mb-3">
                     <div className="h-8 w-8 rounded-full bg-[var(--saffron)] text-[var(--ink)] grid place-items-center font-display text-sm">
                       {(r.display_name || r.username || "?").charAt(0).toUpperCase()}
