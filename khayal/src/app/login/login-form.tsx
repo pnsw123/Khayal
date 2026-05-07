@@ -68,7 +68,7 @@ export function LoginForm({
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@cinema.com"
             className={cn(
-              "w-full h-11 pl-10 pr-3 rounded-sm text-sm",
+              "w-full h-11 pl-10 pr-3 rounded-md text-sm",
               "bg-[var(--ink-lift)] border border-[var(--taupe)]/25",
               "text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60",
               "focus:outline-none focus:border-[var(--saffron)]/60 focus:bg-[var(--ink-high)]",
@@ -94,7 +94,7 @@ export function LoginForm({
             onChange={(e) => setPassword(e.target.value)}
             placeholder={mode === "signup" ? "At least 6 characters" : "••••••••"}
             className={cn(
-              "w-full h-11 pl-10 pr-3 rounded-sm text-sm",
+              "w-full h-11 pl-10 pr-3 rounded-md text-sm",
               "bg-[var(--ink-lift)] border border-[var(--taupe)]/25",
               "text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60",
               "focus:outline-none focus:border-[var(--saffron)]/60 focus:bg-[var(--ink-high)]",
@@ -106,12 +106,12 @@ export function LoginForm({
 
       {/* Feedback */}
       {error && (
-        <div className="text-sm text-[var(--danger)] bg-[var(--danger)]/10 border border-[var(--danger)]/30 rounded-sm px-3 py-2">
+        <div className="text-sm text-[var(--danger)] bg-[var(--danger)]/10 border border-[var(--danger)]/30 rounded-md px-3 py-2">
           {error}
         </div>
       )}
       {info && !error && (
-        <div className="text-sm text-[var(--saffron)] bg-[var(--saffron)]/10 border border-[var(--saffron)]/30 rounded-sm px-3 py-2">
+        <div className="text-sm text-[var(--saffron)] bg-[var(--saffron)]/10 border border-[var(--saffron)]/30 rounded-md px-3 py-2">
           {info}
         </div>
       )}
@@ -121,7 +121,7 @@ export function LoginForm({
         type="submit"
         disabled={pending}
         className={cn(
-          "w-full h-11 rounded-sm text-sm font-medium tracking-wide",
+          "w-full h-11 rounded-md text-sm font-medium tracking-wide",
           "bg-[var(--saffron)] text-[var(--ink)]",
           "hover:bg-[var(--saffron-glow)]",
           "shadow-[0_0_18px_-6px_var(--saffron)]",

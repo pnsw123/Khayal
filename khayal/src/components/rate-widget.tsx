@@ -36,7 +36,7 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
     return (
       <Link
         href={`/login?next=${encodeURIComponent(kind === "movie" ? `/movies/${slug}` : `/tv/${slug}`)}`}
-        className="inline-flex items-center gap-2 h-11 px-5 rounded-sm bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--saffron-glow)] transition-colors"
+        className="inline-flex items-center gap-2 h-11 px-5 rounded-md bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--saffron-glow)] transition-colors"
       >
         <Star size={14} /> Sign in to rate
       </Link>
@@ -96,7 +96,7 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
               disabled={pending}
               aria-label={`Rate ${n} out of 10`}
               className={cn(
-                "h-9 w-9 rounded-sm text-sm font-mono transition-all",
+                "h-9 w-9 rounded-md text-sm font-mono transition-all",
                 lit
                   ? "bg-[var(--saffron)] text-[var(--ink)]"
                   : "bg-[var(--ink-lift)] text-[var(--cream-muted)] border border-[var(--taupe)]/20 hover:border-[var(--saffron)]/50 hover:text-[var(--cream)]"

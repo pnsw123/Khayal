@@ -52,7 +52,7 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
     return (
       <Link
         href={`/login?next=${encodeURIComponent(kind === "movie" ? `/movies/${slug}` : `/tv/${slug}`)}`}
-        className="inline-flex items-center gap-2 h-11 px-4 rounded-sm border border-[var(--taupe)]/30 text-[var(--cream)] text-sm hover:border-[var(--saffron)]/50 transition-colors"
+        className="inline-flex items-center gap-2 h-11 px-4 rounded-md border border-[var(--taupe)]/30 text-[var(--cream)] text-sm hover:border-[var(--saffron)]/50 transition-colors"
       >
         <ListPlus size={14} /> Sign in to save
       </Link>
@@ -111,7 +111,7 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
       <button
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "inline-flex items-center gap-2 h-11 px-4 rounded-sm text-sm transition-colors",
+          "inline-flex items-center gap-2 h-11 px-4 rounded-md text-sm transition-colors",
           inSomeList
             ? "bg-[var(--saffron)] text-[var(--ink)] hover:bg-[var(--saffron-glow)]"
             : "border border-[var(--taupe)]/30 text-[var(--cream)] hover:border-[var(--saffron)]/50",
@@ -122,7 +122,7 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-2 w-72 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/30 shadow-2xl z-50 overflow-hidden">
+        <div className="absolute left-0 top-full mt-2 w-72 rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/30 shadow-2xl z-50 overflow-hidden">
           <div className="p-2 max-h-72 overflow-y-auto">
             {lists.length === 0 && !creating && (
               <p className="p-3 text-xs text-[var(--cream-muted)]">No lists yet. Create one below.</p>
@@ -132,10 +132,10 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
                 key={l.id}
                 onClick={() => toggle(l)}
                 disabled={pending}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-sm text-sm text-left text-[var(--cream)] hover:bg-[var(--ink-high)] transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-left text-[var(--cream)] hover:bg-[var(--ink-high)] transition-colors"
               >
                 <span className={cn(
-                  "flex h-4 w-4 shrink-0 rounded-sm border items-center justify-center",
+                  "flex h-4 w-4 shrink-0 rounded-md border items-center justify-center",
                   l.member
                     ? "bg-[var(--saffron)] border-[var(--saffron)] text-[var(--ink)]"
                     : "border-[var(--taupe)]/50",
@@ -160,18 +160,18 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") createList(); if (e.key === "Escape") { setCreating(false); setNewName(""); } }}
                   placeholder="New list name…"
-                  className="flex-1 h-9 px-3 rounded-sm text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] focus:outline-none focus:border-[var(--saffron)]/60"
+                  className="flex-1 h-9 px-3 rounded-md text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] focus:outline-none focus:border-[var(--saffron)]/60"
                 />
                 <button
                   onClick={createList}
                   disabled={pending || !newName.trim()}
-                  className="h-9 px-3 rounded-sm text-xs font-medium bg-[var(--saffron)] text-[var(--ink)] hover:bg-[var(--saffron-glow)] disabled:opacity-50"
+                  className="h-9 px-3 rounded-md text-xs font-medium bg-[var(--saffron)] text-[var(--ink)] hover:bg-[var(--saffron-glow)] disabled:opacity-50"
                 >
                   {pending ? <LoaderCircle size={12} className="animate-spin" /> : "Create"}
                 </button>
                 <button
                   onClick={() => { setCreating(false); setNewName(""); }}
-                  className="h-9 w-9 grid place-items-center rounded-sm text-[var(--cream-muted)] hover:text-[var(--cream)]"
+                  className="h-9 w-9 grid place-items-center rounded-md text-[var(--cream-muted)] hover:text-[var(--cream)]"
                 >
                   <X size={12} />
                 </button>
@@ -179,7 +179,7 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
             ) : (
               <button
                 onClick={() => setCreating(true)}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-sm text-xs tracking-wider uppercase font-mono text-[var(--saffron)] hover:bg-[var(--ink-high)] transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs tracking-wider uppercase font-mono text-[var(--saffron)] hover:bg-[var(--ink-high)] transition-colors"
               >
                 <Plus size={12} /> New list
               </button>

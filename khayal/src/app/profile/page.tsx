@@ -87,7 +87,7 @@ export default async function ProfilePage() {
           {profile?.username && (
             <Link
               href={`/users/${profile.username}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-[var(--taupe)]/30 font-mono text-[11px] tracking-wider uppercase text-[var(--cream-muted)] hover:border-[var(--saffron)]/50 hover:text-[var(--cream)] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[var(--taupe)]/30 font-mono text-[11px] tracking-wider uppercase text-[var(--cream-muted)] hover:border-[var(--saffron)]/50 hover:text-[var(--cream)] transition-colors"
             >
               <ArrowUpRight size={11} /> Public profile
             </Link>
@@ -119,7 +119,7 @@ export default async function ProfilePage() {
           <span className="font-mono text-[11px] tracking-[0.25em] uppercase text-[var(--cream-muted)]">قوائمك</span>
         </div>
         {(!lists || lists.length === 0) ? (
-          <div className="p-8 rounded-sm bg-[var(--ink-lift)] border border-dashed border-[var(--taupe)]/25 text-center">
+          <div className="p-8 rounded-md bg-[var(--ink-lift)] border border-dashed border-[var(--taupe)]/25 text-center">
             <p className="font-display italic text-lg text-[var(--cream)]/70">No lists yet.</p>
             <p className="mt-1 text-sm text-[var(--cream-muted)]">
               Add a film from its detail page. A Favorites list will auto-create.
@@ -131,7 +131,7 @@ export default async function ProfilePage() {
               <Link
                 key={l.id}
                 href={`/lists/${l.id}`}
-                className="group p-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/40 transition-colors"
+                className="group p-5 rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/40 transition-colors"
               >
                 <div className="flex items-center gap-2 mb-2 text-[10px] font-mono tracking-[0.25em] uppercase text-[var(--cream-muted)]">
                   {l.is_favorites && <Heart size={10} className="fill-[var(--saffron)] text-[var(--saffron)]" />}
@@ -160,7 +160,7 @@ export default async function ProfilePage() {
               <Link
                 key={`${r.kind}-${r.id}`}
                 href={r.kind === "movie" ? `/movies/${r.target.slug}` : `/tv/${r.target.slug}`}
-                className="p-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/40 transition-colors group"
+                className="p-5 rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/40 transition-colors group"
               >
                 <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] mb-2">
                   {new Date(r.created_at).toLocaleDateString()} · on <span className="text-[var(--saffron)]">{r.target.title}</span>
@@ -182,13 +182,13 @@ export default async function ProfilePage() {
               <Link
                 key={r.movies.slug}
                 href={`/movies/${r.movies.slug}`}
-                className="group block relative aspect-[2/3] overflow-hidden rounded-sm border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/50 transition-colors"
+                className="group block relative aspect-[2/3] overflow-hidden rounded-md border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/50 transition-colors"
               >
                 {r.movies.poster_url && (
                   <img src={r.movies.poster_url} alt={r.movies.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 )}
                 <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-[var(--ink)] to-transparent">
-                  <div className="inline-flex items-center gap-1 px-2 h-6 rounded-sm bg-[var(--saffron)] text-[var(--ink)] text-xs font-mono">
+                  <div className="inline-flex items-center gap-1 px-2 h-6 rounded-md bg-[var(--saffron)] text-[var(--ink)] text-xs font-mono">
                     {r.rating}/10
                   </div>
                 </div>

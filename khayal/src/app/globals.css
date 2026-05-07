@@ -1,20 +1,29 @@
 @import "tailwindcss";
 
-/* ─── Cinema Dark palette ─────────────────────────────────────────────────── */
+/* ─── KHAYAL Cinema palette ───────────────────────────────────────────────── */
 :root {
-  --ink:              #09090b;   /* zinc-950 — pure dark, no brown tint */
-  --ink-lift:         #18181b;   /* zinc-900 */
-  --ink-high:         #27272a;   /* zinc-800 */
-  --cream:            #fafafa;   /* zinc-50  */
-  --cream-muted:      #a1a1aa;   /* zinc-400 */
-  --taupe:            #52525b;   /* zinc-600 */
+  /* Surfaces — blue-tinted dark, feels like a projection screen in a dark room */
+  --ink:              #08080e;
+  --ink-lift:         #0f0f1a;
+  --ink-high:         #1a1a2a;
 
-  --saffron:          #f59e0b;   /* amber-500 — cinematic gold */
-  --saffron-glow:     #fbbf24;   /* amber-400 */
-  --terracotta:       #fb923c;   /* orange-400 */
-  --lamp:             #fef08a;   /* yellow-200 */
+  /* Text */
+  --cream:            #eeeef8;   /* cool off-white */
+  --cream-muted:      #8888b0;   /* cool muted */
+  --taupe:            #3a3a58;   /* border / divider */
 
-  --danger:           #ef4444;   /* red-500 */
+  /* Primary accent — clean white for UI chrome (buttons, active chips, etc.) */
+  --accent:           #e8e8f8;
+  --accent-dim:       #9090b8;
+
+  /* Rating gold — stays amber for star scores only */
+  --saffron:          #f0b429;
+  --saffron-glow:     #fcd34d;
+
+  /* Misc */
+  --terracotta:       #fb923c;
+  --lamp:             #fef08a;
+  --danger:           #f43f5e;
 }
 
 @theme inline {
@@ -24,10 +33,10 @@
   --color-border: var(--taupe);
   --color-surface: var(--ink-lift);
   --color-surface-high: var(--ink-high);
-  --color-primary: var(--saffron);
+  --color-primary: var(--accent);
   --color-primary-foreground: var(--ink);
-  --color-secondary: var(--terracotta);
-  --color-accent: var(--lamp);
+  --color-secondary: var(--saffron);
+  --color-accent: var(--accent);
   --color-danger: var(--danger);
 
   --font-display: var(--font-fraunces), Georgia, serif;

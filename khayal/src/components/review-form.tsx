@@ -36,13 +36,13 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
 
   if (!userId) {
     return (
-      <div className="p-6 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/20 flex items-center justify-between gap-4">
+      <div className="p-6 rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/20 flex items-center justify-between gap-4">
         <p className="text-sm text-[var(--cream-muted)]">
           <span className="font-display italic text-[var(--cream)] text-base">Have thoughts?</span> Sign in to write your review.
         </p>
         <Link
           href={`/login?next=${encodeURIComponent(kind === "movie" ? `/movies/${slug}` : `/tv/${slug}`)}`}
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-sm bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--saffron-glow)] transition-colors whitespace-nowrap"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--saffron-glow)] transition-colors whitespace-nowrap"
         >
           <PenLine size={13} /> Sign in to review
         </Link>
@@ -90,7 +90,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
     return (
       <button
         onClick={() => setOpen(true)}
-        className="w-full p-6 rounded-sm bg-[var(--ink-lift)] border border-dashed border-[var(--taupe)]/30 text-left hover:border-[var(--saffron)]/50 transition-colors group"
+        className="w-full p-6 rounded-md bg-[var(--ink-lift)] border border-dashed border-[var(--taupe)]/30 text-left hover:border-[var(--saffron)]/50 transition-colors group"
       >
         <p className="font-display italic text-lg text-[var(--cream)] group-hover:text-[var(--saffron-glow)] transition-colors">
           Write a review…
@@ -103,7 +103,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
   }
 
   return (
-    <form onSubmit={submit} className="p-6 rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 space-y-4">
+    <form onSubmit={submit} className="p-6 rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/25 space-y-4">
       <div className="flex items-center justify-between">
         <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-[var(--saffron)]">
           {existing ? "Edit your review" : "Write your review"}
@@ -125,7 +125,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
         onChange={(e) => setHeadline(e.target.value)}
         placeholder="Headline (optional)"
         maxLength={120}
-        className="w-full h-11 px-3 rounded-sm text-base bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--saffron)]/60"
+        className="w-full h-11 px-3 rounded-md text-base bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--saffron)]/60"
       />
 
       <textarea
@@ -134,7 +134,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
         onChange={(e) => setBody(e.target.value)}
         placeholder="What did you think?"
         rows={5}
-        className="w-full p-3 rounded-sm text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--saffron)]/60 resize-y"
+        className="w-full p-3 rounded-md text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--saffron)]/60 resize-y"
       />
 
       <label className="flex items-center gap-2 text-xs text-[var(--cream-muted)] cursor-pointer">
@@ -142,13 +142,13 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
           type="checkbox"
           checked={spoiler}
           onChange={(e) => setSpoiler(e.target.checked)}
-          className="h-4 w-4 rounded-sm accent-[var(--saffron)]"
+          className="h-4 w-4 rounded-md accent-[var(--saffron)]"
         />
         Contains spoilers. Hide body behind a reveal.
       </label>
 
       {err && (
-        <div className="text-sm text-[var(--danger)] bg-[var(--danger)]/10 border border-[var(--danger)]/30 rounded-sm px-3 py-2">
+        <div className="text-sm text-[var(--danger)] bg-[var(--danger)]/10 border border-[var(--danger)]/30 rounded-md px-3 py-2">
           {err}
         </div>
       )}
@@ -158,7 +158,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
           type="submit"
           disabled={pending}
           className={cn(
-            "inline-flex items-center gap-2 h-11 px-5 rounded-sm text-sm font-medium",
+            "inline-flex items-center gap-2 h-11 px-5 rounded-md text-sm font-medium",
             "bg-[var(--saffron)] text-[var(--ink)]",
             "hover:bg-[var(--saffron-glow)]",
             "shadow-[0_0_16px_-6px_var(--saffron)]",
@@ -173,7 +173,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
             type="button"
             onClick={() => setOpen(false)}
             disabled={pending}
-            className="h-11 px-4 rounded-sm text-xs tracking-wider uppercase font-mono text-[var(--cream-muted)] hover:text-[var(--cream)] border border-[var(--taupe)]/25 hover:border-[var(--taupe)]/50"
+            className="h-11 px-4 rounded-md text-xs tracking-wider uppercase font-mono text-[var(--cream-muted)] hover:text-[var(--cream)] border border-[var(--taupe)]/25 hover:border-[var(--taupe)]/50"
           >
             Cancel
           </button>

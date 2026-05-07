@@ -49,19 +49,14 @@ export function TicketEnter({ className }: { className?: string }) {
     <Link
       href="/login"
       className={cn(
-        "group relative inline-flex items-center gap-2 md:gap-3 h-10 md:h-11 px-3 md:pl-4 md:pr-5",
-        "text-[10px] md:text-[11px] font-mono tracking-[0.15em] md:tracking-[0.32em] uppercase",
-        "text-[var(--ink)] bg-[var(--saffron)]",
-        "transition-all duration-300",
-        "hover:bg-[var(--saffron-glow)]",
-        "[clip-path:polygon(8px_0,calc(100%-8px)_0,100%_8px,100%_calc(100%-8px),calc(100%-8px)_100%,8px_100%,0_calc(100%-8px),0_8px)]",
+        "inline-flex items-center gap-2 h-9 px-4",
+        "text-[11px] font-mono tracking-[0.2em] uppercase font-semibold",
+        "text-[var(--ink)] bg-[var(--accent)] rounded-md",
+        "hover:bg-[var(--cream)] transition-colors duration-200",
         className,
       )}
     >
-      <span className="font-semibold">Enter</span>
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="hidden sm:block text-[var(--ink)] group-hover:translate-x-0.5 transition-transform">
-        <path d="M3 8 H13 M9 4 L13 8 L9 12" />
-      </svg>
+      Sign In
     </Link>
   );
 }
@@ -75,8 +70,8 @@ export function ProfileStub({ initial }: { initial: string }) {
     <Link
       href="/profile"
       aria-label="Profile"
-      className="group relative inline-flex items-center justify-center h-11 w-11 bg-[var(--saffron)] text-[var(--ink)] font-display text-base hover:bg-[var(--saffron-glow)] transition-colors
-        [clip-path:polygon(8px_0,calc(100%-8px)_0,100%_8px,100%_calc(100%-8px),calc(100%-8px)_100%,8px_100%,0_calc(100%-8px),0_8px)]"
+      className="group relative inline-flex items-center justify-center h-9 w-9 rounded-md bg-[var(--ink-high)] text-[var(--cream)] font-display text-sm hover:bg-[var(--taupe)] transition-colors
+        "
     >
       {initial}
     </Link>

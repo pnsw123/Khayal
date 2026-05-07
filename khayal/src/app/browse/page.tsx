@@ -252,7 +252,7 @@ function Pagination({
       </p>
       <div className="flex items-center gap-1">
         {current > 1 && (
-          <Link href={href(current - 1)} className="h-9 px-3 rounded-sm text-xs font-mono tracking-wider uppercase border border-[var(--taupe)]/25 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--saffron)]/50 transition-colors flex items-center">
+          <Link href={href(current - 1)} className="h-9 px-3 rounded-md text-xs font-mono tracking-wider uppercase border border-[var(--taupe)]/25 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--saffron)]/50 transition-colors flex items-center">
             ← Prev
           </Link>
         )}
@@ -263,7 +263,7 @@ function Pagination({
             key={p}
             href={href(p)}
             className={
-              "h-9 min-w-9 px-3 rounded-sm text-xs font-mono flex items-center justify-center transition-colors " +
+              "h-9 min-w-9 px-3 rounded-md text-xs font-mono flex items-center justify-center transition-colors " +
               (p === current
                 ? "bg-[var(--saffron)] text-[var(--ink)]"
                 : "border border-[var(--taupe)]/25 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--saffron)]/50")
@@ -273,7 +273,7 @@ function Pagination({
           </Link>
         ))}
         {current < total && (
-          <Link href={href(current + 1)} className="h-9 px-3 rounded-sm text-xs font-mono tracking-wider uppercase border border-[var(--taupe)]/25 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--saffron)]/50 transition-colors flex items-center">
+          <Link href={href(current + 1)} className="h-9 px-3 rounded-md text-xs font-mono tracking-wider uppercase border border-[var(--taupe)]/25 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--saffron)]/50 transition-colors flex items-center">
             Next →
           </Link>
         )}

@@ -34,12 +34,12 @@ export async function Nav() {
       <div className="mx-auto max-w-[1600px] px-6 h-16 flex items-center justify-between gap-6">
         <Link href="/" className="group flex items-center gap-2.5 shrink-0">
           {/* Icon mark */}
-          <span className="flex items-center justify-center w-8 h-8 rounded-sm bg-[var(--saffron)] text-[var(--ink)] group-hover:bg-[var(--saffron-glow)] transition-colors">
+          <span className="flex items-center justify-center w-8 h-8 rounded-md bg-[var(--ink-high)] text-[var(--accent)] group-hover:bg-[var(--taupe)] transition-colors">
             <Clapperboard size={16} strokeWidth={2.5} />
           </span>
           {/* Wordmark */}
           <span className="flex items-baseline gap-1.5">
-            <span className="font-display text-[1.2rem] leading-none tracking-[0.08em] text-[var(--cream)] group-hover:text-[var(--saffron)] transition-colors">
+            <span className="font-display text-[1.2rem] leading-none tracking-[0.08em] text-[var(--cream)] group-hover:text-[var(--accent)] transition-colors">
               KHAYAL
             </span>
             <span className="font-arabic text-lg leading-none text-[var(--saffron)]/70 group-hover:text-[var(--saffron)] transition-colors" dir="rtl">

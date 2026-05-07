@@ -24,7 +24,7 @@ export function WhereToWatch({ title, year, trailerYoutubeId }: WhereToWatchProp
   ];
 
   return (
-    <div className="rounded-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 p-5">
+    <div className="rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/25 p-5">
       <div className="flex items-baseline justify-between mb-3">
         <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-[var(--saffron)]">
           Where to watch
@@ -47,7 +47,7 @@ export function WhereToWatch({ title, year, trailerYoutubeId }: WhereToWatchProp
             href={l.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-sm text-xs font-mono tracking-wider uppercase text-[var(--cream)] bg-[var(--ink)] border border-[var(--taupe)]/25 hover:border-[var(--saffron)]/50 hover:text-[var(--saffron)] transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-mono tracking-wider uppercase text-[var(--cream)] bg-[var(--ink)] border border-[var(--taupe)]/25 hover:border-[var(--saffron)]/50 hover:text-[var(--saffron)] transition-colors"
           >
             {l.label} <ExternalLink size={10} />
           </a>

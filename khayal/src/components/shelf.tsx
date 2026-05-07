@@ -44,10 +44,10 @@ export function Shelf({ title, kicker, items, viewAllHref, ratingByMovie }: Shel
         )}
       </header>
 
-      <div className="relative -mx-6 px-6 overflow-x-auto scroll-smooth snap-x">
-        <div className="flex gap-4 min-w-max pb-2">
+      <div className="relative -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto scroll-smooth snap-x [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+        <div className="flex gap-4 md:gap-5 min-w-max pb-4">
           {items.map((m) => (
-            <div key={m.id} className="w-[160px] md:w-[180px] shrink-0 snap-start">
+            <div key={m.id} className="w-[150px] md:w-[170px] shrink-0 snap-start">
               <MovieCard
                 title={m.title}
                 year={year(m.release_date)}

@@ -94,7 +94,7 @@ function FindTab() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Title, phrase, idea…"
-          className="w-full h-14 pl-12 pr-12 rounded-sm text-base bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--saffron)]/60"
+          className="w-full h-14 pl-12 pr-12 rounded-md text-base bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--saffron)]/60"
         />
         {pending && (
           <LoaderCircle
@@ -187,7 +187,7 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
             <li key={q.id}>
               <button
                 onClick={() => setSql(q.query_text)}
-                className="text-left w-full px-3 py-2 text-sm rounded-sm border border-transparent text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--ink-lift)] hover:border-[var(--taupe)]/25 transition-colors"
+                className="text-left w-full px-3 py-2 text-sm rounded-md border border-transparent text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--ink-lift)] hover:border-[var(--taupe)]/25 transition-colors"
               >
                 {q.title}
               </button>
@@ -206,11 +206,11 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
             value={sql}
             onChange={(e) => setSql(e.target.value)}
             spellCheck={false}
-            className="w-full h-44 p-4 rounded-sm font-mono text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] focus:outline-none focus:border-[var(--saffron)]/60 resize-y"
+            className="w-full h-44 p-4 rounded-md font-mono text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] focus:outline-none focus:border-[var(--saffron)]/60 resize-y"
           />
           <button
             onClick={run}
-            className="absolute bottom-3 right-3 h-9 px-4 rounded-sm bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--saffron-glow)] inline-flex items-center gap-2"
+            className="absolute bottom-3 right-3 h-9 px-4 rounded-md bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--saffron-glow)] inline-flex items-center gap-2"
           >
             {pending ? <LoaderCircle size={13} className="animate-spin" /> : <Play size={13} />} Run
           </button>
@@ -221,13 +221,13 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
         </p>
 
         {err && (
-          <div className="text-sm text-[var(--danger)] bg-[var(--danger)]/10 border border-[var(--danger)]/30 rounded-sm px-3 py-2 mb-4">
+          <div className="text-sm text-[var(--danger)] bg-[var(--danger)]/10 border border-[var(--danger)]/30 rounded-md px-3 py-2 mb-4">
             {err}
           </div>
         )}
 
         {rows.length > 0 && (
-          <div className="border border-[var(--taupe)]/15 rounded-sm overflow-hidden">
+          <div className="border border-[var(--taupe)]/15 rounded-md overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-[var(--ink-lift)]">

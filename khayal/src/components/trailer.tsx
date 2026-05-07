@@ -29,7 +29,7 @@ export function Trailer({ youtubeId, title, year, className }: TrailerProps) {
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          "group inline-flex items-center gap-2 h-11 px-4 rounded-sm",
+          "group inline-flex items-center gap-2 h-11 px-4 rounded-md",
           "bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium",
           "hover:bg-[var(--saffron-glow)] transition-colors",
           className,
@@ -47,7 +47,7 @@ export function Trailer({ youtubeId, title, year, className }: TrailerProps) {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "group relative inline-flex items-center gap-2 h-11 px-4 rounded-sm",
+          "group relative inline-flex items-center gap-2 h-11 px-4 rounded-md",
           "bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium",
           "hover:bg-[var(--saffron-glow)] transition-colors",
           className,
@@ -61,7 +61,7 @@ export function Trailer({ youtubeId, title, year, className }: TrailerProps) {
 
   return (
     <div className={cn("relative", className)}>
-      <div className="relative aspect-video w-full rounded-sm overflow-hidden bg-[var(--ink-lift)] border border-[var(--saffron)]/30">
+      <div className="relative aspect-video w-full rounded-md overflow-hidden bg-[var(--ink-lift)] border border-[var(--saffron)]/30">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`}
           title={`${title} — trailer`}
