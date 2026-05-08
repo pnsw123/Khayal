@@ -6,12 +6,13 @@ import type { Movie } from "@/lib/supabase";
 import { MovieCard } from "@/components/movie-card";
 import { FilterDropdown } from "@/components/filter-dropdown";
 import { Shelf } from "@/components/shelf";
-import { LANGUAGES, RATINGS, hasAnyFilter } from "@/lib/filters";
+import { LANGUAGES, RATINGS, YEARS, SCORES, SORT_OPTIONS, hasAnyFilter } from "@/lib/filters";
+import { buildBrowseQuery } from "@/lib/browse";
 import { year } from "@/lib/utils";
 
 export const revalidate = 300;
 
-type Search = { lang?: string; rating?: string; genre?: string; page?: string };
+type Search = { lang?: string; rating?: string; score?: string; genre?: string; year?: string; sort?: string; page?: string };
 
 const PAGE_SIZE = 96;
 
@@ -20,7 +21,10 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const usp = new URLSearchParams(Object.entries(params).filter(([, v]) => !!v) as [string, string][]);
   const activeLang   = params.lang   ?? "";
   const activeRating = params.rating ?? "";
+  const activeScore  = params.score  ?? "";
   const activeGenre  = params.genre  ?? "";
+  const activeYear   = params.year   ?? "";
+  const activeSort   = params.sort   ?? "";
   const page         = Math.max(1, Number(params.page ?? "1") || 1);
   const filtersActive = hasAnyFilter(usp) || !!activeGenre;
 
@@ -45,27 +49,27 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     ? await loadShelves(sb, today, sixtyDaysAgo)
     : { nowPlaying: null, upcoming: null, classics: null, world: null, recent: null, totals: null };
 
-  // Deep browse grid — genre filter uses movie_genres bridge
-  const from = (page - 1) * PAGE_SIZE;
-  const to   = from + PAGE_SIZE - 1;
-
   let gridData: any[] = [];
   let gridTotal = 0;
 
-  // Single query path — genre filter uses .contains() on genre_names[] array column
   {
-    let q = sb
+    const base = sb
       .from("movies_with_genres")
-      .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names", { count: "exact" })
-      .not("poster_url", "is", null)
-      .order("release_date", { ascending: false, nullsFirst: false })
-      .range(from, to);
-    if (activeGenre)  q = q.contains("genre_names", [activeGenre]);
-    if (activeLang)   q = q.eq("original_language", activeLang);
-    if (activeRating) q = q.eq("age_rating", activeRating);
-    const { data, count } = await q;
-    gridData = data ?? [];
-    gridTotal = count ?? 0;
+      .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names", { count: "exact" });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const q = buildBrowseQuery(base as any, {
+      genre:  activeGenre  || undefined,
+      lang:   activeLang   || undefined,
+      rating: activeRating || undefined,
+      score:  activeScore  || undefined,
+      year:   activeYear   || undefined,
+      sort:   activeSort   || undefined,
+      page,
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, count } = await (q as any);
+    gridData = (data ?? []) as typeof gridData;
+    gridTotal = (count as number | null) ?? 0;
   }
 
   const grid = gridData as (Movie & { genre_names: string[] })[];
@@ -91,13 +95,16 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const totals = shelfQueries.totals;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" data-testid="browse-page">
       {/* ─── Filter bar ─── */}
       <div className="border-b border-[var(--ink-high)] bg-[var(--ink)]">
         <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-2.5 flex items-center gap-2 flex-wrap">
-          <FilterDropdown label="Genre"    items={genres}     activeCode={activeGenre}  paramKey="genre"  searchParams={usp} />
-          <FilterDropdown label="Language" items={LANGUAGES}  activeCode={activeLang}   paramKey="lang"   searchParams={usp} />
-          <FilterDropdown label="Rating"   items={RATINGS}    activeCode={activeRating} paramKey="rating" searchParams={usp} />
+          <FilterDropdown label="Genre"    items={genres}        activeCode={activeGenre}  paramKey="genre"  searchParams={usp} />
+          <FilterDropdown label="Year"     items={YEARS}         activeCode={activeYear}   paramKey="year"   searchParams={usp} />
+          <FilterDropdown label="Language" items={LANGUAGES}     activeCode={activeLang}   paramKey="lang"   searchParams={usp} />
+          <FilterDropdown label="Score"    items={SCORES}        activeCode={activeScore}  paramKey="score"  searchParams={usp} />
+          <FilterDropdown label="Rating"   items={RATINGS}       activeCode={activeRating} paramKey="rating" searchParams={usp} />
+          <FilterDropdown label="Sort"     items={SORT_OPTIONS}  activeCode={activeSort}   paramKey="sort"   searchParams={usp} />
           {filtersActive && (
             <Link href="/browse" className="inline-flex items-center gap-1 h-8 px-2.5 text-[11px] font-mono text-[var(--cream-muted)] hover:text-[var(--cream)] transition-colors">
               <X size={10} /> Clear

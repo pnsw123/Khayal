@@ -41,7 +41,31 @@ export function buildFilterHref(
   return q ? `${basePath}?${q}` : basePath;
 }
 
+export const YEARS = [
+  { code: "",      label: "All Years" },
+  { code: "2020s", label: "2020s" },
+  { code: "2010s", label: "2010s" },
+  { code: "2000s", label: "2000s" },
+  { code: "1990s", label: "1990s" },
+  { code: "older", label: "Older" },
+] as const;
+
+export const SCORES = [
+  { code: "",  label: "Any Score" },
+  { code: "9", label: "9+ Masterpiece" },
+  { code: "8", label: "8+ Excellent" },
+  { code: "7", label: "7+ Good" },
+  { code: "6", label: "6+ Decent" },
+] as const;
+
+export const SORT_OPTIONS = [
+  { code: "",         label: "Latest First" },
+  { code: "popular",  label: "Most Popular" },
+  { code: "rated",    label: "Highest Rated" },
+  { code: "oldest",   label: "Oldest First" },
+] as const;
+
 export function hasAnyFilter(sp: URLSearchParams): boolean {
-  for (const k of ["lang", "rating", "year", "q"]) if (sp.has(k)) return true;
+  for (const k of ["lang", "rating", "year", "score", "sort", "q"]) if (sp.has(k)) return true;
   return false;
 }
