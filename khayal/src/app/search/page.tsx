@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { supabaseServer } from "@/lib/supabase-server";
 import { SearchClient } from "./search-client";
 
@@ -28,7 +29,9 @@ export default async function SearchPage() {
         <h1 className="font-display text-[clamp(2.25rem,4.5vw,3.75rem)] leading-[0.95] text-[var(--cream)] mb-10">
           What are you looking for?
         </h1>
-        <SearchClient defaultQueries={defaultQueries ?? []} />
+        <Suspense fallback={null}>
+          <SearchClient defaultQueries={defaultQueries ?? []} />
+        </Suspense>
       </div>
     </div>
   );

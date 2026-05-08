@@ -1,30 +1,30 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MovieCard } from "@/components/movie-card";
 import { cn } from "@/lib/utils";
+import { searchAll } from "@/lib/search";
+import { buildFilterHref, YEARS } from "@/lib/filters";
 import { Search, Play, LoaderCircle, Table2 } from "lucide-react";
 
 type Tab = "find" | "sql";
 type SavedQuery = { id: number; title: string; query_text: string };
 
-interface SearchAllRow {
-  id: number; type: "movie" | "tv"; title: string; slug: string;
-  overview: string | null; poster_url: string | null; release_year: number | null; relevance: number;
-  age_rating: string | null; original_language: string | null;
-  runtime_minutes: number | null; genre_names: string[] | null;
-}
+const MEDIA_TYPES = [
+  { code: "", label: "All" },
+  { code: "movie", label: "Films" },
+  { code: "tv", label: "TV" },
+] as const;
 
 export function SearchClient({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
   const [tab, setTab] = useState<Tab>("find");
   return (
     <div>
-      {/* Tabs */}
       <div className="flex gap-1 border-b border-[var(--taupe)]/15 mb-8">
         <TabBtn active={tab === "find"} onClick={() => setTab("find")} icon={<Search size={14} />} label="Find" />
         <TabBtn active={tab === "sql"}  onClick={() => setTab("sql")}  icon={<Table2 size={14} />} label="SQL" />
       </div>
-
       {tab === "find" ? <FindTab /> : <SqlTab defaultQueries={defaultQueries} />}
     </div>
   );
@@ -45,64 +45,139 @@ function TabBtn({ active, onClick, icon, label }: { active: boolean; onClick: ()
   );
 }
 
-// ─── Normal full-text search tab ──────────────────────────────────────────
+function ChipRow<T extends string>({
+  options,
+  value,
+  onChange,
+  testId,
+}: {
+  options: readonly { code: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  testId: string;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2" data-testid={testId}>
+      {options.map((opt) => (
+        <button
+          key={opt.code}
+          onClick={() => onChange(opt.code)}
+          className={cn(
+            "h-7 px-3 rounded-full text-xs transition-colors border",
+            value === opt.code
+              ? "bg-[var(--accent)] text-[var(--ink)] border-[var(--accent)]"
+              : "bg-transparent text-[var(--cream-muted)] border-[var(--taupe)]/30 hover:text-[var(--cream)] hover:border-[var(--taupe)]/60"
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function FindTab() {
-  const [q, setQ] = useState("");
-  const [rows, setRows] = useState<SearchAllRow[]>([]);
-  const [pending, setPending] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const initialQ = searchParams.get("q") ?? "";
+  const initialType = (searchParams.get("type") ?? "") as "" | "movie" | "tv";
+  const initialYear = searchParams.get("year") ?? "";
+  const initialGenre = searchParams.get("genre") ?? "";
+
+  const [q, setQ] = useState(initialQ);
+  const [typeFilter, setTypeFilter] = useState<"" | "movie" | "tv">(initialType);
+  const [yearFilter, setYearFilter] = useState(initialYear);
+  const [rows, setRows] = useState<Awaited<ReturnType<typeof searchAll>>>([]);
+  const [pending, startTransition] = useTransition();
+  const [fetching, setFetching] = useState(false);
   const reqIdRef = useRef(0);
 
-  // Live search: 200ms debounce on `q`. Min 2 chars. Stale-response guard via reqId.
+  const syncUrl = (newQ: string, newType: string, newYear: string, newGenre: string) => {
+    const sp = new URLSearchParams();
+    if (newQ) sp.set("q", newQ);
+    if (newType) sp.set("type", newType);
+    if (newYear) sp.set("year", newYear);
+    if (newGenre) sp.set("genre", newGenre);
+    const qs = sp.toString();
+    startTransition(() => router.replace(qs ? `/search?${qs}` : "/search", { scroll: false }));
+  };
+
   useEffect(() => {
     const text = q.trim();
     if (text.length < 2) {
       setRows([]);
-      setPending(false);
+      setFetching(false);
       return;
     }
-    setPending(true);
+    setFetching(true);
     const handle = setTimeout(async () => {
       const myId = ++reqIdRef.current;
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/search_all`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          },
-          body: JSON.stringify({ query_text: text, page_size: 30 }),
-        }
-      );
-      const data = res.ok ? await res.json() : [];
+      const results = await searchAll(text, {
+        type: typeFilter || undefined,
+        year: yearFilter || undefined,
+        genre: initialGenre || undefined,
+      });
       if (myId !== reqIdRef.current) return;
-      setRows((data ?? []) as SearchAllRow[]);
-      setPending(false);
+      setRows(results);
+      setFetching(false);
     }, 200);
     return () => clearTimeout(handle);
-  }, [q]);
+  }, [q, typeFilter, yearFilter, initialGenre]);
+
+  const handleQChange = (val: string) => {
+    setQ(val);
+    syncUrl(val, typeFilter, yearFilter, initialGenre);
+  };
+
+  const handleTypeChange = (val: "" | "movie" | "tv") => {
+    setTypeFilter(val);
+    syncUrl(q, val, yearFilter, initialGenre);
+  };
+
+  const handleYearChange = (val: string) => {
+    setYearFilter(val);
+    syncUrl(q, typeFilter, val, initialGenre);
+  };
 
   const touched = q.trim().length >= 2;
+  const isLoading = fetching || pending;
 
   return (
     <div>
-      <form onSubmit={(e) => e.preventDefault()} className="relative mb-10">
+      <form onSubmit={(e) => e.preventDefault()} className="relative mb-6">
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--cream-muted)]" />
         <input
           autoFocus
+          data-testid="search-input"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => handleQChange(e.target.value)}
           placeholder="Title, phrase, idea…"
           className="w-full h-11 pl-11 pr-11 rounded-md text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--accent-dim)] transition-colors"
         />
-        {pending && (
+        {isLoading && (
           <LoaderCircle
             size={16}
             className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-[var(--cream-muted)]"
           />
         )}
       </form>
+
+      <div className="flex flex-wrap gap-4 mb-8">
+        <div>
+          <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--cream-muted)] mb-2">Type</p>
+          <ChipRow options={MEDIA_TYPES} value={typeFilter} onChange={handleTypeChange} testId="filter-type" />
+        </div>
+        <div>
+          <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--cream-muted)] mb-2">Decade</p>
+          <ChipRow
+            options={YEARS}
+            value={yearFilter}
+            onChange={handleYearChange}
+            testId="filter-year"
+          />
+        </div>
+      </div>
 
       {!touched && (
         <p className="text-sm text-[var(--cream-muted)]">
@@ -111,7 +186,7 @@ function FindTab() {
         </p>
       )}
 
-      {touched && rows.length === 0 && !pending && (
+      {touched && rows.length === 0 && !isLoading && (
         <div className="py-16 text-center">
           <p className="font-arabic text-3xl text-[var(--cream-muted)]/50 mb-3">لا خيال هنا</p>
           <p className="font-display italic text-xl text-[var(--cream)]">No such fantasy.</p>
@@ -120,7 +195,10 @@ function FindTab() {
       )}
 
       {rows.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-5 gap-y-8">
+        <div
+          data-testid="search-results"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-5 gap-y-8"
+        >
           {rows.map((r) => (
             <MovieCard
               key={`${r.type}-${r.id}`}
@@ -140,12 +218,10 @@ function FindTab() {
   );
 }
 
-// ─── SQL explorer tab ─────────────────────────────────────────────────────
-
 function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
   const [sql, setSql] = useState(defaultQueries[0]?.query_text || "select title, release_date from movies order by release_date desc limit 10");
-  const [rows, setRows] = useState<any[]>([]);
-  const [err, setErr]   = useState<string | null>(null);
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  const [err, setErr] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   const run = async () => {
@@ -165,7 +241,7 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
     setPending(false);
     if (!res.ok) {
       const e = await res.json().catch(() => ({}));
-      setErr(e?.message || "Query failed.");
+      setErr((e as { message?: string })?.message || "Query failed.");
       setRows([]);
       return;
     }
@@ -177,19 +253,18 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
 
   return (
     <div className="grid md:grid-cols-[240px_1fr] gap-6">
-      {/* Sidebar: default queries */}
       <aside>
         <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] mb-3">
           Default queries
         </p>
         <ul className="space-y-1">
-          {defaultQueries.map((q) => (
-            <li key={q.id}>
+          {defaultQueries.map((dq) => (
+            <li key={dq.id}>
               <button
-                onClick={() => setSql(q.query_text)}
+                onClick={() => setSql(dq.query_text)}
                 className="text-left w-full px-3 py-2 text-sm rounded-md border border-transparent text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--ink-lift)] hover:border-[var(--taupe)]/25 transition-colors"
               >
-                {q.title}
+                {dq.title}
               </button>
             </li>
           ))}
@@ -199,7 +274,6 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
         </ul>
       </aside>
 
-      {/* Editor + results */}
       <div>
         <div className="relative mb-3">
           <textarea
@@ -262,7 +336,7 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
   );
 }
 
-function formatCell(v: any): string {
+function formatCell(v: unknown): string {
   if (v === null || v === undefined) return "—";
   if (typeof v === "object") return JSON.stringify(v);
   return String(v);
