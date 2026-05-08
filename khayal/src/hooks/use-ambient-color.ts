@@ -44,7 +44,7 @@ export function useAmbientColor(posterUrl: string | null): RgbColor | null {
       getColor(posterUrl)
         .then((raw) => {
           if (!cancelled) {
-            setColor(processColor(raw as [number, number, number]));
+            setColor(processColor(raw as unknown as [number, number, number]));
           }
         })
         .catch(() => {
