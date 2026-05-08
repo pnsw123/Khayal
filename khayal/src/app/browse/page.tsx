@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Search, X } from "lucide-react";
+import { X } from "lucide-react";
+import { PersonalisedShelf } from "@/components/personalised-shelf";
 import { supabaseServer } from "@/lib/supabase-server";
 import type { Movie } from "@/lib/supabase";
 import { MovieCard } from "@/components/movie-card";
-import { FilterChips } from "@/components/filter-chips";
+import { FilterDropdown } from "@/components/filter-dropdown";
 import { Shelf } from "@/components/shelf";
 import { LANGUAGES, RATINGS, hasAnyFilter } from "@/lib/filters";
 import { year } from "@/lib/utils";
@@ -12,7 +13,7 @@ export const revalidate = 300;
 
 type Search = { lang?: string; rating?: string; genre?: string; page?: string };
 
-const PAGE_SIZE = 48;
+const PAGE_SIZE = 96;
 
 export default async function BrowsePage({ searchParams }: { searchParams: Promise<Search> }) {
   const params = await searchParams;
@@ -91,56 +92,29 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="min-h-screen">
-      {/* ─── Filter bar — top of browse, not sticky ─── */}
+      {/* ─── Filter bar ─── */}
       <div className="border-b border-[var(--ink-high)] bg-[var(--ink)]">
-        <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-2 space-y-1.5">
-          {/* Row 1: Genre — horizontal scroll, no wrap */}
-          <div className="flex items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-            <span className="shrink-0 font-mono text-[9px] tracking-widest uppercase text-[var(--cream-muted)] w-12">Genre</span>
-            <FilterChips items={genres} activeCode={activeGenre} paramKey="genre" searchParams={usp} className="flex-nowrap" />
-          </div>
-          {/* Row 2: Lang + Rating on same line */}
-          <div className="flex items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-            <span className="shrink-0 font-mono text-[9px] tracking-widest uppercase text-[var(--cream-muted)] w-12">Lang</span>
-            <FilterChips items={LANGUAGES} activeCode={activeLang} paramKey="lang" searchParams={usp} className="flex-nowrap" />
-            <span className="shrink-0 w-px h-3 bg-[var(--ink-high)] mx-1" />
-            <span className="shrink-0 font-mono text-[9px] tracking-widest uppercase text-[var(--cream-muted)]">Rating</span>
-            <FilterChips items={RATINGS} activeCode={activeRating} paramKey="rating" searchParams={usp} className="flex-nowrap" />
-            {filtersActive && (
-              <Link href="/browse" className="ml-2 shrink-0 inline-flex items-center gap-1 text-[10px] font-mono uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors">
-                <X size={10} /> Clear
-              </Link>
-            )}
-          </div>
+        <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-2.5 flex items-center gap-2 flex-wrap">
+          <FilterDropdown label="Genre"    items={genres}     activeCode={activeGenre}  paramKey="genre"  searchParams={usp} />
+          <FilterDropdown label="Language" items={LANGUAGES}  activeCode={activeLang}   paramKey="lang"   searchParams={usp} />
+          <FilterDropdown label="Rating"   items={RATINGS}    activeCode={activeRating} paramKey="rating" searchParams={usp} />
+          {filtersActive && (
+            <Link href="/browse" className="inline-flex items-center gap-1 h-8 px-2.5 text-[11px] font-mono text-[var(--cream-muted)] hover:text-[var(--cream)] transition-colors">
+              <X size={10} /> Clear
+            </Link>
+          )}
         </div>
       </div>
 
       <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-8">
-        {/* ─── Header row with search ─── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="font-display text-2xl md:text-3xl text-[var(--cream)]">
-              {filtersActive ? "Filtered results" : "Browse films"}
-            </h1>
-            {totals && !filtersActive && (
-              <p className="mt-1 font-mono text-[11px] tracking-[0.15em] text-[var(--cream-muted)]">
-                {totals.movies.toLocaleString()} films · {totals.tv.toLocaleString()} series
-              </p>
-            )}
-            {filtersActive && (
-              <p className="mt-1 font-mono text-[11px] tracking-[0.15em] text-[var(--cream-muted)]">
-                {gridTotal.toLocaleString()} results
-              </p>
-            )}
-          </div>
-          <Link
-            href="/search"
-            className="flex items-center gap-3 h-10 pl-4 pr-4 rounded-md bg-[var(--ink-lift)] border border-[var(--ink-high)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--taupe)] transition-colors w-full sm:w-[320px]"
-          >
-            <Search size={14} className="text-[var(--saffron)] shrink-0" />
-            <span className="flex-1 text-sm text-left truncate">Search films & series…</span>
-            <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--ink-high)] text-[var(--cream-muted)] shrink-0">⌘K</kbd>
-          </Link>
+        {/* ─── Personalised shelf (client — checks auth on mount) ─── */}
+        <PersonalisedShelf />
+
+        {/* ─── Header row ─── */}
+        <div className="mb-8">
+          <h1 className="font-display text-2xl md:text-3xl text-[var(--cream)]">
+            {filtersActive ? "Filtered results" : "Browse films"}
+          </h1>
         </div>
 
         {/* ─── Shelves (only on page 1 with no filter) ─── */}
@@ -187,7 +161,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-3">
                 {grid.map((m) => (
                   <MovieCard
                     key={m.id}
@@ -227,57 +201,44 @@ function Pagination({
     return q ? `/browse?${q}` : "/browse";
   };
 
-  // Show: first 2, current ± 2, last 2
-  const pages: (number | "…")[] = [];
-  const seen = new Set<number>();
-  const add = (n: number) => { if (n >= 1 && n <= total && !seen.has(n)) { pages.push(n); seen.add(n); } };
-  add(1); add(2);
-  add(current - 2); add(current - 1); add(current); add(current + 1); add(current + 2);
-  add(total - 1); add(total);
-  pages.sort((a, b) => (a as number) - (b as number));
-  const withGaps: (number | "…")[] = [];
-  let prev = 0;
-  for (const p of pages) {
-    if (typeof p === "number") {
-      if (prev && p - prev > 1) withGaps.push("…");
-      withGaps.push(p);
-      prev = p;
-    }
-  }
+  // Show up to 9 sequential pages centred around current, no ellipsis
+  const windowSize = 9;
+  let start = Math.max(1, current - Math.floor(windowSize / 2));
+  let end   = start + windowSize - 1;
+  if (end > total) { end = total; start = Math.max(1, end - windowSize + 1); }
+  const withGaps: number[] = [];
+  for (let i = start; i <= end; i++) withGaps.push(i);
 
   return (
-    <nav className="mt-14 flex items-center justify-between gap-4 pt-8 border-t border-[var(--taupe)]/15">
-      <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)]">
-        Page {current} of {total} · {totalRows.toLocaleString()} titles
-      </p>
-      <div className="flex items-center gap-1">
-        {current > 1 && (
-          <Link href={href(current - 1)} className="h-9 px-3 rounded-md text-xs font-mono tracking-wider uppercase border border-[var(--taupe)]/25 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--saffron)]/50 transition-colors flex items-center">
-            ← Prev
-          </Link>
-        )}
-        {withGaps.map((p, i) => p === "…" ? (
-          <span key={`g${i}`} className="px-2 text-[var(--cream-muted)] text-sm">…</span>
-        ) : (
-          <Link
-            key={p}
-            href={href(p)}
-            className={
-              "h-9 min-w-9 px-3 rounded-md text-xs font-mono flex items-center justify-center transition-colors " +
-              (p === current
-                ? "bg-[var(--saffron)] text-[var(--ink)]"
-                : "border border-[var(--taupe)]/25 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--saffron)]/50")
-            }
-          >
-            {p}
-          </Link>
-        ))}
-        {current < total && (
-          <Link href={href(current + 1)} className="h-9 px-3 rounded-md text-xs font-mono tracking-wider uppercase border border-[var(--taupe)]/25 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--saffron)]/50 transition-colors flex items-center">
-            Next →
-          </Link>
-        )}
-      </div>
+    <nav className="mt-10 pt-6 border-t border-[var(--ink-high)] flex items-center justify-center gap-0.5">
+      {current > 1 ? (
+        <Link href={href(current - 1)} className="h-9 px-3 rounded text-[12px] font-mono border border-[var(--taupe)]/20 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--taupe)]/50 transition-colors flex items-center gap-1">
+          ‹ Prev
+        </Link>
+      ) : (
+        <span className="h-9 px-3 rounded text-[12px] font-mono border border-[var(--taupe)]/10 text-[var(--cream-muted)]/25 flex items-center">‹ Prev</span>
+      )}
+      {withGaps.map((p) => (
+        <Link
+          key={p}
+          href={href(p)}
+          className={
+            "h-9 min-w-9 px-2.5 rounded text-[12px] font-mono flex items-center justify-center transition-colors " +
+            (p === current
+              ? "bg-[var(--accent)] text-[var(--ink)] font-semibold"
+              : "text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--ink-lift)]")
+          }
+        >
+          {p}
+        </Link>
+      ))}
+      {current < total ? (
+        <Link href={href(current + 1)} className="h-9 px-3 rounded text-[12px] font-mono border border-[var(--taupe)]/20 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--taupe)]/50 transition-colors flex items-center gap-1">
+          Next ›
+        </Link>
+      ) : (
+        <span className="h-9 px-3 rounded text-[12px] font-mono border border-[var(--taupe)]/10 text-[var(--cream-muted)]/25 flex items-center">Next ›</span>
+      )}
     </nav>
   );
 }

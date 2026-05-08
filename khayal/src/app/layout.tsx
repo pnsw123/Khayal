@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { Fraunces, DM_Sans, JetBrains_Mono, Reem_Kufi } from "next/font/google";
+import { Playfair_Display, DM_Sans, JetBrains_Mono, Reem_Kufi } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/nav";
-import { CursorGlow } from "@/components/cursor-glow";
 import { currentUser } from "@/lib/auth";
 
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-fraunces", display: "swap", style: ["normal","italic"] });
 const dmSans   = DM_Sans({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const jbm      = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jbm", display: "swap" });
 const reem     = Reem_Kufi({ subsets: ["arabic", "latin"], variable: "--font-reem", display: "swap", weight: ["400","500","600","700"] });
@@ -19,9 +18,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await currentUser();
 
   return (
-    <html lang="en" className={`h-full antialiased ${fraunces.variable} ${dmSans.variable} ${jbm.variable} ${reem.variable}`}>
+    <html lang="en" className={`h-full antialiased ${playfair.variable} ${dmSans.variable} ${jbm.variable} ${reem.variable}`}>
       <body className="min-h-full flex flex-col bg-[var(--ink)] text-[var(--cream)]">
-        <CursorGlow />
         <Nav />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-[var(--taupe)]/15 mt-16">

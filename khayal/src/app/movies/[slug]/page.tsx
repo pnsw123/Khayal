@@ -12,6 +12,8 @@ import { AddToListButton } from "@/components/add-to-list";
 import { loadUserListsForTarget } from "@/lib/lists";
 import { CastRow } from "@/components/cast-row";
 import type { CastMember } from "@/components/cast-row";
+import { MovieCard } from "@/components/movie-card";
+import { AmbientBackdrop } from "@/components/ambient-backdrop";
 
 export const revalidate = 0;
 
@@ -76,6 +78,20 @@ export default async function MovieDetailPage({
       : Promise.resolve([]),
   ]);
 
+  // Similar movies — same primary genre, different movie, sorted by rating
+  const genres: string[] = (genreResult.data as any)?.genre_names ?? [];
+  const primaryGenre = genres[0] ?? null;
+  const { data: similarRaw } = primaryGenre
+    ? await sb
+        .from("movies_with_genres")
+        .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names")
+        .contains("genre_names", [primaryGenre])
+        .neq("id", movie.id)
+        .not("poster_url", "is", null)
+        .order("release_date", { ascending: false })
+        .limit(12)
+    : { data: [] };
+
   if (user) {
     const [{ data: r }, { data: rv }, lists] = userResults as any;
     myRating = r?.rating ?? null;
@@ -93,12 +109,13 @@ export default async function MovieDetailPage({
     credit_order:   c.credit_order,
   }));
 
-  const genres: string[] = (genreResult.data as any)?.genre_names ?? [];
+  const similarMovies = (similarRaw ?? []) as any[];
   const avgRating = stats?.avg_rating ? Number(stats.avg_rating) : null;
-  const ratingCount = stats?.rating_count ?? 0;
+  const ratingCount = stats?.total_ratings ?? 0;
 
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen">
+      <AmbientBackdrop posterUrl={movie.poster_url} />
       {/* ── Full-bleed backdrop ── */}
       <div className="relative h-[55vh] min-h-[400px] overflow-hidden">
         {movie.backdrop_url ? (
@@ -244,21 +261,45 @@ export default async function MovieDetailPage({
           </div>
         </div>
 
-        {/* ─── Where to watch + review form ─── */}
-        <div className="grid md:grid-cols-[300px_1fr] gap-6 mb-14">
+        {/* ─── Where to watch ─── */}
+        <div className="mb-10">
           <WhereToWatch
             title={movie.title}
             year={year(movie.release_date)}
             trailerYoutubeId={movie.trailer_youtube_id}
           />
-          <ReviewForm
-            userId={user?.id ?? null}
-            kind="movie"
-            targetId={movie.id}
-            slug={movie.slug}
-            existing={myReview}
-          />
         </div>
+
+        {/* ─── More like this ─── */}
+        {similarMovies.length > 0 && (
+          <section className="mb-14">
+            <h2 className="font-display text-xl text-[var(--cream)] mb-5">
+              More like this
+              {primaryGenre && (
+                <span className="font-mono text-xs text-[var(--cream-muted)] ml-3 tracking-widest uppercase">{primaryGenre}</span>
+              )}
+            </h2>
+            <div className="relative -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+              <div className="flex gap-4 min-w-max pb-3">
+                {similarMovies.map((m) => (
+                  <div key={m.id} className="w-[140px] shrink-0">
+                    <MovieCard
+                      title={m.title}
+                      year={year(m.release_date)}
+                      posterUrl={m.poster_url}
+                      rating={null}
+                      href={`/movies/${m.slug}`}
+                      genres={m.genre_names ?? []}
+                      language={m.original_language}
+                      runtime={m.runtime_minutes}
+                      ageRating={m.age_rating}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ─── Cast ─── */}
         {cast.length > 0 && <CastRow cast={cast} />}
@@ -266,16 +307,23 @@ export default async function MovieDetailPage({
         {/* ─── Reviews ─── */}
         <section className="pt-10 border-t border-[var(--ink-high)]">
           <div className="flex items-baseline justify-between mb-8">
-            <h2 className="font-display text-2xl text-[var(--cream)]">
-              Reviews
-              <span className="font-mono text-sm text-[var(--cream-muted)] ml-3">({reviews.length})</span>
-            </h2>
+            <h2 className="font-display text-2xl text-[var(--cream)]">Reviews</h2>
+          </div>
+
+          {/* Write / edit your review — always shown at top-left of section */}
+          <div className="mb-8 max-w-2xl">
+            <ReviewForm
+              userId={user?.id ?? null}
+              kind="movie"
+              targetId={movie.id}
+              slug={movie.slug}
+              existing={myReview}
+            />
           </div>
 
           {reviews.length === 0 ? (
-            <div className="py-16 text-center">
+            <div className="py-10 text-left">
               <p className="font-display italic text-xl text-[var(--cream)]/50">No reviews yet.</p>
-              <p className="mt-2 text-sm text-[var(--cream-muted)]">Be the first — form is above.</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
