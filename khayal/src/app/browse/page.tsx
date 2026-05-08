@@ -56,7 +56,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     const base = sb
       .from("movies_with_genres")
       .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names", { count: "exact" });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const q = buildBrowseQuery(base as any, {
       genre:  activeGenre  || undefined,
       lang:   activeLang   || undefined,
@@ -66,7 +65,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
       sort:   activeSort   || undefined,
       page,
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, count } = await (q as any);
     gridData = (data ?? []) as typeof gridData;
     gridTotal = (count as number | null) ?? 0;

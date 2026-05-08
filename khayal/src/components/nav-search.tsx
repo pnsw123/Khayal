@@ -79,6 +79,7 @@ export function NavSearch() {
         <Search size={13} className="absolute left-3 text-[var(--cream-muted)] pointer-events-none z-10" />
         <input
           type="text"
+          data-testid="nav-search-input"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => { if (results.length > 0) setOpen(true); }}

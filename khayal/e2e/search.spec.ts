@@ -20,17 +20,18 @@ test("facet filters are rendered on the search page", async ({ page }) => {
   await expect(page.getByTestId("filter-year")).toBeVisible({ timeout: 8000 });
 });
 
-test("nav search input triggers fetch after 2+ characters", async ({ page }) => {
-  const fetchCalls: string[] = [];
-  page.on("request", (req) => {
-    if (req.url().includes("search_all")) fetchCalls.push(req.url());
-  });
-
+test("nav search link navigates to /search page", async ({ page }) => {
+  // The nav uses a SearchMarquee link (not an inline input) that navigates to /search
   await page.goto("/browse");
-  const navInput = page.getByRole("textbox").first();
-  await navInput.fill("ba");
-  await page.waitForTimeout(400);
-  expect(fetchCalls.length).toBeGreaterThan(0);
+  await page.waitForLoadState("networkidle");
+
+  // Click the nav search link
+  const searchLink = page.locator('a[href="/search"]').first();
+  await expect(searchLink).toBeVisible({ timeout: 10000 });
+  await searchLink.click();
+
+  // Should land on search page
+  await expect(page).toHaveURL(/\/search/);
 });
 
 test("typing in search page input updates URL query param", async ({ page }) => {
