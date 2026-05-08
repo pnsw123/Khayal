@@ -36,7 +36,7 @@ export function WhereToWatch({ title, year, trailerYoutubeId }: WhereToWatchProp
   ];
 
   return (
-    <div className="rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/25 p-5">
+    <div className="pt-6 border-t border-[var(--ink-high)]">
       <div className="flex items-baseline justify-between mb-3">
         <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-[var(--saffron)]">
           Where to watch
