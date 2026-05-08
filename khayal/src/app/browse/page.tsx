@@ -5,7 +5,6 @@ import { supabaseServer } from "@/lib/supabase-server";
 import type { Movie } from "@/lib/supabase";
 import { MovieCard } from "@/components/movie-card";
 import { FilterDropdown } from "@/components/filter-dropdown";
-import { Shelf } from "@/components/shelf";
 import { LANGUAGES, RATINGS, YEARS, SCORES, SORT_OPTIONS, hasAnyFilter } from "@/lib/filters";
 import { buildBrowseQuery } from "@/lib/browse";
 import { year } from "@/lib/utils";
@@ -41,13 +40,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     ...(genreRows ?? []).map((g: any) => ({ code: g.name, label: g.name })),
   ];
   const today = new Date().toISOString().slice(0, 10);
-  const sixtyDaysAgo = new Date(Date.now() - 60 * 86_400_000).toISOString().slice(0, 10);
-
-  // Only show shelves on first page with no filter — page 2+ is pure deep-browse mode
-  const showShelves = !filtersActive && page === 1;
-  const shelfQueries = showShelves
-    ? await loadShelves(sb, today, sixtyDaysAgo)
-    : { nowPlaying: null, upcoming: null, classics: null, world: null, recent: null, totals: null };
 
   let gridData: any[] = [];
   let gridTotal = 0;
@@ -73,24 +65,13 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const grid = gridData as (Movie & { genre_names: string[] })[];
   const totalPages = Math.max(1, Math.ceil((gridTotal ?? 0) / PAGE_SIZE));
 
-  // Stats shared across rendered cards
-  const allIds = new Set<number>();
-  (gridData ?? []).forEach((m: any) => allIds.add(m.id));
-  if (shelfQueries.nowPlaying) shelfQueries.nowPlaying.forEach((m: any) => allIds.add(m.id));
-  if (shelfQueries.upcoming)   shelfQueries.upcoming.forEach((m: any)   => allIds.add(m.id));
-  if (shelfQueries.classics)   shelfQueries.classics.forEach((m: any)   => allIds.add(m.id));
-  if (shelfQueries.world)      shelfQueries.world.forEach((m: any)      => allIds.add(m.id));
-  if (shelfQueries.recent)     shelfQueries.recent.forEach((m: any)     => allIds.add(m.id));
-
-  const idList = Array.from(allIds);
+  const idList = (gridData ?? []).map((m: any) => m.id);
   const { data: stats } = await sb
     .from("movie_stats")
     .select("movie_id, avg_rating")
     .in("movie_id", idList.length ? idList : [-1]);
   const ratingByMovie = new Map<number, number>();
   (stats ?? []).forEach((s: any) => { if (s.avg_rating != null) ratingByMovie.set(s.movie_id, Number(s.avg_rating)); });
-
-  const totals = shelfQueries.totals;
 
   return (
     <div className="min-h-screen" data-testid="browse-page">
@@ -111,6 +92,27 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         </div>
       </div>
 
+      {/* ─── Genre chips ─── */}
+      <div className="border-b border-[var(--ink-high)] bg-[var(--ink)]">
+        <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-2 flex items-center gap-2 overflow-x-auto scrollbar-none">
+          {genres.map((g) => (
+            <Link
+              key={g.code}
+              href={g.code ? `/browse?genre=${encodeURIComponent(g.code)}` : "/browse"}
+              data-testid={`genre-chip-${g.code || "all"}`}
+              className={
+                "shrink-0 h-7 px-3 rounded-full text-[11px] font-mono transition-colors " +
+                (activeGenre === g.code
+                  ? "bg-[var(--accent)] text-[var(--ink)] font-semibold"
+                  : "border border-[var(--taupe)]/30 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--taupe)]/60")
+              }
+            >
+              {g.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-8">
         {/* ─── Personalised shelf (client — checks auth on mount) ─── */}
         <PersonalisedShelf />
@@ -122,42 +124,8 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
           </h1>
         </div>
 
-        {/* ─── Shelves (only on page 1 with no filter) ─── */}
-        {showShelves && shelfQueries.nowPlaying && (
-          <>
-            <Shelf
-              title="New Releases"
-              kicker="إصدارات جديدة"
-              items={shelfQueries.nowPlaying}
-              ratingByMovie={ratingByMovie}
-            />
-            <Shelf
-              title="Coming Soon"
-              kicker="قريبًا"
-              items={shelfQueries.upcoming!}
-              ratingByMovie={ratingByMovie}
-            />
-            <Shelf
-              title="World Cinema"
-              kicker="سينما العالم"
-              items={shelfQueries.world!}
-              ratingByMovie={ratingByMovie}
-            />
-            <Shelf
-              title="The Classics"
-              kicker="الكلاسيكيات"
-              items={shelfQueries.classics!}
-              ratingByMovie={ratingByMovie}
-            />
-          </>
-        )}
-
         {/* ─── Grid ─── */}
-        <section id="films" className={showShelves ? "mt-12 pt-10 border-t border-[var(--ink-high)]" : ""}>
-          {showShelves && (
-            <h2 className="font-display text-xl text-[var(--cream)] mb-6">All films</h2>
-          )}
-
+        <section id="films">
           {grid.length === 0 ? (
             <div className="py-24 text-center">
               <p className="font-arabic text-3xl text-[var(--saffron)]/50 mb-3">لا خيال هنا</p>
@@ -246,70 +214,4 @@ function Pagination({
       )}
     </nav>
   );
-}
-
-// ─── Data loader for the shelves ─────────────────────────────────────────
-
-const SHELF_SELECT = "id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names";
-
-async function loadShelves(sb: any, today: string, sixtyDaysAgo: string) {
-  const [
-    { data: nowPlaying },
-    { data: upcoming },
-    { data: classics },
-    { data: world },
-    { data: recent },
-    { count: movieTotal },
-    { count: tvTotal },
-    { count: upcomingCount },
-    { count: classicsCount },
-  ] = await Promise.all([
-    sb.from("movies_with_genres")
-      .select(SHELF_SELECT)
-      .not("poster_url", "is", null)
-      .gte("release_date", sixtyDaysAgo)
-      .lte("release_date", today)
-      .order("release_date", { ascending: false })
-      .limit(15),
-    sb.from("movies_with_genres")
-      .select(SHELF_SELECT)
-      .not("poster_url", "is", null)
-      .gt("release_date", today)
-      .order("release_date", { ascending: true })
-      .limit(15),
-    sb.from("movies_with_genres")
-      .select(SHELF_SELECT)
-      .not("poster_url", "is", null)
-      .lt("release_date", "2000-01-01")
-      .order("release_date", { ascending: false })
-      .limit(15),
-    sb.from("movies_with_genres")
-      .select(SHELF_SELECT)
-      .not("poster_url", "is", null)
-      .neq("original_language", "en")
-      .order("release_date", { ascending: false })
-      .limit(15),
-    sb.from("movies_with_genres")
-      .select(SHELF_SELECT)
-      .not("poster_url", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(15),
-    sb.from("movies").select("*", { count: "exact", head: true }).not("poster_url", "is", null),
-    sb.from("tv_series").select("*", { count: "exact", head: true }).not("poster_url", "is", null),
-    sb.from("movies").select("*", { count: "exact", head: true }).not("poster_url", "is", null).gt("release_date", today),
-    sb.from("movies").select("*", { count: "exact", head: true }).not("poster_url", "is", null).lt("release_date", "2000-01-01"),
-  ]);
-  return {
-    nowPlaying: nowPlaying as Movie[],
-    upcoming:   upcoming as Movie[],
-    classics:   classics as Movie[],
-    world:      world as Movie[],
-    recent:     recent as Movie[],
-    totals: {
-      movies: movieTotal ?? 0,
-      tv: tvTotal ?? 0,
-      upcoming: upcomingCount ?? 0,
-      classics: classicsCount ?? 0,
-    },
-  };
 }
