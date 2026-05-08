@@ -148,7 +148,7 @@ export default async function MovieDetailPage({
 
       {/* ── Main content — overlaps backdrop ── */}
       <div className="relative mx-auto max-w-[1400px] px-6 -mt-48 pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] gap-8 lg:gap-12 items-end mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] xl:grid-cols-[360px_1fr] 2xl:grid-cols-[400px_1fr] gap-8 lg:gap-12 items-end mb-12">
 
           {/* Poster */}
           <div className="relative aspect-[2/3] rounded-lg overflow-hidden border border-white/10 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.9)] self-end">
@@ -242,21 +242,25 @@ export default async function MovieDetailPage({
             )}
 
             {/* Actions */}
-            <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-[var(--ink-high)]">
-              <RateWidget
-                userId={user?.id ?? null}
-                kind="movie"
-                targetId={movie.id}
-                initialRating={myRating}
-                slug={movie.slug}
-              />
-              <AddToListButton
-                userId={user?.id ?? null}
-                kind="movie"
-                targetId={movie.id}
-                slug={movie.slug}
-                initialLists={myLists}
-              />
+            <div className="pt-6 border-t border-[var(--ink-high)]">
+              <div>
+                <RateWidget
+                  userId={user?.id ?? null}
+                  kind="movie"
+                  targetId={movie.id}
+                  initialRating={myRating}
+                  slug={movie.slug}
+                />
+              </div>
+              <div className="mt-3">
+                <AddToListButton
+                  userId={user?.id ?? null}
+                  kind="movie"
+                  targetId={movie.id}
+                  slug={movie.slug}
+                  initialLists={myLists}
+                />
+              </div>
             </div>
           </div>
         </div>
