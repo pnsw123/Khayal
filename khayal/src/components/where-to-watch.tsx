@@ -14,13 +14,25 @@ export interface WhereToWatchProps {
  * via Letterboxd / IMDb).
  */
 export function WhereToWatch({ title, year, trailerYoutubeId }: WhereToWatchProps) {
-  const qBase  = `${title} ${year ?? ""}`.trim();
-  const q      = encodeURIComponent(qBase);
+  const qBase = `${title} ${year ?? ""}`.trim();
+  const q = encodeURIComponent(qBase);
 
   const links = [
-    { label: "JustWatch",    href: `https://www.justwatch.com/us/search?q=${q}` },
-    { label: "Letterboxd",   href: `https://letterboxd.com/search/${q}/` },
-    { label: "IMDb",         href: `https://www.imdb.com/find?q=${q}` },
+    {
+      label: "JustWatch",
+      sublabel: "Stream & Rent",
+      href: `https://www.justwatch.com/us/search?q=${q}`,
+    },
+    {
+      label: "Letterboxd",
+      sublabel: "Reviews",
+      href: `https://letterboxd.com/search/${q}/`,
+    },
+    {
+      label: "IMDb",
+      sublabel: "Info",
+      href: `https://www.imdb.com/find?q=${q}`,
+    },
   ];
 
   return (
@@ -34,11 +46,11 @@ export function WhereToWatch({ title, year, trailerYoutubeId }: WhereToWatchProp
 
       {/* Trailer — embed if we have a TMDB-sourced id, else YouTube search */}
       <div className="mb-4">
-        <Trailer youtubeId={trailerYoutubeId ?? null} title={title} year={year} className="w-full" />
+        <Trailer youtubeId={trailerYoutubeId ?? null} title={title} year={year} />
       </div>
 
       <p className="text-xs text-[var(--cream-muted)] mb-3 leading-relaxed">
-        KHAYAL indexes films. We don't stream. Rentals & credits:
+        KHAYAL indexes films. We don&apos;t stream. Rentals &amp; credits:
       </p>
       <div className="flex flex-wrap gap-2">
         {links.map((l) => (
@@ -47,9 +59,13 @@ export function WhereToWatch({ title, year, trailerYoutubeId }: WhereToWatchProp
             href={l.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-mono tracking-wider uppercase text-[var(--cream)] bg-[var(--ink)] border border-[var(--taupe)]/25 hover:border-[var(--saffron)]/50 hover:text-[var(--saffron)] transition-colors"
+            className="inline-flex items-center gap-2 h-10 px-3 rounded-md bg-[var(--ink)] border border-[var(--taupe)]/25 hover:border-[var(--saffron)]/50 hover:text-[var(--saffron)] text-[var(--cream)] transition-colors"
           >
-            {l.label} <ExternalLink size={10} />
+            <ExternalLink size={12} />
+            <span className="flex flex-col">
+              <span className="text-xs font-mono uppercase tracking-wider">{l.label}</span>
+              <span className="text-[10px] text-[var(--cream-muted)]">{l.sublabel}</span>
+            </span>
           </a>
         ))}
       </div>

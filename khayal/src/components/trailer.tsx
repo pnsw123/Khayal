@@ -29,13 +29,13 @@ export function Trailer({ youtubeId, title, year, className }: TrailerProps) {
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          "group inline-flex items-center gap-2 h-11 px-4 rounded-md",
-          "bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium",
-          "hover:bg-[var(--saffron-glow)] transition-colors",
+          "group inline-flex items-center gap-2 h-9 px-3 rounded-md",
+          "border border-[var(--taupe)]/40 text-[var(--cream)] text-xs font-mono tracking-wider uppercase",
+          "hover:border-[var(--saffron)]/60 hover:text-[var(--saffron)] transition-colors",
           className,
         )}
       >
-        <Play size={14} className="fill-[var(--ink)]" />
+        <Play size={12} className="fill-current" />
         Find trailer
         <ExternalLink size={11} className="ml-1 opacity-70 group-hover:opacity-100" />
       </a>
@@ -47,13 +47,13 @@ export function Trailer({ youtubeId, title, year, className }: TrailerProps) {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "group relative inline-flex items-center gap-2 h-11 px-4 rounded-md",
-          "bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium",
-          "hover:bg-[var(--saffron-glow)] transition-colors",
+          "group relative inline-flex items-center gap-2 h-9 px-3 rounded-md",
+          "border border-[var(--taupe)]/40 text-[var(--cream)] text-xs font-mono tracking-wider uppercase",
+          "hover:border-[var(--saffron)]/60 hover:text-[var(--saffron)] transition-colors",
           className,
         )}
       >
-        <Play size={14} className="fill-[var(--ink)]" />
+        <Play size={12} className="fill-current" />
         Watch trailer
       </button>
     );
