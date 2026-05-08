@@ -1,86 +1,115 @@
-export type BrowseFilters = {
-  genre?: string;
-  year?: string;
-  lang?: string;
-  rating?: string;
-  score?: string;
-  sort?: string;
-  page?: number;
-};
+import "server-only";
+import { supabaseServer } from "@/lib/supabase-server";
+import type { Movie } from "@/lib/supabase";
 
-export type YearRange = { from: string; to: string };
+// Re-export pure helpers so callers can still import from "@/lib/browse"
+export {
+  buildBrowseQuery,
+  yearRange,
+  resolveSortColumn,
+  PAGE_SIZE,
+  type BrowseFilters,
+  type YearRange,
+  type ChainableQuery,
+} from "@/lib/browse-logic";
 
-export const PAGE_SIZE = 96;
+const SHELF_SELECT =
+  "id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names";
 
-export function yearRange(code: string): YearRange | null {
-  switch (code) {
-    case "2020s": return { from: "2020-01-01", to: "2029-12-31" };
-    case "2010s": return { from: "2010-01-01", to: "2019-12-31" };
-    case "2000s": return { from: "2000-01-01", to: "2009-12-31" };
-    case "1990s": return { from: "1990-01-01", to: "1999-12-31" };
-    case "older": return { from: "1900-01-01", to: "1989-12-31" };
-    default:      return null;
-  }
+export interface GenreRow {
+  name: string;
+  items: Movie[];
 }
 
-export function resolveSortColumn(sort: string): { column: string; ascending: boolean } {
-  switch (sort) {
-    case "popular": return { column: "popularity",   ascending: false };
-    case "rated":   return { column: "vote_average",  ascending: false };
-    case "oldest":  return { column: "release_date",  ascending: true };
-    default:        return { column: "release_date",  ascending: false };
-  }
+export interface BrowseRows {
+  topRated: Movie[];
+  newThisWeek: Movie[];
+  genreRows: GenreRow[];
+  ratingByMovie: Map<number, number>;
 }
 
-export type ChainableQuery = {
-  contains: (col: string, val: string[]) => ChainableQuery;
-  eq: (col: string, val: string) => ChainableQuery;
-  gte: (col: string, val: number | string) => ChainableQuery;
-  lte: (col: string, val: number | string) => ChainableQuery;
-  order: (col: string, opts: { ascending: boolean; nullsFirst: boolean }) => ChainableQuery;
-  range: (from: number, to: number) => ChainableQuery;
-  not: (col: string, op: string, val: unknown) => ChainableQuery;
-};
+export async function loadBrowseRows(): Promise<BrowseRows> {
+  const sb = await supabaseServer();
+  const today = new Date().toISOString().slice(0, 10);
+  const fourteenDaysAgo = new Date(Date.now() - 14 * 86_400_000).toISOString().slice(0, 10);
 
-export function buildBrowseQuery(
-  query: ChainableQuery,
-  filters: BrowseFilters,
-): ChainableQuery {
-  let q = query.not("poster_url", "is", null);
+  // Load top rated, new this week, and genres in parallel
+  const [topRatedResult, newThisWeekResult, genresResult] = await Promise.all([
+    sb
+      .from("movie_stats")
+      .select(`movie_id, avg_rating, movies_with_genres!inner(${SHELF_SELECT})`)
+      .not("movies_with_genres.poster_url", "is", null)
+      .gt("avg_rating", 0)
+      .order("avg_rating", { ascending: false })
+      .limit(15),
+    sb
+      .from("movies_with_genres")
+      .select(SHELF_SELECT)
+      .not("poster_url", "is", null)
+      .gte("release_date", fourteenDaysAgo)
+      .lte("release_date", today)
+      .order("release_date", { ascending: false })
+      .limit(15),
+    sb.from("genres").select("id, name").order("name", { ascending: true }),
+  ]);
 
-  if (filters.genre) {
-    q = q.contains("genre_names", [filters.genre]);
-  }
+  const topRated: Movie[] = (topRatedResult.data ?? []).map(
+    (r: any) => r.movies_with_genres as unknown as Movie,
+  );
+  const newThisWeek: Movie[] = (newThisWeekResult.data ?? []) as unknown as Movie[];
+  const allGenres: { id: number; name: string }[] = (genresResult.data ?? []) as any[];
 
-  if (filters.lang) {
-    q = q.eq("original_language", filters.lang);
-  }
+  // Count films per genre, filter to >= 5
+  const countResults = await Promise.all(
+    allGenres.map((g) =>
+      sb
+        .from("movies_with_genres")
+        .select("id", { count: "exact", head: true })
+        .contains("genre_names", [g.name]),
+    ),
+  );
 
-  if (filters.rating) {
-    q = q.eq("age_rating", filters.rating);
-  }
+  const qualifiedGenres = allGenres.filter(
+    (_, i) => (countResults[i].count ?? 0) >= 5,
+  );
 
-  if (filters.score) {
-    const min = Number(filters.score);
-    if (!Number.isNaN(min)) {
-      q = q.gte("vote_average", min);
-    }
-  }
+  // Fetch items for each qualified genre in parallel
+  const genreItemResults = await Promise.all(
+    qualifiedGenres.map((g) =>
+      sb
+        .from("movies_with_genres")
+        .select(SHELF_SELECT)
+        .not("poster_url", "is", null)
+        .contains("genre_names", [g.name])
+        .order("release_date", { ascending: false })
+        .limit(15),
+    ),
+  );
 
-  if (filters.year) {
-    const range = yearRange(filters.year);
-    if (range) {
-      q = q.gte("release_date", range.from).lte("release_date", range.to);
-    }
-  }
+  const genreRows: GenreRow[] = qualifiedGenres
+    .map((g, i) => ({
+      name: g.name,
+      items: (genreItemResults[i].data ?? []) as unknown as Movie[],
+    }))
+    .filter((r) => r.items.length > 0);
 
-  const { column, ascending } = resolveSortColumn(filters.sort ?? "");
-  q = q.order(column, { ascending, nullsFirst: false });
+  // Build ratingByMovie map covering all shelves
+  const allIds = [
+    ...topRated.map((m) => m.id),
+    ...newThisWeek.map((m) => m.id),
+    ...genreRows.flatMap((r) => r.items.map((m) => m.id)),
+  ];
+  const uniqueIds = [...new Set(allIds)];
 
-  const page = Math.max(1, filters.page ?? 1);
-  const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-  q = q.range(from, to);
+  const { data: statsData } = await sb
+    .from("movie_stats")
+    .select("movie_id, avg_rating")
+    .in("movie_id", uniqueIds.length ? uniqueIds : [-1]);
 
-  return q;
+  const ratingByMovie = new Map<number, number>();
+  (statsData ?? []).forEach((s: any) => {
+    if (s.avg_rating != null) ratingByMovie.set(s.movie_id, Number(s.avg_rating));
+  });
+
+  return { topRated, newThisWeek, genreRows, ratingByMovie };
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { buildBrowseQuery, yearRange, resolveSortColumn, PAGE_SIZE, type ChainableQuery } from "@/lib/browse";
+import { buildBrowseQuery, yearRange, resolveSortColumn, PAGE_SIZE, type ChainableQuery } from "@/lib/browse-logic";
 
 function makeMock() {
   const calls: { method: string; args: unknown[] }[] = [];
@@ -249,13 +249,105 @@ describe("genre chips data shape", () => {
     expect(href).toBe("/browse");
   });
 
-  it("Shelf component is not imported or referenced in browse page (no shelves)", () => {
-    // This test verifies the design intent: the browse page must not use the Shelf component.
-    // We check this by asserting the genres array builder never produces shelf-related data.
-    const genres = buildGenres([{ name: "Action" }]);
-    const hasShelfEntry = genres.some(
-      (g) => g.label === "New Releases" || g.label === "Coming Soon" || g.label === "World Cinema" || g.label === "The Classics",
+  it("genre chip hrefs are valid browse URLs", () => {
+    const genres = buildGenres([{ name: "Action" }, { name: "Science Fiction" }]);
+    const actionChip = genres.find((g) => g.code === "Action");
+    expect(actionChip).toBeDefined();
+    const href = `/browse?genre=${encodeURIComponent(actionChip!.code)}`;
+    expect(href).toBe("/browse?genre=Action");
+  });
+
+});
+
+// ─── Netflix-style shelf rows (unfiltered vs filtered logic) ─────────────
+
+describe("browse shelf row logic", () => {
+  /**
+   * Mirrors the `filtersActive` logic from page.tsx:
+   *   filtersActive = hasAnyFilter(usp) || !!activeGenre
+   * And the decision to show shelves:
+   *   showShelves = !filtersActive && page === 1
+   */
+  function shouldShowShelves(params: {
+    genre?: string; lang?: string; rating?: string;
+    score?: string; year?: string; sort?: string; page?: number;
+  }): boolean {
+    const usp = new URLSearchParams(
+      Object.entries(params).filter(([k, v]) => !!v && k !== "page") as [string, string][],
     );
-    expect(hasShelfEntry).toBe(false);
+    const filtersActive = usp.toString() !== "" || !!params.genre;
+    const page = params.page ?? 1;
+    return !filtersActive && page === 1;
+  }
+
+  it("unfiltered page 1 shows shelves (top-rated-shelf, new-this-week-shelf)", () => {
+    expect(shouldShowShelves({})).toBe(true);
+  });
+
+  it("unfiltered page 2 does NOT show shelves — falls back to grid", () => {
+    expect(shouldShowShelves({ page: 2 })).toBe(false);
+  });
+
+  it("genre filter active → does NOT show shelves, shows grid instead", () => {
+    expect(shouldShowShelves({ genre: "Action" })).toBe(false);
+  });
+
+  it("lang filter active → does NOT show shelves", () => {
+    expect(shouldShowShelves({ lang: "fr" })).toBe(false);
+  });
+
+  it("year filter active → does NOT show shelves", () => {
+    expect(shouldShowShelves({ year: "2010s" })).toBe(false);
+  });
+
+  it("score filter active → does NOT show shelves", () => {
+    expect(shouldShowShelves({ score: "8" })).toBe(false);
+  });
+
+  it("rating filter active → does NOT show shelves", () => {
+    expect(shouldShowShelves({ rating: "PG-13" })).toBe(false);
+  });
+
+  it("genre viewAllHref is built correctly for shelf row", () => {
+    const genre = "Science Fiction";
+    const href = "/browse?genre=" + encodeURIComponent(genre);
+    expect(href).toBe("/browse?genre=Science%20Fiction");
+  });
+
+  it("genreRows filters out genres with zero items", () => {
+    type GenreRow = { name: string; items: unknown[] };
+    const raw: GenreRow[] = [
+      { name: "Action", items: [{ id: 1 }, { id: 2 }] },
+      { name: "Empty",  items: [] },
+      { name: "Drama",  items: [{ id: 3 }] },
+    ];
+    const filtered = raw.filter((r) => r.items.length > 0);
+    expect(filtered.map((r) => r.name)).toEqual(["Action", "Drama"]);
+  });
+
+  it("qualified genres require count >= 5", () => {
+    const counts = [
+      { name: "Action",  count: 10 },
+      { name: "Niche",   count: 3 },
+      { name: "Drama",   count: 5 },
+      { name: "Tiny",    count: 0 },
+    ];
+    const qualified = counts.filter((g) => g.count >= 5).map((g) => g.name);
+    expect(qualified).toEqual(["Action", "Drama"]);
+  });
+
+  it("ratingByMovie map excludes null avg_rating entries", () => {
+    const statsData = [
+      { movie_id: 1, avg_rating: 8.5 },
+      { movie_id: 2, avg_rating: null },
+      { movie_id: 3, avg_rating: 7.0 },
+    ];
+    const map = new Map<number, number>();
+    statsData.forEach((s) => {
+      if (s.avg_rating != null) map.set(s.movie_id, Number(s.avg_rating));
+    });
+    expect(map.get(1)).toBe(8.5);
+    expect(map.has(2)).toBe(false);
+    expect(map.get(3)).toBe(7.0);
   });
 });

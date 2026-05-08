@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 import { PersonalisedShelf } from "@/components/personalised-shelf";
+import { Shelf } from "@/components/shelf";
 import { supabaseServer } from "@/lib/supabase-server";
 import type { Movie } from "@/lib/supabase";
 import { MovieCard } from "@/components/movie-card";
 import { FilterDropdown } from "@/components/filter-dropdown";
 import { LANGUAGES, RATINGS, YEARS, SCORES, SORT_OPTIONS, hasAnyFilter } from "@/lib/filters";
-import { buildBrowseQuery } from "@/lib/browse";
+import { buildBrowseQuery, loadBrowseRows } from "@/lib/browse";
 import { year } from "@/lib/utils";
 
 export const revalidate = 300;
@@ -34,7 +35,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     .from("genres")
     .select("id, name, slug")
     .order("name", { ascending: true });
-  // Use genre name as code — lets us filter with .contains() on the genre_names[] array in the view
   const genres = [
     { code: "", label: "All Genres" },
     ...(genreRows ?? []).map((g: any) => ({ code: g.name, label: g.name })),
@@ -73,6 +73,9 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const ratingByMovie = new Map<number, number>();
   (stats ?? []).forEach((s: any) => { if (s.avg_rating != null) ratingByMovie.set(s.movie_id, Number(s.avg_rating)); });
 
+  // Load shelf rows only when not filtered
+  const browseRows = !filtersActive && page === 1 ? await loadBrowseRows() : null;
+
   return (
     <div className="min-h-screen" data-testid="browse-page">
       {/* ─── Filter bar ─── */}
@@ -97,46 +100,89 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         {/* ─── Personalised shelf (client — checks auth on mount) ─── */}
         <PersonalisedShelf />
 
-        {/* ─── Header row ─── */}
-        <div className="mb-8">
-          <h1 className="font-display text-2xl md:text-3xl text-[var(--cream)]">
-            {filtersActive ? "Filtered results" : "Browse films"}
-          </h1>
-        </div>
-
-        {/* ─── Grid ─── */}
-        <section id="films">
-          {grid.length === 0 ? (
-            <div className="py-24 text-center">
-              <p className="font-arabic text-3xl text-[var(--saffron)]/50 mb-3">لا خيال هنا</p>
-              <p className="font-display italic text-xl text-[var(--cream)]/70">Nothing matches.</p>
-              <p className="mt-2 text-sm text-[var(--cream-muted)]">Try loosening a filter.</p>
+        {browseRows ? (
+          /* ─── Unfiltered: Netflix-style genre rows ─── */
+          <>
+            <div className="mb-8">
+              <h1 className="font-display text-2xl md:text-3xl text-[var(--cream)]">Browse films</h1>
             </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-3">
-                {grid.map((m) => (
-                  <MovieCard
-                    key={m.id}
-                    title={m.title}
-                    year={year(m.release_date)}
-                    posterUrl={m.poster_url}
-                    rating={ratingByMovie.get(m.id) ?? null}
-                    href={`/movies/${m.slug}`}
-                    genres={(m as any).genre_names ?? []}
-                    language={m.original_language}
-                    runtime={m.runtime_minutes}
-                    ageRating={m.age_rating}
-                  />
-                ))}
-              </div>
 
-              {totalPages > 1 && (
-                <Pagination current={page} total={totalPages} searchParams={usp} totalRows={gridTotal ?? 0} />
+            {browseRows.topRated.length > 0 && (
+              <div data-testid="top-rated-shelf">
+                <Shelf
+                  title="Top Rated"
+                  kicker="الأعلى تقييماً"
+                  items={browseRows.topRated}
+                  ratingByMovie={browseRows.ratingByMovie}
+                  viewAllHref="/browse?sort=rated"
+                />
+              </div>
+            )}
+
+            {browseRows.newThisWeek.length > 0 && (
+              <div data-testid="new-this-week-shelf">
+                <Shelf
+                  title="New This Week"
+                  kicker="جديد هذا الأسبوع"
+                  items={browseRows.newThisWeek}
+                  ratingByMovie={browseRows.ratingByMovie}
+                />
+              </div>
+            )}
+
+            {browseRows.genreRows.map((gr) => (
+              <Shelf
+                key={gr.name}
+                title={gr.name}
+                items={gr.items}
+                ratingByMovie={browseRows.ratingByMovie}
+                viewAllHref={"/browse?genre=" + encodeURIComponent(gr.name)}
+              />
+            ))}
+          </>
+        ) : (
+          /* ─── Filtered: existing grid ─── */
+          <>
+            <div className="mb-8">
+              <h1 className="font-display text-2xl md:text-3xl text-[var(--cream)]">
+                Filtered results
+              </h1>
+            </div>
+
+            <section id="films" data-testid="filtered-grid">
+              {grid.length === 0 ? (
+                <div className="py-24 text-center">
+                  <p className="font-arabic text-3xl text-[var(--saffron)]/50 mb-3">لا خيال هنا</p>
+                  <p className="font-display italic text-xl text-[var(--cream)]/70">Nothing matches.</p>
+                  <p className="mt-2 text-sm text-[var(--cream-muted)]">Try loosening a filter.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-3">
+                    {grid.map((m) => (
+                      <MovieCard
+                        key={m.id}
+                        title={m.title}
+                        year={year(m.release_date)}
+                        posterUrl={m.poster_url}
+                        rating={ratingByMovie.get(m.id) ?? null}
+                        href={`/movies/${m.slug}`}
+                        genres={(m as any).genre_names ?? []}
+                        language={m.original_language}
+                        runtime={m.runtime_minutes}
+                        ageRating={m.age_rating}
+                      />
+                    ))}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <Pagination current={page} total={totalPages} searchParams={usp} totalRows={gridTotal ?? 0} />
+                  )}
+                </>
               )}
-            </>
-          )}
-        </section>
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
@@ -154,7 +200,6 @@ function Pagination({
     return q ? `/browse?${q}` : "/browse";
   };
 
-  // Show up to 9 sequential pages centred around current, no ellipsis
   const windowSize = 9;
   let start = Math.max(1, current - Math.floor(windowSize / 2));
   let end   = start + windowSize - 1;
