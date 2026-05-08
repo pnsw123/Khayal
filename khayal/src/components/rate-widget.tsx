@@ -21,6 +21,20 @@ export interface RateWidgetProps {
 }
 
 /**
+ * Returns tier-appropriate unlit hover classes for a rating button.
+ * 1–4 = red tint, 5–7 = neutral saffron, 8–10 = green tint.
+ */
+export function getUnlitHoverClasses(n: number): string {
+  if (n <= 4) {
+    return "bg-[var(--ink-lift)] text-[var(--cream-muted)] border border-[var(--taupe)]/20 hover:border-red-500/50 hover:text-red-400";
+  }
+  if (n <= 7) {
+    return "bg-[var(--ink-lift)] text-[var(--cream-muted)] border border-[var(--taupe)]/20 hover:border-[var(--saffron)]/50 hover:text-[var(--cream)]";
+  }
+  return "bg-[var(--ink-lift)] text-[var(--cream-muted)] border border-[var(--taupe)]/20 hover:border-green-500/50 hover:text-green-400";
+}
+
+/**
  * Rate-a-title widget — 10 numbered buttons. Upserts on click.
  * Server-side RLS + our unique (user_id, movie_id) index enforces one rating
  * per user per title. The hover state shows what the rating WOULD be.
@@ -99,7 +113,7 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
                 "h-9 w-9 rounded-md text-sm font-mono transition-all",
                 lit
                   ? "bg-[var(--saffron)] text-[var(--ink)]"
-                  : "bg-[var(--ink-lift)] text-[var(--cream-muted)] border border-[var(--taupe)]/20 hover:border-[var(--saffron)]/50 hover:text-[var(--cream)]"
+                  : getUnlitHoverClasses(n)
               )}
             >
               {n}
