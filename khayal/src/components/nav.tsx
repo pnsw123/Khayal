@@ -31,7 +31,7 @@ export async function Nav() {
 
   return (
     <header className="relative z-20 border-b border-[var(--ink-high)]">
-      <div className="mx-auto max-w-[1600px] px-6 h-16 flex items-center justify-between gap-6">
+      <div className="mx-auto max-w-[1600px] px-4 md:px-6 h-16 flex items-center justify-between gap-6">
         <Link href="/" className="group flex items-center gap-2.5 shrink-0">
           {/* Icon mark */}
           <span className="flex items-center justify-center w-8 h-8 rounded-md bg-[var(--ink-high)] text-[var(--accent)] group-hover:bg-[var(--taupe)] transition-colors">

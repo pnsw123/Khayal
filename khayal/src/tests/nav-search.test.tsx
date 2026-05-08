@@ -2,6 +2,20 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NavSearch } from "@/components/nav-search";
+import { readFileSync } from "fs";
+import { resolve } from "path";
+
+// --- Nav container alignment test ---
+describe("Nav container alignment", () => {
+  it("nav inner container uses max-w-[1600px] to match page content width", () => {
+    const navSource = readFileSync(
+      resolve(__dirname, "../components/nav.tsx"),
+      "utf-8"
+    );
+    expect(navSource).toContain("max-w-[1600px]");
+    expect(navSource).not.toContain("max-w-5xl");
+  });
+});
 
 // Mock next/navigation
 const mockPush = vi.fn();
