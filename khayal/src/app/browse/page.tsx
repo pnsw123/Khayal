@@ -92,26 +92,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         </div>
       </div>
 
-      {/* ─── Genre chips ─── */}
-      <div className="border-b border-[var(--ink-high)] bg-[var(--ink)]">
-        <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-2 flex items-center gap-2 overflow-x-auto scrollbar-none">
-          {genres.map((g) => (
-            <Link
-              key={g.code}
-              href={g.code ? `/browse?genre=${encodeURIComponent(g.code)}` : "/browse"}
-              data-testid={`genre-chip-${g.code || "all"}`}
-              className={
-                "shrink-0 h-7 px-3 rounded-full text-[11px] font-mono transition-colors " +
-                (activeGenre === g.code
-                  ? "bg-[var(--accent)] text-[var(--ink)] font-semibold"
-                  : "border border-[var(--taupe)]/30 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--taupe)]/60")
-              }
-            >
-              {g.label}
-            </Link>
-          ))}
-        </div>
-      </div>
 
       <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-8">
         {/* ─── Personalised shelf (client — checks auth on mount) ─── */}
