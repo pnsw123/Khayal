@@ -1,13 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="KHAYAL — خيال">
-  <rect width="180" height="180" rx="36" fill="#1b1111"/>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#2a1a0e"/>
+      <stop offset="100%" stop-color="#0f0707"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F4C430" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#F4C430" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#bg)"/>
+  <rect width="180" height="180" rx="40" fill="url(#glow)"/>
+  <rect x="5" y="5" width="170" height="170" rx="35" fill="none" stroke="#F4C430" stroke-width="1.5" opacity="0.25"/>
   <text
-    x="90" y="90"
+    x="90" y="95"
     text-anchor="middle"
     dominant-baseline="central"
     fill="#F4C430"
-    font-size="130"
-    font-weight="500"
+    font-size="118"
+    font-weight="600"
     font-family="'Reem Kufi','Noto Sans Arabic','Amiri','Geeza Pro','Arabic Typesetting',serif"
   >خ</text>
-  <rect x="4" y="4" width="172" height="172" rx="32" fill="none" stroke="#F4C430" stroke-width="1" opacity="0.2"/>
 </svg>
