@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
+import { useRef, useState, useEffect } from "react";
+import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "motion/react";
 import { Star, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +34,13 @@ export function MovieCard({
   const [imgBroken, setImgBroken] = useState(false);
   const showPoster = posterUrl && !imgBroken;
 
+  const prefersReduced = useReducedMotion();
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+  }, []);
+  const disableMotion = prefersReduced || isTouch;
+
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
   const sx = useSpring(mx, { stiffness: 300, damping: 42, mass: 0.42 });
@@ -42,6 +49,7 @@ export function MovieCard({
   const rotateY = useTransform(sx, [-0.5, 0.5], ["-6deg", "6deg"]);
 
   const onMove = (e: React.MouseEvent) => {
+    if (disableMotion) return;
     const r = ref.current?.getBoundingClientRect();
     if (!r) return;
     mx.set((e.clientX - r.left - r.width / 2) / r.width);
@@ -61,7 +69,7 @@ export function MovieCard({
     >
       {/* ── Poster ── */}
       <motion.div
-        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        style={{ rotateX: disableMotion ? 0 : rotateX, rotateY: disableMotion ? 0 : rotateY, transformStyle: "preserve-3d" }}
         className={cn(
           "relative aspect-[2/3] w-full rounded-md overflow-hidden border transition-colors duration-300 shadow-[0_8px_30px_-14px_rgb(0_0_0/0.9)]",
           showPoster

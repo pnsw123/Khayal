@@ -4,6 +4,7 @@ import { Heart, Lock, Globe, ArrowUpRight } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import { currentUser, currentProfile } from "@/lib/auth";
 import { AvatarUpload } from "./avatar-upload";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata = { title: "Profile — KHAYAL" };
 export const revalidate = 0;
@@ -107,10 +108,10 @@ export default async function ProfilePage() {
           <span className="font-mono text-[11px] tracking-[0.25em] uppercase text-[var(--cream-muted)]">قوائمك</span>
         </div>
         {(!lists || lists.length === 0) ? (
-          <div>
-            <p className="font-display italic text-lg text-[var(--cream)]/50">No lists yet.</p>
-            <p className="mt-1 text-sm text-[var(--cream-muted)]">Add a film from its detail page and a Favorites list will auto-create.</p>
-          </div>
+          <EmptyState
+            title="No lists yet."
+            subtitle="Add a film from its detail page and a Favorites list will auto-create."
+          />
         ) : (
           <div className="flex flex-col divide-y divide-[var(--taupe)]/10">
             {lists.map((l) => (
@@ -150,7 +151,7 @@ export default async function ProfilePage() {
                 <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] mb-2">
                   {new Date(r.created_at).toLocaleDateString()} · on <span className="text-[var(--saffron)]">{r.target.title}</span>
                 </p>
-                {r.headline && <h3 className="font-display text-lg text-[var(--cream)] mb-1 group-hover:text-[var(--saffron-glow)] transition-colors">{r.headline}</h3>}
+                {r.headline && <h3 className="font-display text-lg text-[var(--cream)] mb-1 group-hover:text-[var(--accent)] transition-colors">{r.headline}</h3>}
                 <p className="text-sm text-[var(--cream-muted)] line-clamp-3">{r.body}</p>
               </Link>
             ))}
