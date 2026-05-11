@@ -28,11 +28,8 @@ export function Shelf({ title, kicker, items, viewAllHref, ratingByMovie }: Shel
             {title}
           </h2>
           {kicker && (
-            <span className="font-arabic text-sm text-[var(--saffron)]/70">{kicker}</span>
+            <span className="font-arabic text-sm text-[var(--cream-muted)]/50">{kicker}</span>
           )}
-          <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] ml-1">
-            {items.length}
-          </span>
         </div>
         {viewAllHref && (
           <Link

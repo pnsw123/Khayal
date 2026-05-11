@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRef, useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, Shield, LogOut } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { cn } from "@/lib/utils";
 
@@ -61,13 +60,14 @@ export function ProfileStub({
 
   return (
     <div ref={ref} className="relative ml-2">
-      {/* Avatar button */}
+      {/* Avatar */}
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Account menu"
         className={cn(
-          "relative flex items-center justify-center w-9 h-9 rounded-full",
-          "bg-[var(--ink-high)] text-[var(--cream)] font-display text-sm",
+          "flex items-center justify-center w-9 h-9 rounded-full select-none",
+          "bg-[var(--ink-high)] text-[var(--cream)]",
+          "font-display text-sm",
           "ring-1 ring-[var(--taupe)]/40 hover:ring-[var(--accent)]/60",
           "transition-all duration-200",
           open && "ring-[var(--accent)]/80",
@@ -76,67 +76,67 @@ export function ProfileStub({
         {avatarUrl ? (
           <img src={avatarUrl} alt={initial} className="w-full h-full rounded-full object-cover" />
         ) : (
-          <span className="select-none">{initial}</span>
+          <span>{initial}</span>
         )}
       </button>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-2.5 w-52 z-50 py-1.5
-          bg-[var(--ink-lift)] border border-[var(--taupe)]/20
-          rounded-lg shadow-2xl shadow-black/70 backdrop-blur-sm">
-
-          {/* Account label */}
-          <div className="px-4 pt-1 pb-2.5 border-b border-[var(--taupe)]/15">
-            <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-[var(--cream-muted)]/60 mb-0.5">Signed in as</p>
-            <p className="text-[11px] font-mono text-[var(--cream-muted)] truncate">{email}</p>
+        <div
+          className="absolute right-0 mt-2.5 w-56 z-50
+            bg-[var(--ink-lift)] border border-[var(--taupe)]/20
+            rounded-lg shadow-2xl shadow-black/80"
+        >
+          {/* Signed in as */}
+          <div className="px-4 pt-3 pb-3 border-b border-[var(--taupe)]/15">
+            <p className="font-sans text-[10px] uppercase tracking-[0.18em] text-[var(--cream-muted)]/50 mb-1">
+              Signed in as
+            </p>
+            <p className="font-sans text-[13px] text-[var(--cream-muted)] truncate leading-snug">
+              {email}
+            </p>
           </div>
 
-          <div className="py-1">
+          {/* Links */}
+          <div className="py-1.5">
             {username && (
               <Link
                 href={`/users/${username}`}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-[12px] font-mono tracking-[0.1em]
-                  text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/10 transition-colors"
+                className="block px-4 py-2.5 font-sans text-[13px] text-[var(--cream-muted)]
+                  hover:text-[var(--cream)] hover:bg-[var(--taupe)]/10 transition-colors"
               >
-                <ArrowUpRight size={12} className="shrink-0" />
                 Public profile
               </Link>
             )}
-
             <Link
               href="/profile"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-[12px] font-mono tracking-[0.1em]
-                text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/10 transition-colors"
+              className="block px-4 py-2.5 font-sans text-[13px] text-[var(--cream-muted)]
+                hover:text-[var(--cream)] hover:bg-[var(--taupe)]/10 transition-colors"
             >
-              <span className="w-3 h-3 shrink-0 rounded-full border border-[var(--cream-muted)]/40" />
               My profile
             </Link>
-
             {isAdmin && (
               <Link
                 href="/admin"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-[12px] font-mono tracking-[0.1em]
-                  text-[var(--accent)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/10 transition-colors"
+                className="block px-4 py-2.5 font-sans text-[13px] text-[var(--rose)]
+                  hover:text-[var(--rose-bright)] hover:bg-[var(--taupe)]/10 transition-colors"
               >
-                <Shield size={12} className="shrink-0" />
                 Admin panel
               </Link>
             )}
           </div>
 
-          <div className="border-t border-[var(--taupe)]/15 pt-1">
+          <div className="border-t border-[var(--taupe)]/15 py-1.5">
             <button
               onClick={signOut}
               disabled={pending}
-              className="w-full flex items-center gap-2.5 px-4 py-2 text-[12px] font-mono tracking-[0.1em]
-                text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/10 transition-colors
+              className="w-full text-left px-4 py-2.5 font-sans text-[13px] text-[var(--cream-muted)]
+                hover:text-[var(--cream)] hover:bg-[var(--taupe)]/10 transition-colors
                 disabled:opacity-40"
             >
-              <LogOut size={12} className="shrink-0" />
               Sign out
             </button>
           </div>

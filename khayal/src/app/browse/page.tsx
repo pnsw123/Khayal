@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { X } from "lucide-react";
-import { PersonalisedShelf } from "@/components/personalised-shelf";
+import { RecommendationsShelf, RecommendationsSkeleton } from "@/components/recommendations-shelf";
 import { Shelf } from "@/components/shelf";
 import { supabaseServer } from "@/lib/supabase-server";
 import type { Movie } from "@/lib/supabase";
@@ -98,8 +99,10 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
 
       <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-8">
-        {/* ─── Personalised shelf (client — checks auth on mount) ─── */}
-        <PersonalisedShelf />
+        {/* ─── Personalised shelf — streams from server, no pop-in ─── */}
+        <Suspense fallback={<RecommendationsSkeleton />}>
+          <RecommendationsShelf />
+        </Suspense>
 
         {browseRows ? (
           /* ─── Unfiltered: Netflix-style genre rows ─── */

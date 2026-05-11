@@ -20,6 +20,10 @@
   --saffron:          #b8b4cc;
   --saffron-glow:     #d0cce0;
 
+  /* Second accent — a warm dusty rose for editorial highlights */
+  --rose:             #c4788a;
+  --rose-bright:      #d9899b;
+
   /* Misc */
   --terracotta:       #fb923c;
   --lamp:             #fef08a;
