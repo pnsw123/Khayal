@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ReactPlayer = dynamic<any>(() => import("react-player"), { ssr: false });
+type AnyProps = Record<string, unknown>;
+const ReactPlayer = dynamic<AnyProps>(() => import("react-player"), { ssr: false });
 
 interface TrailerModalProps {
   trailerUrl: string;

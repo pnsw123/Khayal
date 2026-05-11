@@ -6,10 +6,9 @@ vi.mock("embla-carousel-react", () => ({
   default: () => [vi.fn(), null],
 }));
 
-// Mock next/image
+// Mock next/image — render a plain <img> for jsdom compatibility
 vi.mock("next/image", () => ({
   default: ({ alt, src }: { alt: string; src: string }) => (
-    // eslint-disable-next-line @next/next/no-img-element
     <img alt={alt} src={src} />
   ),
 }));
