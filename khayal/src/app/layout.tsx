@@ -19,6 +19,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" className={`h-full antialiased ${playfair.variable} ${dmSans.variable} ${jbm.variable} ${reem.variable}`}>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/dreampulse/computer-modern-web-font@master/fonts.css"
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-[var(--ink)] text-[var(--cream)]">
         <Nav />
         <main className="flex-1">{children}</main>
