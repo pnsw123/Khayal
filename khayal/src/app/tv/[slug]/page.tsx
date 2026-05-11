@@ -19,6 +19,7 @@ import { SimilarTitles } from "@/components/SimilarTitles";
 import { getSimilarTvSeries } from "@/lib/similar";
 import { EmptyState } from "@/components/empty-state";
 import { ExpandableText } from "@/components/expandable-text";
+import { ReviewCard } from "@/components/review-card";
 
 export const revalidate = 0;
 
@@ -236,28 +237,15 @@ export default async function TvDetailPage({
           ) : (
             <div className="grid md:grid-cols-2 gap-5">
               {reviews.map((r) => (
-                <article key={r.id} className="p-5 rounded-sm bg-[var(--ink-lift)] border border-[var(--ink-high)] hover:border-[var(--taupe)]/60 transition-colors">
-                  <header className="flex items-center gap-3 mb-3">
-                    <div className="h-8 w-8 rounded-full bg-[var(--ink-high)] text-[var(--cream)] grid place-items-center font-display text-sm">
-                      {(r.display_name || r.username || "?").charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm text-[var(--cream)]">{r.display_name || r.username || "anon"}</p>
-                      <p className="font-mono text-[10px] tracking-wider text-[var(--cream-muted)]">
-                        {new Date(r.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </header>
-                  {r.headline && <h3 className="font-display text-lg text-[var(--cream)] mb-2">{r.headline}</h3>}
-                  {r.contains_spoiler ? (
-                    <details className="text-sm text-[var(--cream-muted)]">
-                      <summary className="cursor-pointer text-[var(--accent-dim)] hover:text-[var(--cream)]">Spoilers. Click to reveal.</summary>
-                      <p className="mt-2 whitespace-pre-wrap">{r.body}</p>
-                    </details>
-                  ) : (
-                    <p className="text-sm leading-relaxed text-[var(--cream)]/85 whitespace-pre-wrap line-clamp-6">{r.body}</p>
-                  )}
-                </article>
+                <ReviewCard
+                  key={r.id}
+                  headline={r.headline}
+                  body={r.body}
+                  createdAt={r.created_at}
+                  authorInitial={(r.display_name || r.username || "?").charAt(0).toUpperCase()}
+                  authorName={r.display_name || r.username || "anon"}
+                  containsSpoiler={r.contains_spoiler}
+                />
               ))}
             </div>
           )}

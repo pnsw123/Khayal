@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { searchAll } from "@/lib/search";
 import { buildFilterHref, YEARS } from "@/lib/filters";
 import { Search, Play, LoaderCircle, Table2 } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 
 type Tab = "find" | "sql";
 type SavedQuery = { id: number; title: string; query_text: string };
@@ -63,7 +64,7 @@ function ChipRow<T extends string>({
           key={opt.code}
           onClick={() => onChange(opt.code)}
           className={cn(
-            "h-7 px-3 rounded-full text-xs transition-colors border",
+            "h-8 px-3 rounded-full text-xs transition-colors border",
             value === opt.code
               ? "bg-[var(--accent)] text-[var(--ink)] border-[var(--accent)]"
               : "bg-transparent text-[var(--cream-muted)] border-[var(--taupe)]/30 hover:text-[var(--cream)] hover:border-[var(--taupe)]/60"
@@ -187,11 +188,11 @@ function FindTab() {
       )}
 
       {touched && rows.length === 0 && !isLoading && (
-        <div className="py-16 text-center">
-          <p className="font-arabic text-3xl text-[var(--cream-muted)]/50 mb-3">لا خيال هنا</p>
-          <p className="font-display italic text-xl text-[var(--cream)]">No such fantasy.</p>
-          <p className="mt-2 text-sm text-[var(--cream-muted)]">Try a different title or phrase.</p>
-        </div>
+        <EmptyState
+          arabicLabel="لا خيال هنا"
+          title="No such fantasy."
+          subtitle="Try a different title or phrase."
+        />
       )}
 
       {rows.length > 0 && (

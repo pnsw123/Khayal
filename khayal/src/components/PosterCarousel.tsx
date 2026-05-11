@@ -86,7 +86,7 @@ export function PosterCarousel({ title, items }: PosterCarouselProps) {
               key={item.slug}
               href={item.href}
               data-testid="poster-slide"
-              className="group shrink-0 w-[140px] md:w-[160px] block focus:outline-none"
+              className="group shrink-0 w-[140px] md:w-[160px] block"
             >
               {/* Poster */}
               <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-[var(--ink-lift)]">
