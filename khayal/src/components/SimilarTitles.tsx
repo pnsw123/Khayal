@@ -19,7 +19,7 @@ export function SimilarTitles({ heading = "You might also like", items }: Simila
     <section className="mb-14">
       <h2 className="font-display text-xl text-[var(--cream)] mb-5">{heading}</h2>
       <div
-        className="relative -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+        className="relative -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto scroll-smooth snap-x [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: "none" }}
       >
         <div className="flex gap-4 min-w-max pb-3">
@@ -34,7 +34,7 @@ export function SimilarTitles({ heading = "You might also like", items }: Simila
               <Link
                 key={`${item.kind}-${item.id}`}
                 href={href}
-                className="group relative w-[130px] shrink-0 rounded-md overflow-hidden border border-white/10 aspect-[2/3] block"
+                className="group relative w-[130px] shrink-0 snap-start rounded-md overflow-hidden border border-white/10 aspect-[2/3] block"
               >
                 {item.poster_url ? (
                   <img
