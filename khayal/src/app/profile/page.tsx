@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { Heart, Lock, Globe, ArrowUpRight } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import { currentUser, currentProfile } from "@/lib/auth";
-import { SignOutButton } from "./sign-out-button";
 import { AvatarUpload } from "./avatar-upload";
+import { ProfileDropdown } from "./profile-dropdown";
 
 export const metadata = { title: "Profile — KHAYAL" };
 export const revalidate = 0;
@@ -83,17 +83,7 @@ export default async function ProfilePage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {profile?.username && (
-            <Link
-              href={`/users/${profile.username}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[var(--taupe)]/30 font-mono text-[11px] tracking-wider uppercase text-[var(--cream-muted)] hover:border-[var(--saffron)]/50 hover:text-[var(--cream)] transition-colors"
-            >
-              <ArrowUpRight size={11} /> Public profile
-            </Link>
-          )}
-          <SignOutButton />
-        </div>
+        <ProfileDropdown email={user.email ?? ""} username={profile?.username} />
       </header>
 
       {/* Stats */}
@@ -119,32 +109,29 @@ export default async function ProfilePage() {
           <span className="font-mono text-[11px] tracking-[0.25em] uppercase text-[var(--cream-muted)]">قوائمك</span>
         </div>
         {(!lists || lists.length === 0) ? (
-          <div className="p-8 rounded-md bg-[var(--ink-lift)] border border-dashed border-[var(--taupe)]/25 text-center">
-            <p className="font-display italic text-lg text-[var(--cream)]/70">No lists yet.</p>
-            <p className="mt-1 text-sm text-[var(--cream-muted)]">
-              Add a film from its detail page. A Favorites list will auto-create.
-            </p>
+          <div>
+            <p className="font-display italic text-lg text-[var(--cream)]/50">No lists yet.</p>
+            <p className="mt-1 text-sm text-[var(--cream-muted)]">Add a film from its detail page and a Favorites list will auto-create.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex flex-col divide-y divide-[var(--taupe)]/10">
             {lists.map((l) => (
               <Link
                 key={l.id}
                 href={`/lists/${l.id}`}
-                className="group p-5 rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/40 transition-colors"
+                className="group flex items-center justify-between py-4 hover:opacity-80 transition-opacity"
               >
-                <div className="flex items-center gap-2 mb-2 text-[10px] font-mono tracking-[0.25em] uppercase text-[var(--cream-muted)]">
-                  {l.is_favorites && <Heart size={10} className="fill-[var(--saffron)] text-[var(--saffron)]" />}
-                  {l.is_public ? <Globe size={10} /> : <Lock size={10} />}
-                  {l.is_public ? "Public" : "Private"}
+                <div className="flex items-center gap-3">
+                  {l.is_favorites && <Heart size={11} className="fill-[var(--saffron)] text-[var(--saffron)] shrink-0" />}
+                  {!l.is_favorites && (l.is_public ? <Globe size={11} className="text-[var(--cream-muted)] shrink-0" /> : <Lock size={11} className="text-[var(--cream-muted)] shrink-0" />)}
+                  <span className="font-display text-lg text-[var(--cream)] group-hover:text-[var(--saffron-glow)] transition-colors">
+                    {l.name}
+                  </span>
+                  <span className="font-mono text-[10px] tracking-wider text-[var(--cream-muted)]">
+                    {countMap.get(l.id) ?? 0} items
+                  </span>
                 </div>
-                <h3 className="font-display text-lg text-[var(--cream)] group-hover:text-[var(--saffron-glow)] transition-colors mb-1 flex items-center gap-2">
-                  {l.name}
-                  <ArrowUpRight size={14} className="text-[var(--cream-muted)] group-hover:text-[var(--saffron)] opacity-60 group-hover:opacity-100 transition-opacity" />
-                </h3>
-                <p className="font-mono text-[10px] tracking-wider text-[var(--cream-muted)]">
-                  {countMap.get(l.id) ?? 0} item{(countMap.get(l.id) ?? 0) === 1 ? "" : "s"}
-                </p>
+                <ArrowUpRight size={13} className="text-[var(--cream-muted)] group-hover:text-[var(--saffron)] transition-colors shrink-0" />
               </Link>
             ))}
           </div>
@@ -155,17 +142,17 @@ export default async function ProfilePage() {
       {allReviews.length > 0 && (
         <section className="mb-14">
           <h2 className="font-display text-2xl text-[var(--cream)] mb-6">Recent reviews</h2>
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="flex flex-col divide-y divide-[var(--taupe)]/10">
             {allReviews.map((r: any) => (
               <Link
                 key={`${r.kind}-${r.id}`}
                 href={r.kind === "movie" ? `/movies/${r.target.slug}` : `/tv/${r.target.slug}`}
-                className="p-5 rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/40 transition-colors group"
+                className="group py-5 hover:opacity-80 transition-opacity"
               >
                 <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)] mb-2">
                   {new Date(r.created_at).toLocaleDateString()} · on <span className="text-[var(--saffron)]">{r.target.title}</span>
                 </p>
-                {r.headline && <h3 className="font-display text-lg text-[var(--cream)] mb-1">{r.headline}</h3>}
+                {r.headline && <h3 className="font-display text-lg text-[var(--cream)] mb-1 group-hover:text-[var(--saffron-glow)] transition-colors">{r.headline}</h3>}
                 <p className="text-sm text-[var(--cream-muted)] line-clamp-3">{r.body}</p>
               </Link>
             ))}
