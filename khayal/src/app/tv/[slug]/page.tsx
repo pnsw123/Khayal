@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarDays, ArrowLeft, Film, Radio, Globe } from "lucide-react";
+import { CalendarDays, ArrowLeft, Film } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import type { TvDetail } from "@/lib/supabase";
 import { currentUser } from "@/lib/auth";
@@ -15,6 +15,8 @@ import type { CastMember } from "@/components/cast-row";
 import { SeasonsAccordion } from "@/components/seasons-accordion";
 import type { Season } from "@/components/seasons-accordion";
 import { TrailerModal } from "@/components/TrailerModal";
+import { SimilarTitles } from "@/components/SimilarTitles";
+import { getSimilarTvSeries } from "@/lib/similar";
 
 export const revalidate = 0;
 
@@ -60,7 +62,7 @@ export default async function TvDetailPage({
   let myReview: { id: number; headline: string | null; body: string; contains_spoiler: boolean } | null = null;
   let myLists: any[] = [];
 
-  const [castResult, seasonsResult, ...userResults] = await Promise.all([
+  const [castResult, seasonsResult, similarSeries, ...userResults] = await Promise.all([
     sb.from("tv_credits")
       .select("person_id, role, character_name, job, credit_order, people(name, profile_path)")
       .eq("tv_series_id", t.id)
@@ -70,6 +72,7 @@ export default async function TvDetailPage({
       .select("id, season_number, name, overview, air_date, episode_count, poster_url")
       .eq("tv_series_id", t.id)
       .order("season_number", { ascending: true }),
+    getSimilarTvSeries(t.id, 6),
     user
       ? sb.from("tv_series_ratings").select("rating").eq("tv_series_id", t.id).eq("user_id", user.id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -99,6 +102,9 @@ export default async function TvDetailPage({
   }));
 
   const seasons: Season[] = (seasonsResult.data ?? []) as Season[];
+
+  // Suppress unused-vars warning — stats is part of TvDetail type
+  void stats;
 
   return (
     <div className="min-h-screen">
@@ -197,6 +203,12 @@ export default async function TvDetailPage({
             existing={myReview}
           />
         </div>
+
+        {/* ─── You might also like ─── */}
+        <SimilarTitles
+          heading="You might also like"
+          items={similarSeries.map((s) => ({ ...s, kind: "tv" as const }))}
+        />
 
         {/* ─── Cast ─── */}
         {cast.length > 0 && <CastRow cast={cast} />}
