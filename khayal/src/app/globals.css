@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://cdn.jsdelivr.net/gh/dreampulse/computer-modern-web-font@master/fonts.css");
 
 /* ─── KHAYAL Cinema palette ───────────────────────────────────────────────── */
 :root {
@@ -16,9 +17,9 @@
   --accent:           #e8e8f8;
   --accent-dim:       #9090b8;
 
-  /* Rating gold — stays amber for star scores only */
-  --saffron:          #f0b429;
-  --saffron-glow:     #fcd34d;
+  /* Formerly saffron — replaced with muted silver to remove yellow from the system */
+  --saffron:          #b8b4cc;
+  --saffron-glow:     #d0cce0;
 
   /* Misc */
   --terracotta:       #fb923c;
@@ -39,7 +40,7 @@
   --color-accent: var(--accent);
   --color-danger: var(--danger);
 
-  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-display: "Computer Modern Serif", var(--font-fraunces), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-jbm), ui-monospace, monospace;
   --font-arabic: var(--font-reem), "Noto Sans Arabic", sans-serif;
@@ -63,7 +64,7 @@ html, body {
   font-family: var(--font-reem), "Noto Sans Arabic", sans-serif;
 }
 
-::selection { background: var(--saffron); color: var(--ink); }
+::selection { background: var(--accent-dim); color: var(--ink); }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--ink); }

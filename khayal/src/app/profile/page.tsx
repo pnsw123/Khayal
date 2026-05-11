@@ -4,7 +4,6 @@ import { Heart, Lock, Globe, ArrowUpRight } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import { currentUser, currentProfile } from "@/lib/auth";
 import { AvatarUpload } from "./avatar-upload";
-import { ProfileDropdown } from "./profile-dropdown";
 
 export const metadata = { title: "Profile — KHAYAL" };
 export const revalidate = 0;
@@ -83,7 +82,6 @@ export default async function ProfilePage() {
             </p>
           </div>
         </div>
-        <ProfileDropdown email={user.email ?? ""} username={profile?.username} />
       </header>
 
       {/* Stats */}

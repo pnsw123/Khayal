@@ -80,7 +80,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   return (
     <div className="min-h-screen" data-testid="browse-page">
       {/* ─── Filter bar ─── */}
-      <div className="border-b border-[var(--ink-high)] bg-[var(--ink)]">
+      <div className="bg-[var(--ink)]">
         <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-2.5 flex items-center gap-2 flex-wrap">
           <FilterDropdown label="Genre"    items={genres}        activeCode={activeGenre}  paramKey="genre"  searchParams={usp} />
           <FilterDropdown label="Year"     items={YEARS}         activeCode={activeYear}   paramKey="year"   searchParams={usp} />

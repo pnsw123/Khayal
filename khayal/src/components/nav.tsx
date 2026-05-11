@@ -13,16 +13,10 @@ export async function Nav() {
   const user = await currentUser();
   const profile = user ? await currentProfile() : null;
 
-  const links = user
-    ? [
-        { href: "/browse",   label: "Films"    },
-        { href: "/search",   label: "Search"   },
-        { href: "/profile",  label: "Profile"  },
-      ]
-    : [
-        { href: "/browse",   label: "Films"    },
-        { href: "/search",   label: "Search"   },
-      ];
+  const links = [
+    { href: "/browse", label: "Films"  },
+    { href: "/search", label: "Search" },
+  ];
 
   const initial =
     (profile?.display_name || profile?.username || user?.email || "?")
@@ -54,7 +48,12 @@ export async function Nav() {
           </nav>
 
           {user ? (
-            <ProfileStub initial={initial} />
+            <ProfileStub
+              initial={initial}
+              email={user.email ?? ""}
+              username={profile?.username}
+              avatarUrl={profile?.avatar_url}
+            />
           ) : (
             <TicketEnter className="ml-2 md:ml-3" />
           )}
