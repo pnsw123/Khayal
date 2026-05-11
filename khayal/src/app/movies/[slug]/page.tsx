@@ -26,19 +26,33 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!data) return {};
   const m = (data as any).movie;
   const yr = m.release_date ? `(${m.release_date.split("-")[0]})` : "";
+  const releaseYear = m.release_date ? m.release_date.split("-")[0] : "";
+
+  // Fetch genres for fallback description
+  const { data: genreRow } = await sb.from("movies_with_genres").select("genre_names").eq("id", m.id).maybeSingle();
+  const genres: string[] = (genreRow as any)?.genre_names ?? [];
+
+  const desc = m.overview
+    ? m.overview.slice(0, 155).trimEnd() + (m.overview.length > 155 ? "\u2026" : "")
+    : genres.length > 0
+      ? `${m.title} (${releaseYear}) \u2014 ${genres.slice(0, 3).join(", ")} \u2014 Watch on KHAYAL`
+      : `${m.title}${releaseYear ? ` (${releaseYear})` : ""} \u2014 Watch on KHAYAL`;
+
+  const ogImages = m.poster_url ? [{ url: m.poster_url, width: 500, height: 750 }] : [];
+
   return {
-    title:       `${m.title} ${yr} — KHAYAL`,
-    description: m.overview?.slice(0, 160) ?? `Watch ${m.title} on KHAYAL.`,
+    title:       `${m.title} ${yr} \u2014 KHAYAL`,
+    description: desc,
     openGraph: {
       title:       `${m.title} ${yr}`,
-      description: m.overview?.slice(0, 160),
-      images:      m.poster_url ? [{ url: m.poster_url }] : [],
+      description: desc,
+      images:      ogImages,
       type:        "video.movie",
     },
     twitter: {
       card:        "summary_large_image",
       title:       `${m.title} ${yr}`,
-      description: m.overview?.slice(0, 160),
+      description: desc,
       images:      m.poster_url ? [m.poster_url] : [],
     },
   };

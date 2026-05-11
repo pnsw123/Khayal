@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Star, LoaderCircle } from "lucide-react";
@@ -45,6 +45,11 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
   const [hover,  setHover]  = useState<number | null>(null);
   const [err,    setErr]    = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    return () => clearTimeout(debounceRef.current);
+  }, []);
 
   if (!userId) {
     return (
@@ -59,17 +64,20 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
 
   const save = (n: number) => {
     setErr(null);
-    setRating(n); // optimistic
-    start(async () => {
-      const sb = supabaseBrowser();
-      const table = kind === "movie" ? "movie_ratings" : "tv_series_ratings";
-      const idField = kind === "movie" ? "movie_id" : "tv_series_id";
-      const { error } = await sb
-        .from(table)
-        .upsert({ user_id: userId, [idField]: targetId, rating: n }, { onConflict: `user_id,${idField}` });
-      if (error) { setErr(error.message); setRating(initialRating); return; }
-      router.refresh();
-    });
+    setRating(n); // optimistic — instant feedback, outside debounce
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      start(async () => {
+        const sb = supabaseBrowser();
+        const table = kind === "movie" ? "movie_ratings" : "tv_series_ratings";
+        const idField = kind === "movie" ? "movie_id" : "tv_series_id";
+        const { error } = await sb
+          .from(table)
+          .upsert({ user_id: userId, [idField]: targetId, rating: n }, { onConflict: `user_id,${idField}` });
+        if (error) { setErr(error.message); setRating(initialRating); return; }
+        router.refresh();
+      });
+    }, 300);
   };
 
   const clear = () => {

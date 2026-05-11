@@ -27,19 +27,27 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!data) return {};
   const s = (data as any).series;
   const yr = s.first_air_date ? `(${s.first_air_date.split("-")[0]})` : "";
+  const releaseYear = s.first_air_date ? s.first_air_date.split("-")[0] : "";
+
+  const desc = s.overview
+    ? s.overview.slice(0, 155).trimEnd() + (s.overview.length > 155 ? "\u2026" : "")
+    : `${s.title}${releaseYear ? ` (${releaseYear})` : ""} \u2014 Watch on KHAYAL`;
+
+  const ogImages = s.poster_url ? [{ url: s.poster_url, width: 500, height: 750 }] : [];
+
   return {
-    title:       `${s.title} ${yr} — KHAYAL`,
-    description: s.overview?.slice(0, 160) ?? `Watch ${s.title} on KHAYAL.`,
+    title:       `${s.title} ${yr} \u2014 KHAYAL`,
+    description: desc,
     openGraph: {
       title:       `${s.title} ${yr}`,
-      description: s.overview?.slice(0, 160),
-      images:      s.poster_url ? [{ url: s.poster_url }] : [],
+      description: desc,
+      images:      ogImages,
       type:        "video.tv_show",
     },
     twitter: {
       card:        "summary_large_image",
       title:       `${s.title} ${yr}`,
-      description: s.overview?.slice(0, 160),
+      description: desc,
       images:      s.poster_url ? [s.poster_url] : [],
     },
   };
