@@ -160,7 +160,7 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") createList(); if (e.key === "Escape") { setCreating(false); setNewName(""); } }}
                   placeholder="New list name…"
-                  className="flex-1 h-9 px-3 rounded-md text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] focus:outline-none focus:border-[var(--saffron)]/60"
+                  className="flex-1 h-9 px-3 rounded-md text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] focus-visible:outline-none focus:border-[var(--saffron)]/60"
                 />
                 <button
                   onClick={createList}

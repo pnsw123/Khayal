@@ -71,7 +71,7 @@ export function LoginForm({
               "w-full h-11 pl-10 pr-3 rounded-md text-sm",
               "bg-[var(--ink-lift)] border border-[var(--taupe)]/25",
               "text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60",
-              "focus:outline-none focus:border-[var(--saffron)]/60 focus:bg-[var(--ink-high)]",
+              "focus-visible:outline-none focus:border-[var(--accent)]/60 focus:bg-[var(--ink-high)]",
               "transition-colors"
             )}
           />
@@ -97,7 +97,7 @@ export function LoginForm({
               "w-full h-11 pl-10 pr-3 rounded-md text-sm",
               "bg-[var(--ink-lift)] border border-[var(--taupe)]/25",
               "text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60",
-              "focus:outline-none focus:border-[var(--saffron)]/60 focus:bg-[var(--ink-high)]",
+              "focus-visible:outline-none focus:border-[var(--accent)]/60 focus:bg-[var(--ink-high)]",
               "transition-colors"
             )}
           />
@@ -111,7 +111,7 @@ export function LoginForm({
         </div>
       )}
       {info && !error && (
-        <div className="text-sm text-[var(--saffron)] bg-[var(--saffron)]/10 border border-[var(--saffron)]/30 rounded-md px-3 py-2">
+        <div className="text-sm text-[var(--cream)] bg-[var(--accent)]/10 border border-[var(--accent)]/30 rounded-md px-3 py-2">
           {info}
         </div>
       )}
@@ -122,9 +122,9 @@ export function LoginForm({
         disabled={pending}
         className={cn(
           "w-full h-11 rounded-md text-sm font-medium tracking-wide",
-          "bg-[var(--saffron)] text-[var(--ink)]",
-          "hover:bg-[var(--saffron-glow)]",
-          "shadow-[0_0_18px_-6px_var(--saffron)]",
+          "bg-[var(--accent)] text-[var(--ink)]",
+          "hover:bg-[var(--cream)]",
+          "shadow-[0_0_18px_-6px_var(--accent)]",
           "disabled:opacity-60 disabled:cursor-not-allowed",
           "inline-flex items-center justify-center gap-2",
           "transition-colors"
@@ -142,7 +142,7 @@ export function LoginForm({
             <button
               type="button"
               onClick={() => { setMode("signup"); setError(null); setInfo(null); }}
-              className="text-[var(--saffron)] hover:text-[var(--saffron-glow)] underline-offset-2 hover:underline"
+              className="text-[var(--accent-dim)] hover:text-[var(--cream)] underline-offset-2 hover:underline"
             >
               Create an account
             </button>
@@ -153,7 +153,7 @@ export function LoginForm({
             <button
               type="button"
               onClick={() => { setMode("signin"); setError(null); setInfo(null); }}
-              className="text-[var(--saffron)] hover:text-[var(--saffron-glow)] underline-offset-2 hover:underline"
+              className="text-[var(--accent-dim)] hover:text-[var(--cream)] underline-offset-2 hover:underline"
             >
               Sign in
             </button>

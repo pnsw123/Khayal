@@ -125,7 +125,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
         onChange={(e) => setHeadline(e.target.value)}
         placeholder="Headline (optional)"
         maxLength={120}
-        className="w-full h-11 px-3 rounded-md text-base bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--saffron)]/60"
+        className="w-full h-11 px-3 rounded-md text-base bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus-visible:outline-none focus:border-[var(--saffron)]/60"
       />
 
       <textarea
@@ -134,7 +134,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
         onChange={(e) => setBody(e.target.value)}
         placeholder="What did you think?"
         rows={5}
-        className="w-full p-3 rounded-md text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--saffron)]/60 resize-y"
+        className="w-full p-3 rounded-md text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus-visible:outline-none focus:border-[var(--saffron)]/60 resize-y"
       />
 
       <label className="flex items-center gap-2 text-xs text-[var(--cream-muted)] cursor-pointer">

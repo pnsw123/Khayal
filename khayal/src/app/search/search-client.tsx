@@ -154,7 +154,7 @@ function FindTab() {
           value={q}
           onChange={(e) => handleQChange(e.target.value)}
           placeholder="Title, phrase, idea…"
-          className="w-full h-11 pl-11 pr-11 rounded-md text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus:outline-none focus:border-[var(--accent-dim)] transition-colors"
+          className="w-full h-11 pl-11 pr-11 rounded-md text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus-visible:outline-none focus:border-[var(--accent-dim)] transition-colors"
         />
         {isLoading && (
           <LoaderCircle
@@ -281,7 +281,7 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
             value={sql}
             onChange={(e) => setSql(e.target.value)}
             spellCheck={false}
-            className="w-full h-44 p-4 rounded-md font-mono text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] focus:outline-none focus:border-[var(--accent-dim)] transition-colors resize-y"
+            className="w-full h-44 p-4 rounded-md font-mono text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] focus-visible:outline-none focus:border-[var(--accent-dim)] transition-colors resize-y"
           />
           <button
             onClick={run}

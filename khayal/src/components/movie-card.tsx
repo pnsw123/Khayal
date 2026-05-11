@@ -65,7 +65,7 @@ export function MovieCard({
       ref={ref}
       onMouseMove={onMove}
       onMouseLeave={() => { mx.set(0); my.set(0); }}
-      className={cn("group block focus:outline-none", className)}
+      className={cn("group block", className)}
     >
       {/* ── Poster ── */}
       <motion.div

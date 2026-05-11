@@ -86,7 +86,7 @@ export function NavSearch() {
           onKeyDown={(e) => { if (e.key === "Enter") goFull(); if (e.key === "Escape") setOpen(false); }}
           autoComplete="off"
           spellCheck={false}
-          className="w-full h-8 pl-9 pr-8 rounded-md bg-[var(--ink-lift)] border border-[var(--ink-high)] text-sm text-[var(--cream)] focus:outline-none focus:border-[var(--taupe)]/50 transition-colors"
+          className="w-full h-8 pl-9 pr-8 rounded-md bg-[var(--ink-lift)] border border-[var(--ink-high)] text-sm text-[var(--cream)] focus-visible:outline-none focus:border-[var(--taupe)]/50 transition-colors"
         />
         {pending && (
           <LoaderCircle size={12} className="absolute right-3 animate-spin text-[var(--cream-muted)]" />
