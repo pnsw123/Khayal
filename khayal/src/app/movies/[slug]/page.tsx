@@ -16,6 +16,8 @@ import { AmbientBackdrop } from "@/components/ambient-backdrop";
 import { TrailerModal } from "@/components/TrailerModal";
 import { SimilarTitles } from "@/components/SimilarTitles";
 import { getSimilarMovies } from "@/lib/similar";
+import { EmptyState } from "@/components/empty-state";
+import { ExpandableText } from "@/components/expandable-text";
 
 export const revalidate = 0;
 
@@ -242,9 +244,9 @@ export default async function MovieDetailPage({
 
             {/* Overview */}
             {movie.overview && (
-              <p className="max-w-2xl text-[15px] leading-relaxed text-[var(--cream)]/80 mb-8">
-                {movie.overview}
-              </p>
+              <div className="max-w-2xl mb-8">
+                <ExpandableText text={movie.overview} />
+              </div>
             )}
 
             {/* Actions */}
@@ -315,9 +317,7 @@ export default async function MovieDetailPage({
           </div>
 
           {reviews.length === 0 ? (
-            <div className="py-10 text-left">
-              <p className="font-display italic text-xl text-[var(--cream)]/50">No reviews yet.</p>
-            </div>
+            <EmptyState title="No reviews yet." />
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
               {reviews.map((r) => (

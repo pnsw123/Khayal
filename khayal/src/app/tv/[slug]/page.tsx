@@ -17,6 +17,8 @@ import type { Season } from "@/components/seasons-accordion";
 import { TrailerModal } from "@/components/TrailerModal";
 import { SimilarTitles } from "@/components/SimilarTitles";
 import { getSimilarTvSeries } from "@/lib/similar";
+import { EmptyState } from "@/components/empty-state";
+import { ExpandableText } from "@/components/expandable-text";
 
 export const revalidate = 0;
 
@@ -167,9 +169,9 @@ export default async function TvDetailPage({
             </div>
 
             {t.overview && (
-              <p className="max-w-2xl text-[15px] leading-relaxed text-[var(--cream)]/80 mb-8">
-                {t.overview}
-              </p>
+              <div className="max-w-2xl mb-8">
+                <ExpandableText text={t.overview} />
+              </div>
             )}
 
             <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-[var(--ink-high)]">
@@ -230,10 +232,7 @@ export default async function TvDetailPage({
           </h2>
 
           {reviews.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="font-display italic text-xl text-[var(--cream)]/70">No voices yet.</p>
-              <p className="mt-2 text-sm text-[var(--cream-muted)]">Be the first. Form is above.</p>
-            </div>
+            <EmptyState title="No voices yet." subtitle="Be the first. Form is above." />
           ) : (
             <div className="grid md:grid-cols-2 gap-5">
               {reviews.map((r) => (
