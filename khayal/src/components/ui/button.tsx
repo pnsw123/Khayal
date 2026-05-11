@@ -5,12 +5,12 @@ import { cn } from "@/lib/utils";
 
 /** Saffron-themed button. shadcn-style API so 21.dev components can drop in. */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--saffron)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ink)] disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ink)] disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default:   "bg-[var(--saffron)] text-[var(--ink)] hover:bg-[var(--saffron-glow)] shadow-sm",
-        outline:   "border border-[var(--taupe)]/40 text-[var(--cream)] hover:bg-[var(--ink-lift)] hover:border-[var(--saffron)]/60",
+        default:   "bg-[var(--accent)] text-[var(--ink)] hover:bg-[var(--cream)] shadow-sm",
+        outline:   "border border-[var(--taupe)]/40 text-[var(--cream)] hover:bg-[var(--ink-lift)] hover:border-[var(--accent)]/60",
         ghost:     "text-[var(--cream)] hover:bg-[var(--ink-lift)]",
         link:      "text-[var(--saffron)] underline-offset-4 hover:underline p-0 h-auto",
         danger:    "bg-[var(--danger)]/90 text-white hover:bg-[var(--danger)]",

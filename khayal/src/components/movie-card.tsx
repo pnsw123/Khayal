@@ -125,7 +125,7 @@ export function MovieCard({
         </div>
 
         {/* Subtle bottom accent on hover */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-[var(--saffron)]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-[var(--accent)]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </motion.div>
 
       {/* ── Below poster ── */}

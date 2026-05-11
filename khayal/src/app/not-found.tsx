@@ -7,11 +7,11 @@ export default function NotFound() {
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          background: "radial-gradient(closest-side at 50% 40%, rgba(244,196,48,0.12), transparent 60%)",
+          background: "radial-gradient(closest-side at 50% 40%, rgba(184,180,204,0.12), transparent 60%)",
         }}
       />
       <div className="relative text-center">
-        <p className="font-arabic text-5xl text-[var(--saffron)] mb-3">هذا الخيال ضاع</p>
+        <p className="font-arabic text-5xl text-[var(--cream-muted)] mb-3">هذا الخيال ضاع</p>
         <h1 className="font-display text-5xl md:text-6xl text-[var(--cream)] mb-3">
           This fantasy got lost.
         </h1>
@@ -21,7 +21,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/browse"
-          className="inline-flex items-center gap-2 h-11 px-5 rounded-sm bg-[var(--saffron)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--saffron-glow)] transition-colors"
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-sm bg-[var(--accent)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--cream)] transition-colors"
         >
           ← Back home
         </Link>

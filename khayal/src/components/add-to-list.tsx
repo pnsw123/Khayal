@@ -113,8 +113,8 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
         className={cn(
           "inline-flex items-center gap-2 h-11 px-4 rounded-md text-sm transition-colors",
           inSomeList
-            ? "bg-[var(--saffron)] text-[var(--ink)] hover:bg-[var(--saffron-glow)]"
-            : "border border-[var(--taupe)]/30 text-[var(--cream)] hover:border-[var(--saffron)]/50",
+            ? "bg-[var(--accent)] text-[var(--ink)] hover:bg-[var(--cream)]"
+            : "border border-[var(--taupe)]/30 text-[var(--cream)] hover:border-[var(--accent)]/50",
         )}
       >
         {inSomeList ? <Check size={14} /> : <ListPlus size={14} />}
@@ -137,7 +137,7 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
                 <span className={cn(
                   "flex h-4 w-4 shrink-0 rounded-md border items-center justify-center",
                   l.member
-                    ? "bg-[var(--saffron)] border-[var(--saffron)] text-[var(--ink)]"
+                    ? "bg-[var(--accent)] border-[var(--accent)] text-[var(--ink)]"
                     : "border-[var(--taupe)]/50",
                 )}>
                   {l.member && <Check size={11} strokeWidth={3} />}
@@ -160,12 +160,12 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") createList(); if (e.key === "Escape") { setCreating(false); setNewName(""); } }}
                   placeholder="New list name…"
-                  className="flex-1 h-9 px-3 rounded-md text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] focus-visible:outline-none focus:border-[var(--saffron)]/60"
+                  className="flex-1 h-9 px-3 rounded-md text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] focus-visible:outline-none focus:border-[var(--accent)]/60"
                 />
                 <button
                   onClick={createList}
                   disabled={pending || !newName.trim()}
-                  className="h-9 px-3 rounded-md text-xs font-medium bg-[var(--saffron)] text-[var(--ink)] hover:bg-[var(--saffron-glow)] disabled:opacity-50"
+                  className="h-9 px-3 rounded-md text-xs font-medium bg-[var(--accent)] text-[var(--ink)] hover:bg-[var(--cream)] disabled:opacity-50"
                 >
                   {pending ? <LoaderCircle size={12} className="animate-spin" /> : "Create"}
                 </button>

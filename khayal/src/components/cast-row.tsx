@@ -50,7 +50,7 @@ export function CastRow({ cast }: { cast: CastMember[] }) {
   const btnBase =
     "h-9 w-9 rounded-full flex items-center justify-center transition-all bg-black/50 backdrop-blur-sm border border-white/10";
   const btnActive =
-    "text-[var(--cream)] hover:bg-[var(--saffron)] hover:text-[var(--ink)] hover:border-[var(--saffron)] cursor-pointer";
+    "text-[var(--cream)] hover:bg-[var(--accent)] hover:text-[var(--ink)] hover:border-[var(--accent)] cursor-pointer";
   const btnInactive = "text-[var(--cream-muted)]/30 cursor-default";
 
   return (

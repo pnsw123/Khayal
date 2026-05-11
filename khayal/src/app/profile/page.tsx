@@ -174,7 +174,7 @@ export default async function ProfilePage() {
                   <img src={r.movies.poster_url} alt={r.movies.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 )}
                 <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-[var(--ink)] to-transparent">
-                  <div className="inline-flex items-center gap-1 px-2 h-6 rounded-md bg-[var(--saffron)] text-[var(--ink)] text-xs font-mono">
+                  <div className="inline-flex items-center gap-1 px-2 h-6 rounded-md bg-[var(--ink-high)] text-[var(--cream)] text-xs font-mono">
                     {r.rating}/10
                   </div>
                 </div>
