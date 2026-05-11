@@ -11,6 +11,7 @@ import { PosterCarousel } from "@/components/PosterCarousel";
 import { LANGUAGES, RATINGS, YEARS, SCORES, SORT_OPTIONS, hasAnyFilter } from "@/lib/filters";
 import { buildBrowseQuery, loadBrowseRows } from "@/lib/browse";
 import { year } from "@/lib/utils";
+import { EmptyState } from "@/components/empty-state";
 
 export const revalidate = 300;
 
@@ -158,11 +159,11 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
             <section id="films" data-testid="filtered-grid">
               {grid.length === 0 ? (
-                <div className="py-24 text-center">
-                  <p className="font-arabic text-3xl text-[var(--saffron)]/50 mb-3">لا خيال هنا</p>
-                  <p className="font-display italic text-xl text-[var(--cream)]/70">Nothing matches.</p>
-                  <p className="mt-2 text-sm text-[var(--cream-muted)]">Try loosening a filter.</p>
-                </div>
+                <EmptyState
+                  arabicLabel="لا خيال هنا"
+                  title="Nothing matches."
+                  subtitle="Try loosening a filter."
+                />
               ) : (
                 <>
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-3">

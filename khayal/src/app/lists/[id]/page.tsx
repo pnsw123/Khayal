@@ -6,6 +6,7 @@ import { currentUser } from "@/lib/auth";
 import { MovieCard } from "@/components/movie-card";
 import { year } from "@/lib/utils";
 import { ListActions } from "./list-actions";
+import { EmptyState } from "@/components/empty-state";
 
 export const revalidate = 0;
 
@@ -97,12 +98,10 @@ export default async function ListPage({
       </header>
 
       {total === 0 ? (
-        <div className="py-20 text-center">
-          <p className="font-display italic text-xl text-[var(--cream)]/70">Empty shelf.</p>
-          <p className="mt-2 text-sm text-[var(--cream-muted)]">
-            {isOwner ? "Add films from their detail pages. Look for “Add to list.”" : "Nothing on this list yet."}
-          </p>
-        </div>
+        <EmptyState
+          title="Empty shelf."
+          subtitle={isOwner ? 'Add films from their detail pages. Look for “Add to list.”' : "Nothing on this list yet."}
+        />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-5 gap-y-10">
           {movies.map((m: any) => (
