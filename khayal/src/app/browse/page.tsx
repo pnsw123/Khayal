@@ -6,6 +6,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import type { Movie } from "@/lib/supabase";
 import { MovieCard } from "@/components/movie-card";
 import { FilterDropdown } from "@/components/filter-dropdown";
+import { PosterCarousel } from "@/components/PosterCarousel";
 import { LANGUAGES, RATINGS, YEARS, SCORES, SORT_OPTIONS, hasAnyFilter } from "@/lib/filters";
 import { buildBrowseQuery, loadBrowseRows } from "@/lib/browse";
 import { year } from "@/lib/utils";
@@ -121,11 +122,14 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
             {browseRows.newThisWeek.length > 0 && (
               <div data-testid="new-this-week-shelf">
-                <Shelf
-                  title="New This Week"
-                  kicker="جديد هذا الأسبوع"
-                  items={browseRows.newThisWeek}
-                  ratingByMovie={browseRows.ratingByMovie}
+                <PosterCarousel
+                  title="New This Week — جديد هذا الأسبوع"
+                  items={browseRows.newThisWeek.map((m) => ({
+                    slug: m.slug,
+                    title: m.title,
+                    poster_url: m.poster_url ?? null,
+                    href: `/movies/${m.slug}`,
+                  }))}
                 />
               </div>
             )}
