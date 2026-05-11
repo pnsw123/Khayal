@@ -12,8 +12,10 @@ import { AddToListButton } from "@/components/add-to-list";
 import { loadUserListsForTarget } from "@/lib/lists";
 import { CastRow } from "@/components/cast-row";
 import type { CastMember } from "@/components/cast-row";
-import { MovieCard } from "@/components/movie-card";
 import { AmbientBackdrop } from "@/components/ambient-backdrop";
+import { TrailerModal } from "@/components/TrailerModal";
+import { SimilarTitles } from "@/components/SimilarTitles";
+import { getSimilarMovies } from "@/lib/similar";
 
 export const revalidate = 0;
 
@@ -78,19 +80,10 @@ export default async function MovieDetailPage({
       : Promise.resolve([]),
   ]);
 
-  // Similar movies — same primary genre, different movie, sorted by rating
   const genres: string[] = (genreResult.data as any)?.genre_names ?? [];
-  const primaryGenre = genres[0] ?? null;
-  const { data: similarRaw } = primaryGenre
-    ? await sb
-        .from("movies_with_genres")
-        .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names")
-        .contains("genre_names", [primaryGenre])
-        .neq("id", movie.id)
-        .not("poster_url", "is", null)
-        .order("release_date", { ascending: false })
-        .limit(12)
-    : { data: [] };
+
+  // Similar movies via RPC — genre overlap + year proximity scoring
+  const [similarMovies] = await Promise.all([getSimilarMovies(movie.id, 6)]);
 
   if (user) {
     const [{ data: r }, { data: rv }, lists] = userResults as any;
@@ -109,7 +102,6 @@ export default async function MovieDetailPage({
     credit_order:   c.credit_order,
   }));
 
-  const similarMovies = (similarRaw ?? []) as any[];
   const avgRating = stats?.avg_rating ? Number(stats.avg_rating) : null;
   const ratingCount = stats?.total_ratings ?? 0;
 
@@ -243,6 +235,14 @@ export default async function MovieDetailPage({
 
             {/* Actions */}
             <div className="pt-6 border-t border-[var(--ink-high)]">
+              {movie.trailer_youtube_id && (
+                <div className="mb-4">
+                  <TrailerModal
+                    trailerUrl={`https://www.youtube.com/watch?v=${movie.trailer_youtube_id}`}
+                    title={movie.title}
+                  />
+                </div>
+              )}
               <div>
                 <RateWidget
                   userId={user?.id ?? null}
@@ -274,36 +274,11 @@ export default async function MovieDetailPage({
           />
         </div>
 
-        {/* ─── More like this ─── */}
-        {similarMovies.length > 0 && (
-          <section className="mb-14">
-            <h2 className="font-display text-xl text-[var(--cream)] mb-5">
-              More like this
-              {primaryGenre && (
-                <span className="font-mono text-xs text-[var(--cream-muted)] ml-3 tracking-widest uppercase">{primaryGenre}</span>
-              )}
-            </h2>
-            <div className="relative -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-              <div className="flex gap-4 min-w-max pb-3">
-                {similarMovies.map((m) => (
-                  <div key={m.id} className="w-[140px] shrink-0">
-                    <MovieCard
-                      title={m.title}
-                      year={year(m.release_date)}
-                      posterUrl={m.poster_url}
-                      rating={null}
-                      href={`/movies/${m.slug}`}
-                      genres={m.genre_names ?? []}
-                      language={m.original_language}
-                      runtime={m.runtime_minutes}
-                      ageRating={m.age_rating}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        {/* ─── You might also like ─── */}
+        <SimilarTitles
+          heading="You might also like"
+          items={similarMovies.map((m) => ({ ...m, kind: "movie" as const }))}
+        />
 
         {/* ─── Cast ─── */}
         {cast.length > 0 && <CastRow cast={cast} />}

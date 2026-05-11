@@ -14,6 +14,7 @@ import { CastRow } from "@/components/cast-row";
 import type { CastMember } from "@/components/cast-row";
 import { SeasonsAccordion } from "@/components/seasons-accordion";
 import type { Season } from "@/components/seasons-accordion";
+import { TrailerModal } from "@/components/TrailerModal";
 
 export const revalidate = 0;
 
@@ -158,6 +159,12 @@ export default async function TvDetailPage({
             )}
 
             <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-[var(--ink-high)]">
+              {t.trailer_youtube_id && (
+                <TrailerModal
+                  trailerUrl={`https://www.youtube.com/watch?v=${t.trailer_youtube_id}`}
+                  title={t.title}
+                />
+              )}
               <RateWidget
                 userId={user?.id ?? null}
                 kind="tv_series"
