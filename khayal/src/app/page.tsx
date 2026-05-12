@@ -1,81 +1,55 @@
-import Link from "next/link";
+import { supabaseServer } from "@/lib/supabase-server";
+import { HeroSection } from "@/components/landing/hero-section";
+import { FilmTicker } from "@/components/landing/film-ticker";
+import { FeaturedFilms } from "@/components/landing/featured-films";
+import { StatsSection } from "@/components/landing/stats-section";
+import { CTASection } from "@/components/landing/cta-section";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const sb = await supabaseServer();
+
+  const { data: featuredRaw } = await sb
+    .from("movie_stats")
+    .select("movie_id, avg_rating, movies!inner(title, slug, poster_url)")
+    .order("avg_rating", { ascending: false })
+    .not("movies.poster_url", "is", null)
+    .limit(6);
+
+  const { data: tickerRaw } = await sb
+    .from("movies")
+    .select("title, slug")
+    .limit(20);
+
+  const [{ count: filmCount }, { count: ratingCount }, { count: reviewCount }] =
+    await Promise.all([
+      sb.from("movies").select("*", { count: "exact", head: true }),
+      sb.from("movie_ratings").select("*", { count: "exact", head: true }),
+      sb.from("movie_reviews").select("*", { count: "exact", head: true }),
+    ]);
+
+  // Normalise Supabase join shape — movies can come back as object or array
+  const featured = (featuredRaw ?? []).map((row) => {
+    const m = Array.isArray(row.movies) ? row.movies[0] : row.movies;
+    return {
+      movie_id: row.movie_id as number,
+      avg_rating: row.avg_rating as number,
+      movies: m as { title: string; slug: string; poster_url: string },
+    };
+  });
+
+  const tickerTitles = (tickerRaw ?? []).map((r) => r.title as string);
+
   return (
-    <main className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center gap-8">
-      {/* Wordmark */}
-      <div className="flex flex-col items-center gap-2">
-        <h1
-          className="font-display"
-          style={{
-            fontSize: "clamp(4rem, 12vw, 9rem)",
-            color: "var(--cream)",
-            letterSpacing: "-0.03em",
-            lineHeight: 1,
-          }}
-        >
-          KHAYAL
-        </h1>
-        <p
-          className="font-arabic"
-          style={{
-            fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
-            color: "var(--cream-muted)",
-            letterSpacing: "0.05em",
-          }}
-        >
-          خيال
-        </p>
-      </div>
-
-      {/* Tagline */}
-      <p
-        className="font-display"
-        style={{
-          fontSize: "clamp(1rem, 2.5vw, 1.5rem)",
-          color: "var(--cream-muted)",
-          fontStyle: "italic",
-          maxWidth: "32ch",
-        }}
-      >
-        A library of imagination.
-      </p>
-
-      {/* CTAs */}
-      <div className="flex items-center gap-4 flex-wrap justify-center">
-        <Link
-          href="/browse"
-          className="landing-cta-primary"
-          style={{
-            background: "var(--accent)",
-            color: "var(--ink)",
-            padding: "0.75rem 2rem",
-            borderRadius: "0.375rem",
-            fontWeight: 600,
-            fontSize: "1rem",
-            letterSpacing: "0.01em",
-            textDecoration: "none",
-          }}
-        >
-          Browse Films
-        </Link>
-        <Link
-          href="/search"
-          className="landing-cta-ghost"
-          style={{
-            background: "transparent",
-            color: "var(--cream)",
-            padding: "0.75rem 2rem",
-            borderRadius: "0.375rem",
-            border: "1px solid var(--taupe)",
-            fontSize: "1rem",
-            letterSpacing: "0.01em",
-            textDecoration: "none",
-          }}
-        >
-          Search
-        </Link>
-      </div>
-    </main>
+    <div>
+      <HeroSection />
+      <FilmTicker titles={tickerTitles} />
+      <FeaturedFilms movies={featured} />
+      <StatsSection
+        filmCount={filmCount ?? 0}
+        ratingCount={ratingCount ?? 0}
+        reviewCount={reviewCount ?? 0}
+      />
+      <CTASection />
+    </div>
   );
 }
