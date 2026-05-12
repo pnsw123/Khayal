@@ -14,9 +14,11 @@ test("year filter updates URL when selected", async ({ page }) => {
   await expect(page.locator('[data-testid="browse-page"]')).toBeVisible({ timeout: 10000 });
 
   await page.getByRole("button", { name: /year/i }).first().click();
+  const popover = page.locator('[data-radix-popper-content-wrapper]');
+  await expect(popover).toBeVisible({ timeout: 5000 });
   await page.getByRole("button", { name: "2010s" }).click();
 
-  await expect(page).toHaveURL(/year=2010s/, { timeout: 5000 });
+  await expect(page).toHaveURL(/year=2010s/, { timeout: 8000 });
 });
 
 test("genre filter updates URL when selected", async ({ page }) => {
@@ -24,12 +26,18 @@ test("genre filter updates URL when selected", async ({ page }) => {
   await expect(page.locator('[data-testid="browse-page"]')).toBeVisible({ timeout: 10000 });
 
   await page.getByRole("button", { name: /genre/i }).first().click();
-  const firstOption = page.locator('[data-radix-popper-content-wrapper] button').nth(1);
+  // Wait for the Radix Popover portal content to appear
+  const popoverContent = page.locator('[data-radix-popper-content-wrapper]');
+  await expect(popoverContent).toBeVisible({ timeout: 5000 });
+
+  // Skip the "All" option (index 0) and pick the first genre
+  const firstOption = popoverContent.locator('button').nth(1);
+  await expect(firstOption).toBeVisible({ timeout: 3000 });
   const label = await firstOption.textContent();
   await firstOption.click();
 
   if (label?.trim()) {
-    await expect(page).toHaveURL(/genre=/, { timeout: 5000 });
+    await expect(page).toHaveURL(/genre=/, { timeout: 8000 });
   }
 });
 

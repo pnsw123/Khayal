@@ -69,7 +69,7 @@ const STATS = [
 
 export function StatsSection(props: StatsSectionProps) {
   return (
-    <section style={{ background: "var(--ink)", padding: "6rem 1.5rem" }}>
+    <section style={{ background: "var(--ink)", padding: "6rem 1.5rem", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
       <div className="mx-auto max-w-[1200px]">
         <p
           className="font-mono text-center text-[10px] tracking-[0.4em] uppercase mb-16"

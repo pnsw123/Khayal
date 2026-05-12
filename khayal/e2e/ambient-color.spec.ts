@@ -13,8 +13,8 @@ test("ambient backdrop component is wired to movie detail page", async ({ page }
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
 
-  await page.goto(href);
-  await page.waitForLoadState("networkidle");
+  await page.goto(href, { waitUntil: "load", timeout: 30000 });
+  await page.waitForLoadState("domcontentloaded");
 
   // The ambient backdrop renders only when color extraction succeeds.
   // In CI (no real image cross-origin access), it may not appear.

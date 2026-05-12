@@ -14,7 +14,7 @@ export function CTASection() {
     <section
       ref={ref}
       className="relative flex flex-col items-center justify-center text-center overflow-hidden py-32 px-6"
-      style={{ minHeight: "60vh", background: "var(--ink)" }}
+      style={{ minHeight: "100vh", background: "var(--ink)" }}
     >
 
       <div className="relative z-10 flex flex-col items-center gap-5 max-w-3xl">
