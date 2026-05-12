@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-
-const BEAMS = [
-  { x1: "-10%", y1: "-5%", width: "40%", height: "120%", rotate: -25, duration: 10, opacity: 0.045 },
-  { x1: "10%",  y1: "-8%", width: "30%", height: "110%", rotate: -20, duration: 13, opacity: 0.03  },
-  { x1: "35%",  y1: "-3%", width: "20%", height: "100%", rotate: -15, duration: 11, opacity: 0.04  },
-  { x1: "55%",  y1: "-6%", width: "25%", height: "115%", rotate: -10, duration: 14, opacity: 0.025 },
-  { x1: "-5%",  y1: "30%", width: "35%", height: "90%",  rotate: -30, duration: 9,  opacity: 0.035 },
-];
+import { LineWaves } from "./line-waves";
 
 const LETTERS = ["K", "H", "A", "Y", "A", "L"];
 
@@ -21,25 +14,24 @@ export function HeroSection() {
       className="relative flex flex-col items-center justify-center overflow-hidden"
       style={{ minHeight: "100vh", background: "var(--ink)" }}
     >
-      {/* Projector beam background */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-          {BEAMS.map((b, i) => (
-            <motion.rect
-              key={i}
-              x={b.x1}
-              y={b.y1}
-              width={b.width}
-              height={b.height}
-              fill="var(--ink-lift)"
-              fillOpacity={b.opacity}
-              style={{ transformOrigin: "0% 0%", rotate: b.rotate }}
-              animate={prefersReduced ? {} : { y: ["-2%", "2%", "-2%"] }}
-              transition={{ duration: b.duration, repeat: Infinity, ease: "easeInOut" }}
-            />
-          ))}
-        </svg>
-      </div>
+      {/* LineWaves WebGL background */}
+      {!prefersReduced && (
+        <LineWaves
+          speed={0.2}
+          innerLineCount={24}
+          outerLineCount={28}
+          warpIntensity={0.7}
+          rotation={-35}
+          edgeFadeWidth={0.15}
+          colorCycleSpeed={0.3}
+          brightness={0.12}
+          color1="#b8b4cc"
+          color2="#8888b0"
+          color3="#3a3a58"
+          enableMouseInteraction={true}
+          mouseInfluence={1.4}
+        />
+      )}
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center text-center px-6 gap-6">
