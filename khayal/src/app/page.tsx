@@ -2,8 +2,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { HeroSection } from "@/components/landing/hero-section";
 import { StatsSection } from "@/components/landing/stats-section";
 import { CTASection } from "@/components/landing/cta-section";
-import { ScrollStack, ScrollStackItem } from "@/components/landing/scroll-stack";
-import { CircularGallery } from "@/components/landing/circular-gallery";
+import { GallerySection } from "@/components/landing/gallery-section";
 
 export default async function HomePage() {
   const sb = await supabaseServer();
@@ -31,82 +30,29 @@ export default async function HomePage() {
     };
   });
 
-  // Proxy TMDB images through /api/image-proxy so WebGL textures can load (CORS fix)
+  // Proxy TMDB images so WebGL textures can load (CORS fix)
   const galleryItems = featured.map((f) => ({
     image: `/api/image-proxy?url=${encodeURIComponent(f.movies.poster_url)}`,
     text: f.movies.title,
   }));
 
   return (
-    <ScrollStack
-      useWindowScroll={true}
-      itemDistance={0}
-      itemScale={0.04}
-      itemStackDistance={20}
-      stackPosition="15%"
-      scaleEndPosition="8%"
-      baseScale={0.88}
-      blurAmount={1}
-    >
+    <main>
       {/* Section 1 — Hero */}
-      <ScrollStackItem>
-        <HeroSection />
-      </ScrollStackItem>
+      <HeroSection />
 
-      {/* Section 2 — Circular Gallery (ReactBits CircularGallery + image proxy for CORS) */}
-      <ScrollStackItem>
-        <section
-          style={{
-            minHeight: "100vh",
-            background: "var(--ink)",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-          }}
-        >
-          <div className="mx-auto max-w-[1600px] px-6 pt-16 pb-8">
-            <p
-              className="font-mono text-[10px] tracking-[0.35em] uppercase mb-3"
-              style={{ color: "var(--cream-muted)", opacity: 0.5 }}
-            >
-              Most acclaimed
-            </p>
-            <h2
-              className="font-display text-4xl md:text-6xl"
-              style={{ color: "var(--cream)", letterSpacing: "-0.02em" }}
-            >
-              Now Showing
-            </h2>
-          </div>
-          <div style={{ flex: 1, minHeight: "60vh", width: "100%" }}>
-            {galleryItems.length > 0 && (
-              <CircularGallery
-                items={galleryItems}
-                bend={3}
-                textColor="var(--cream-muted)"
-                borderRadius={0.05}
-                font="bold 18px monospace"
-                scrollSpeed={2}
-                scrollEase={0.05}
-              />
-            )}
-          </div>
-        </section>
-      </ScrollStackItem>
+      {/* Section 2 — Circular gallery */}
+      <GallerySection items={galleryItems} />
 
       {/* Section 3 — Stats */}
-      <ScrollStackItem>
-        <StatsSection
-          filmCount={filmCount ?? 0}
-          ratingCount={ratingCount ?? 0}
-          reviewCount={reviewCount ?? 0}
-        />
-      </ScrollStackItem>
+      <StatsSection
+        filmCount={filmCount ?? 0}
+        ratingCount={ratingCount ?? 0}
+        reviewCount={reviewCount ?? 0}
+      />
 
       {/* Section 4 — CTA */}
-      <ScrollStackItem>
-        <CTASection />
-      </ScrollStackItem>
-    </ScrollStack>
+      <CTASection />
+    </main>
   );
 }
