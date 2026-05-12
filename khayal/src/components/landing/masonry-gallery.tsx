@@ -26,7 +26,7 @@ function useMedia<T>(queries: string[], values: T[], defaultValue: T): T {
     const handler = () => setValue(get);
     queries.forEach((q) => matchMedia(q).addEventListener("change", handler));
     return () => queries.forEach((q) => matchMedia(q).removeEventListener("change", handler));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // intentional: queries array is stable, handler closure captures get() which re-evaluates
   return value;
 }
 

@@ -14,13 +14,13 @@ export function FeaturedFilms({ movies }: { movies: Movie[] }) {
     id: m.movie_id ?? i,
     img: m.movies.poster_url,
     url: `/movies/${m.movies.slug}`,
-    height: 600, // poster aspect ~2:3, 300px wide × 2 = 600
+    height: 780,
   }));
 
   if (items.length === 0) return null;
 
   return (
-    <section style={{ background: "var(--ink)", paddingBottom: "4rem" }}>
+    <section style={{ background: "var(--ink)" }}>
       <div className="mx-auto max-w-[1600px] px-6 pt-20 pb-10 flex items-baseline justify-between">
         <div>
           <p
@@ -44,7 +44,7 @@ export function FeaturedFilms({ movies }: { movies: Movie[] }) {
           Browse all →
         </Link>
       </div>
-      <div className="mx-auto max-w-[1600px] px-6">
+      <div className="w-full px-4 pb-24">
         <MasonryGallery
           items={items}
           animateFrom="bottom"

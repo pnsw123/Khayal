@@ -1,61 +1,118 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+// ReactBits ScrollVelocity — verbatim TypeScript port
+// Source: https://github.com/DavidHDev/react-bits/blob/main/src/content/TextAnimations/ScrollVelocity/ScrollVelocity.jsx
 
-interface FilmTickerProps {
-  titles: string[];
+import { useRef, useLayoutEffect, useState } from "react";
+import {
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+  useMotionValue,
+  useVelocity,
+  useAnimationFrame,
+} from "motion/react";
+
+function useElementWidth(ref: React.RefObject<HTMLElement | null>): number {
+  const [width, setWidth] = useState(0);
+  useLayoutEffect(() => {
+    function update() {
+      if (ref.current) setWidth(ref.current.offsetWidth);
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [ref]);
+  return width;
 }
 
-export function FilmTicker({ titles }: FilmTickerProps) {
-  const prefersReduced = useReducedMotion();
+function wrap(min: number, max: number, v: number): number {
+  const range = max - min;
+  return (((v - min) % range) + range) % range + min;
+}
 
-  const text = titles.join(" · ") + " · ";
+function VelocityRow({
+  children,
+  baseVelocity = 80,
+  numCopies = 5,
+}: {
+  children: React.ReactNode;
+  baseVelocity?: number;
+  numCopies?: number;
+}) {
+  const baseX = useMotionValue(0);
+  const { scrollY } = useScroll();
+  const scrollVelocity = useVelocity(scrollY);
+  const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
+  const velocityFactor = useTransform(smoothVelocity, [0, 1000], [0, 5], { clamp: false });
 
-  if (prefersReduced) {
-    return (
-      <div
-        className="w-full overflow-hidden py-4"
-        style={{ borderTop: "1px solid color-mix(in srgb, var(--taupe) 10%, transparent)", borderBottom: "1px solid color-mix(in srgb, var(--taupe) 10%, transparent)" }}
-      >
-        <p
-          className="font-mono text-[11px] tracking-[0.25em] uppercase text-center truncate"
-          style={{ color: "color-mix(in srgb, var(--cream-muted) 40%, transparent)" }}
-        >
-          {text}
-        </p>
-      </div>
-    );
-  }
+  const copyRef = useRef<HTMLSpanElement>(null);
+  const copyWidth = useElementWidth(copyRef);
+
+  const x = useTransform(baseX, (v) => {
+    if (copyWidth === 0) return "0px";
+    return `${wrap(-copyWidth, 0, v)}px`;
+  });
+
+  const dir = useRef(1);
+  useAnimationFrame((_t, delta) => {
+    let moveBy = dir.current * baseVelocity * (delta / 1000);
+    if (velocityFactor.get() < 0) dir.current = -1;
+    else if (velocityFactor.get() > 0) dir.current = 1;
+    moveBy += dir.current * moveBy * velocityFactor.get();
+    baseX.set(baseX.get() + moveBy);
+  });
 
   return (
-    <div
-      className="w-full overflow-hidden py-4"
-      style={{
-        borderTop: "1px solid color-mix(in srgb, var(--taupe) 10%, transparent)",
-        borderBottom: "1px solid color-mix(in srgb, var(--taupe) 10%, transparent)",
-      }}
-      aria-hidden
-    >
-      <motion.div
-        className="flex whitespace-nowrap"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 35, ease: "linear", repeat: Infinity }}
-      >
-        {[...titles, ...titles].map((title, i) => (
-          <span
-            key={i}
-            className="font-mono text-[11px] tracking-[0.25em] uppercase"
-            style={{
-              color: "color-mix(in srgb, var(--cream-muted) 40%, transparent)",
-              marginRight: "1.5rem",
-              flexShrink: 0,
-            }}
-          >
-            {title}
-            <span className="mx-3 opacity-50">·</span>
+    <div style={{ overflow: "hidden", display: "flex" }}>
+      <motion.div style={{ x, display: "flex", whiteSpace: "nowrap" }}>
+        {Array.from({ length: numCopies }, (_, i) => (
+          <span key={i} ref={i === 0 ? copyRef : null} style={{ whiteSpace: "nowrap" }}>
+            {children}
           </span>
         ))}
       </motion.div>
     </div>
+  );
+}
+
+export function FilmTicker({ titles }: { titles: string[] }) {
+  const text = titles.join("  ·  ") + "  ·  ";
+  return (
+    <section
+      style={{ background: "var(--ink)", padding: "3rem 0", overflow: "hidden" }}
+      aria-hidden
+    >
+      <VelocityRow baseVelocity={55} numCopies={4}>
+        <span
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(1.8rem, 3.5vw, 3rem)",
+            color: "var(--cream)",
+            opacity: 0.12,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          {text}
+        </span>
+      </VelocityRow>
+      <div style={{ marginTop: "1rem" }}>
+        <VelocityRow baseVelocity={-40} numCopies={4}>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "clamp(0.65rem, 1vw, 0.8rem)",
+              color: "var(--cream-muted)",
+              opacity: 0.2,
+              letterSpacing: "0.25em",
+              textTransform: "uppercase",
+            }}
+          >
+            {text}
+          </span>
+        </VelocityRow>
+      </div>
+    </section>
   );
 }

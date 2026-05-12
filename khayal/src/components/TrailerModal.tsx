@@ -24,15 +24,23 @@ export function TrailerModal({ trailerUrl, title }: TrailerModalProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
 
-  // Prevent body scroll when modal is open
+  // Prevent body scroll when modal is open (iOS-safe position-fixed pattern)
   useEffect(() => {
     if (open) {
-      document.body.style.overflow = "hidden";
+      const scrollY = window.scrollY;
+      document.body.style.cssText = `position:fixed;top:-${scrollY}px;left:0;right:0;overflow-y:scroll`;
+      document.body.dataset.scrollY = String(scrollY);
     } else {
-      document.body.style.overflow = "";
+      const savedScrollY = Number(document.body.dataset.scrollY ?? 0);
+      document.body.style.cssText = "";
+      delete document.body.dataset.scrollY;
+      window.scrollTo(0, savedScrollY);
     }
     return () => {
-      document.body.style.overflow = "";
+      const savedScrollY = Number(document.body.dataset.scrollY ?? 0);
+      document.body.style.cssText = "";
+      delete document.body.dataset.scrollY;
+      window.scrollTo(0, savedScrollY);
     };
   }, [open]);
 

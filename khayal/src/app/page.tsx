@@ -1,5 +1,6 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import { HeroSection } from "@/components/landing/hero-section";
+import { FilmTicker } from "@/components/landing/film-ticker";
 import { FeaturedFilms } from "@/components/landing/featured-films";
 import { StatsSection } from "@/components/landing/stats-section";
 import { CTASection } from "@/components/landing/cta-section";
@@ -12,7 +13,7 @@ export default async function HomePage() {
     .select("movie_id, avg_rating, movies!inner(title, slug, poster_url)")
     .order("avg_rating", { ascending: false })
     .not("movies.poster_url", "is", null)
-    .limit(12);
+    .limit(20);
 
   const [{ count: filmCount }, { count: ratingCount }, { count: reviewCount }] =
     await Promise.all([
@@ -31,9 +32,12 @@ export default async function HomePage() {
     };
   });
 
+  const titles = featured.map((f) => f.movies.title).filter(Boolean);
+
   return (
     <main>
       <HeroSection />
+      {titles.length > 0 && <FilmTicker titles={titles} />}
       <FeaturedFilms movies={featured} />
       <StatsSection
         filmCount={filmCount ?? 0}
