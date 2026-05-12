@@ -37,8 +37,8 @@ export function HeroSection() {
       <div className="relative z-10 flex flex-col items-center text-center px-6 gap-6">
         {/* Eyebrow */}
         <motion.p
-          className="font-mono uppercase tracking-[0.35em] text-[11px]"
-          style={{ color: "color-mix(in srgb, var(--cream-muted) 60%, transparent)" }}
+          className="font-mono uppercase tracking-[0.4em] text-[13px]"
+          style={{ color: "color-mix(in srgb, var(--cream-muted) 80%, transparent)" }}
           initial={prefersReduced ? {} : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.1 }}

@@ -1,24 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="KHAYAL — خيال">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="KHAYAL">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="35%" r="70%">
+    <radialGradient id="bg" cx="50%" cy="30%" r="80%">
       <stop offset="0%" stop-color="#1a1a2e"/>
       <stop offset="100%" stop-color="#08080e"/>
     </radialGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#b8b4cc" stop-opacity="0.12"/>
-      <stop offset="100%" stop-color="#b8b4cc" stop-opacity="0"/>
-    </radialGradient>
   </defs>
   <rect width="32" height="32" rx="7" fill="url(#bg)"/>
-  <rect width="32" height="32" rx="7" fill="url(#glow)"/>
-  <rect x="1" y="1" width="30" height="30" rx="6" fill="none" stroke="#eeeef8" stroke-width="0.5" opacity="0.3"/>
-  <text
-    x="16" y="17"
-    text-anchor="middle"
-    dominant-baseline="central"
-    fill="#eeeef8"
-    font-size="22"
-    font-weight="500"
-    font-family="'Reem Kufi','Noto Sans Arabic','Amiri','Geeza Pro','Arabic Typesetting',serif"
-  >خ</text>
+  <rect x="4" y="8" width="24" height="16" rx="1.5" fill="none" stroke="#eeeef8" stroke-width="1.2" opacity="0.9"/>
+  <rect x="8" y="10" width="16" height="12" rx="1" fill="#eeeef8" opacity="0.15"/>
+  <path d="M13.5 13.5 L13.5 18.5 L19 16 Z" fill="#eeeef8" opacity="0.9"/>
+  <rect x="5.5" y="10" width="1.5" height="2" rx="0.4" fill="#eeeef8" opacity="0.5"/>
+  <rect x="5.5" y="14" width="1.5" height="2" rx="0.4" fill="#eeeef8" opacity="0.5"/>
+  <rect x="5.5" y="18" width="1.5" height="2" rx="0.4" fill="#eeeef8" opacity="0.5"/>
+  <rect x="25" y="10" width="1.5" height="2" rx="0.4" fill="#eeeef8" opacity="0.5"/>
+  <rect x="25" y="14" width="1.5" height="2" rx="0.4" fill="#eeeef8" opacity="0.5"/>
+  <rect x="25" y="18" width="1.5" height="2" rx="0.4" fill="#eeeef8" opacity="0.5"/>
 </svg>

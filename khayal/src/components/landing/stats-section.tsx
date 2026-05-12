@@ -1,7 +1,17 @@
 "use client";
+import { useRef } from "react";
+import { motion, useInView, useSpring, useTransform } from "motion/react";
 
-import { useRef, useEffect } from "react";
-import { motion, useInView, useSpring, useTransform, useReducedMotion } from "motion/react";
+function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-100px" });
+  const spring = useSpring(0, { stiffness: 60, damping: 20 });
+  const display = useTransform(spring, (v) => Math.round(v).toLocaleString() + suffix);
+
+  if (inView) spring.set(value);
+
+  return <motion.span ref={ref}>{display}</motion.span>;
+}
 
 interface StatsSectionProps {
   filmCount: number;
@@ -9,67 +19,72 @@ interface StatsSectionProps {
   reviewCount: number;
 }
 
-function AnimatedStat({ value, label }: { value: number; label: string }) {
-  const prefersReduced = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+const STATS = [
+  {
+    label: "Films catalogued",
+    arabicLabel: "فيلم مفهرس",
+    getValue: (p: StatsSectionProps) => p.filmCount,
+  },
+  {
+    label: "Ratings cast",
+    arabicLabel: "تقييم مسجّل",
+    getValue: (p: StatsSectionProps) => p.ratingCount,
+  },
+  {
+    label: "Reviews written",
+    arabicLabel: "مراجعة مكتوبة",
+    getValue: (p: StatsSectionProps) => p.reviewCount,
+  },
+];
 
-  const spring = useSpring(0, { stiffness: 50, damping: 20 });
-  const display = useTransform(spring, (v) => Math.round(v).toLocaleString("en-US"));
-
-  useEffect(() => {
-    if (inView && !prefersReduced) {
-      spring.set(value);
-    }
-  }, [inView, prefersReduced, spring, value]);
-
-  return (
-    <motion.div
-      ref={ref}
-      className="flex flex-col items-center text-center px-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <motion.span
-        className="font-display"
-        style={{
-          fontSize: "clamp(3rem, 7vw, 5.5rem)",
-          color: "var(--cream)",
-          lineHeight: 1,
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {prefersReduced ? value.toLocaleString("en-US") : display}
-      </motion.span>
-      <p
-        className="font-mono text-[11px] tracking-[0.3em] uppercase mt-3"
-        style={{ color: "var(--cream-muted)" }}
-      >
-        {label}
-      </p>
-    </motion.div>
-  );
-}
-
-export function StatsSection({ filmCount, ratingCount, reviewCount }: StatsSectionProps) {
-  const stats = [
-    { value: filmCount,   label: "Films catalogued" },
-    { value: ratingCount, label: "Ratings cast"      },
-    { value: reviewCount, label: "Reviews written"   },
-  ];
-
+export function StatsSection(props: StatsSectionProps) {
   return (
     <section
-      className="py-24"
+      className="relative"
       style={{
-        background: "linear-gradient(to bottom, var(--ink), color-mix(in srgb, var(--ink-lift) 30%, transparent), var(--ink))",
+        background: "linear-gradient(to bottom, var(--ink), var(--ink-lift), var(--ink))",
+        padding: "6rem 1.5rem",
       }}
     >
-      <div className="mx-auto max-w-[1600px] px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[var(--taupe)]/20">
-          {stats.map((s) => (
-            <AnimatedStat key={s.label} value={s.value} label={s.label} />
+      <div className="mx-auto max-w-[1200px]">
+        {/* Label */}
+        <p
+          className="font-mono text-center text-[10px] tracking-[0.4em] uppercase mb-16"
+          style={{ color: "var(--cream-muted)", opacity: 0.5 }}
+        >
+          By the numbers — بالأرقام
+        </p>
+
+        {/* Stats grid */}
+        <div
+          className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-0 md:divide-x"
+          style={{ borderColor: "color-mix(in srgb, var(--taupe) 20%, transparent)" }}
+        >
+          {STATS.map((stat) => (
+            <div key={stat.label} className="flex flex-col items-center text-center px-8">
+              <p
+                className="font-display leading-none mb-4"
+                style={{
+                  fontSize: "clamp(4rem, 8vw, 7rem)",
+                  color: "var(--cream)",
+                  letterSpacing: "-0.04em",
+                }}
+              >
+                <AnimatedNumber value={stat.getValue(props)} />
+              </p>
+              <p
+                className="font-mono text-[11px] tracking-[0.3em] uppercase mb-1"
+                style={{ color: "var(--cream-muted)" }}
+              >
+                {stat.label}
+              </p>
+              <p
+                className="font-arabic text-sm"
+                style={{ color: "var(--saffron)", opacity: 0.6 }}
+              >
+                {stat.arabicLabel}
+              </p>
+            </div>
           ))}
         </div>
       </div>
