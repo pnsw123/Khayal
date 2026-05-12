@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { AuroraBg } from "./aurora-bg";
-
 const WORDS = ["Every", "frame", "tells", "a", "story."];
 
 export function CTASection() {
@@ -18,15 +16,6 @@ export function CTASection() {
       className="relative flex flex-col items-center justify-center text-center overflow-hidden py-32 px-6"
       style={{ minHeight: "60vh", background: "var(--ink)" }}
     >
-      {/* Aurora atmospheric background */}
-      {!prefersReduced && (
-        <AuroraBg
-          colorStops={["#0c0a14", "#2a1a50", "#0c0a14"]}
-          amplitude={0.8}
-          blend={0.45}
-          speed={0.6}
-        />
-      )}
 
       <div className="relative z-10 flex flex-col items-center gap-5 max-w-3xl">
         {/* Arabic label */}

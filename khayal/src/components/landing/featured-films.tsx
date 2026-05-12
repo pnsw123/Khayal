@@ -1,7 +1,10 @@
 "use client";
 
+// ReactBits TiltedCard grid — each poster is a TiltedCard (verbatim ReactBits port)
+// Source: https://github.com/DavidHDev/react-bits/blob/main/src/content/Components/TiltedCard/TiltedCard.jsx
+
 import Link from "next/link";
-import { MasonryGallery } from "./masonry-gallery";
+import { TiltedCard } from "./tilted-card";
 
 interface Movie {
   movie_id: number;
@@ -10,18 +13,13 @@ interface Movie {
 }
 
 export function FeaturedFilms({ movies }: { movies: Movie[] }) {
-  const items = movies.map((m, i) => ({
-    id: m.movie_id ?? i,
-    img: m.movies.poster_url,
-    url: `/movies/${m.movies.slug}`,
-    height: 780,
-  }));
-
-  if (items.length === 0) return null;
+  if (movies.length === 0) return null;
 
   return (
-    <section style={{ background: "var(--ink)" }}>
-      <div className="mx-auto max-w-[1600px] px-6 pt-20 pb-10 flex items-baseline justify-between">
+    <section style={{ background: "var(--ink)", paddingBottom: "6rem" }}>
+      <div
+        className="mx-auto max-w-[1600px] px-6 pt-20 pb-10 flex items-baseline justify-between"
+      >
         <div>
           <p
             className="font-mono text-[10px] tracking-[0.35em] uppercase mb-3"
@@ -44,15 +42,35 @@ export function FeaturedFilms({ movies }: { movies: Movie[] }) {
           Browse all →
         </Link>
       </div>
-      <div className="w-full px-4 pb-24">
-        <MasonryGallery
-          items={items}
-          animateFrom="bottom"
-          blurToFocus={true}
-          scaleOnHover={true}
-          hoverScale={0.97}
-          stagger={0.04}
-        />
+
+      <div
+        className="mx-auto max-w-[1600px] px-6"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+          gap: "1.5rem",
+        }}
+      >
+        {movies.map((m) => (
+          <Link
+            key={m.movie_id}
+            href={`/movies/${m.movies.slug}`}
+            style={{ display: "block" }}
+          >
+            <TiltedCard
+              imageSrc={m.movies.poster_url}
+              altText={m.movies.title}
+              captionText={m.movies.title}
+              containerHeight="240px"
+              containerWidth="100%"
+              imageHeight="240px"
+              imageWidth="100%"
+              scaleOnHover={1.06}
+              rotateAmplitude={10}
+              showTooltip={true}
+            />
+          </Link>
+        ))}
       </div>
     </section>
   );

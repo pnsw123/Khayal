@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-full flex flex-col bg-[var(--ink)] text-[var(--cream)]">
         <NavGuard><Nav /></NavGuard>
         <main className="flex-1">{children}</main>
-        <NavGuard><footer className="border-t border-[var(--taupe)]/15 mt-16">
+        <footer className="border-t border-[var(--taupe)]/15 mt-16">
           <div className="mx-auto max-w-[1600px] px-6 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
               <p className="font-display text-lg text-[var(--cream)]">KHAYAL <span className="font-arabic text-[var(--saffron)]">خيال</span></p>
@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               {" · "}© {new Date().getFullYear()} KHAYAL
             </p>
           </div>
-        </footer></NavGuard>
+        </footer>
       </body>
     </html>
   );
