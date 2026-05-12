@@ -2,6 +2,47 @@
 
 # KHAYAL — Project Rules for Claude Code
 
+---
+
+## ⛔ UI DESIGN RULE — ABSOLUTE, NO EXCEPTIONS
+
+**Claude does not design UI. Claude does not know how. Every time it tries, it makes mistakes.**
+
+### What is banned forever
+- Writing custom CSS gradients, glows, radial backgrounds, or any decorative visual effect
+- Inventing component layouts, card designs, section structures, or spacing systems
+- Choosing colors beyond what already exists in `globals.css` CSS variables
+- Creating animation code from scratch (no custom keyframes, no hand-rolled motion logic)
+- Making any visual decision that isn't directly sourced from an existing library
+
+### The only allowed source for UI: ReactBits
+**Every** component, background, animation, and visual effect **must** come from:
+- **https://www.reactbits.dev** — fetch the actual source code, port it verbatim
+- Installed: `motion` (framer-motion), `gsap`, `ogl`, `three`
+
+### Workflow for any UI task
+1. Go to reactbits.dev and find the component that fits
+2. Fetch the raw source from GitHub (`raw.githubusercontent.com/DavidHDev/react-bits/main/src/content/...`)
+3. Port it verbatim to TypeScript — change only: color props (use CSS variables), className props, TypeScript types
+4. Wire it to real data from Supabase
+5. Never add custom decorative CSS on top
+
+### This applies to ALL pages
+Not just the landing page. Every page in the app:
+- `/browse`, `/movies/[slug]`, `/tv/[slug]`, `/search`, `/profile`, `/lists/[id]`, `/login`, `/admin`
+- Any new page created in the future
+
+### Why
+Claude consistently produces mediocre, inconsistent UI when designing from scratch:
+- Wrong color contrast
+- Mismatched spacing
+- Gradient glows nobody asked for
+- Components that look "AI-generated"
+
+ReactBits components are designed by humans, tested by thousands of users, and look professional. Use them.
+
+---
+
 ## Stack
 - Next.js 15 App Router + TypeScript strict mode
 - Tailwind CSS v4 with CSS custom properties (`var(--ink)`, `var(--cream)`, `var(--accent)`, `var(--saffron)` for ratings only)
