@@ -1,6 +1,7 @@
 "use client";
+
 import Link from "next/link";
-import { CircularGallery } from "./circular-gallery";
+import { MasonryGallery } from "./masonry-gallery";
 
 interface Movie {
   movie_id: number;
@@ -8,24 +9,23 @@ interface Movie {
   movies: { title: string; slug: string; poster_url: string };
 }
 
-interface FeaturedFilmsProps {
-  movies: Movie[];
-}
-
-export function FeaturedFilms({ movies }: FeaturedFilmsProps) {
-  const items = movies.map((m) => ({
-    image: m.movies.poster_url,
-    text: m.movies.title,
+export function FeaturedFilms({ movies }: { movies: Movie[] }) {
+  const items = movies.map((m, i) => ({
+    id: m.movie_id ?? i,
+    img: m.movies.poster_url,
+    url: `/movies/${m.movies.slug}`,
+    height: 600, // poster aspect ~2:3, 300px wide × 2 = 600
   }));
 
+  if (items.length === 0) return null;
+
   return (
-    <section style={{ background: "var(--ink)" }}>
-      {/* Section header */}
-      <div className="mx-auto max-w-[1400px] px-6 pt-20 pb-8 flex items-baseline justify-between">
+    <section style={{ background: "var(--ink)", paddingBottom: "4rem" }}>
+      <div className="mx-auto max-w-[1600px] px-6 pt-20 pb-10 flex items-baseline justify-between">
         <div>
           <p
             className="font-mono text-[10px] tracking-[0.35em] uppercase mb-3"
-            style={{ color: "var(--cream-muted)", opacity: 0.6 }}
+            style={{ color: "var(--cream-muted)", opacity: 0.5 }}
           >
             Top rated
           </p>
@@ -38,23 +38,20 @@ export function FeaturedFilms({ movies }: FeaturedFilmsProps) {
         </div>
         <Link
           href="/browse?sort=rated"
-          className="font-mono text-[11px] tracking-[0.25em] uppercase transition-colors"
+          className="font-mono text-[11px] tracking-[0.25em] uppercase"
           style={{ color: "var(--cream-muted)" }}
         >
           Browse all →
         </Link>
       </div>
-
-      {/* CircularGallery — full width, tall */}
-      <div style={{ height: "500px", width: "100%" }}>
-        <CircularGallery
+      <div className="mx-auto max-w-[1600px] px-6">
+        <MasonryGallery
           items={items}
-          bend={3}
-          textColor="#eeeef8"
-          borderRadius={0.08}
-          font="bold 22px monospace"
-          scrollSpeed={2}
-          scrollEase={0.06}
+          animateFrom="bottom"
+          blurToFocus={true}
+          scaleOnHover={true}
+          hoverScale={0.97}
+          stagger={0.04}
         />
       </div>
     </section>
