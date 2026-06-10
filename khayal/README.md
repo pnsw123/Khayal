@@ -5,7 +5,7 @@
 **A cinematic discovery platform — 7,400+ films · 2,800+ TV shows**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-movie--db--one--psi.vercel.app-black?style=for-the-badge&logo=vercel)](https://movie-db-one-psi.vercel.app)
-[![Next.js](https://img.shields.io/badge/Next.js-15.x-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.9-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
@@ -69,7 +69,7 @@ Browse, search, and track films and TV shows from a curated database of 7,400+ f
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 15 (canary), React 19, TypeScript 5 (strict mode) |
+| Frontend | Next.js 16.2.9, React 19, TypeScript 5 (strict mode) |
 | Styling | Tailwind CSS v4, CSS custom properties |
 | UI Components | ReactBits, Radix UI primitives |
 | Animation | Three.js, Framer Motion, Embla Carousel |
