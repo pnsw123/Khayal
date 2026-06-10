@@ -369,7 +369,7 @@ def test_run_sync_reads_tmdb_max_pages_env() -> None:
     env = {
         "TMDB_API_KEY": "k",
         "SUPABASE_URL": "https://x.supabase.co",
-        "SUPABASE_SERVICE_KEY": "sk",
+        "SUPABASE_SERVICE_ROLE_KEY": "sk",
         "TMDB_MAX_PAGES": "7",
     }
     with patch.dict(os.environ, env), \
@@ -394,7 +394,7 @@ def test_run_sync_default_max_pages_when_env_unset() -> None:
     env = {
         "TMDB_API_KEY": "k",
         "SUPABASE_URL": "https://x.supabase.co",
-        "SUPABASE_SERVICE_KEY": "sk",
+        "SUPABASE_SERVICE_ROLE_KEY": "sk",
     }
     # Ensure TMDB_MAX_PAGES not present
     clean_env = {k: v for k, v in os.environ.items() if k != "TMDB_MAX_PAGES"}

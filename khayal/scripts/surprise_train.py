@@ -177,7 +177,7 @@ def generate_and_store_recommendations(
 def run_svd_training() -> None:
     """Entry point — fetch ratings, train SVD, save model, generate recommendations."""
     supabase_url = get_env("SUPABASE_URL")
-    service_key = get_env("SUPABASE_SERVICE_KEY")
+    service_key = get_env("SUPABASE_SERVICE_ROLE_KEY")
 
     ratings = fetch_ratings(supabase_url, service_key)
     if not ratings:

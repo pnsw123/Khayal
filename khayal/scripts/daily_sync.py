@@ -147,7 +147,7 @@ def run_sync() -> None:
     """Entry point — sync trending movies and TV shows."""
     tmdb_key = get_env("TMDB_API_KEY")
     supabase_url = get_env("SUPABASE_URL")
-    service_key = get_env("SUPABASE_SERVICE_KEY")
+    service_key = get_env("SUPABASE_SERVICE_ROLE_KEY")
     max_pages = int(os.environ.get("TMDB_MAX_PAGES", str(_DEFAULT_MAX_PAGES)))
 
     total = 0
