@@ -271,6 +271,100 @@ describe("migration 000020: fts_stored_generated_columns", () => {
   });
 });
 
+// ─── release_year stored generated column migration (issue #306) ─────────────
+
+describe("migration 000021: release_year_generated_column", () => {
+  let sql: string;
+
+  beforeAll(() => {
+    sql = readMigration("20240001000021_release_year_generated_column.sql");
+  });
+
+  it("adds release_year generated column to movies", () => {
+    expect(sql.toUpperCase()).toContain("ALTER TABLE MOVIES");
+    expect(sql).toContain("release_year");
+  });
+
+  it("adds release_year generated column to tv_series", () => {
+    expect(sql.toUpperCase()).toContain("ALTER TABLE TV_SERIES");
+    expect(sql).toContain("release_year");
+  });
+
+  it("uses GENERATED ALWAYS AS ... STORED for movies", () => {
+    // Verify movies gets a stored generated column (not tv_series only)
+    const moviesSection = sql.split("ALTER TABLE tv_series")[0];
+    expect(moviesSection.toUpperCase()).toContain("GENERATED ALWAYS AS");
+    expect(moviesSection.toUpperCase()).toContain("STORED");
+  });
+
+  it("uses EXTRACT(YEAR FROM release_date) for movies", () => {
+    const moviesSection = sql.split("ALTER TABLE tv_series")[0];
+    expect(moviesSection).toContain("release_date");
+    expect(moviesSection.toUpperCase()).toContain("EXTRACT");
+  });
+
+  it("uses EXTRACT(YEAR FROM first_air_date) for tv_series", () => {
+    expect(sql).toContain("first_air_date");
+  });
+
+  it("creates B-tree index on movies.release_year (no USING GIN)", () => {
+    expect(sql).toContain("idx_movies_release_year");
+    // B-tree is default — should not say GIN for this index
+    const btreeSection = sql.split("idx_movies_release_year")[1] ?? "";
+    expect(btreeSection.toUpperCase()).not.toContain("USING GIN");
+  });
+
+  it("creates B-tree index on tv_series.release_year", () => {
+    expect(sql).toContain("idx_tv_series_release_year");
+  });
+
+  it("uses IF NOT EXISTS on both indexes for idempotency", () => {
+    const indexBlock = sql.split("-- ── 2.")[1] ?? "";
+    const count = (indexBlock.match(/IF NOT EXISTS/gi) ?? []).length;
+    expect(count).toBeGreaterThanOrEqual(2);
+  });
+
+  it("search_all WHERE does not call EXTRACT(YEAR at query time", () => {
+    // EXTRACT still appears in the ALTER TABLE section (generated column def)
+    // but must not appear inside any CREATE FUNCTION body
+    const fnBodies = sql.split("CREATE OR REPLACE FUNCTION").slice(1).join("");
+    expect(fnBodies.toUpperCase()).not.toContain("EXTRACT(YEAR");
+  });
+
+  it("search_all movies branch references m.release_year in WHERE", () => {
+    expect(sql).toContain("m.release_year >= p_year_start");
+    expect(sql).toContain("m.release_year <= p_year_end");
+  });
+
+  it("search_all tv branch references t.release_year in WHERE", () => {
+    expect(sql).toContain("t.release_year >= p_year_start");
+    expect(sql).toContain("t.release_year <= p_year_end");
+  });
+
+  it("search_all movies SELECT uses m.release_year (stored column)", () => {
+    // The SELECT list should use m.release_year, not EXTRACT(...)
+    const moviesBranch = sql.split("UNION ALL")[0] ?? "";
+    expect(moviesBranch).toContain("m.release_year");
+  });
+
+  it("search_all tv SELECT uses t.release_year (stored column)", () => {
+    const tvBranch = sql.split("UNION ALL")[1] ?? "";
+    expect(tvBranch).toContain("t.release_year");
+  });
+
+  it("migration file follows naming convention", () => {
+    expect("20240001000021_release_year_generated_column.sql").toMatch(
+      /^\d{14}_[a-z0-9_]+\.sql$/
+    );
+  });
+
+  it("migration timestamp is after migration 000020", () => {
+    const ts20 = parseInt("20240001000020", 10);
+    const ts21 = parseInt("20240001000021", 10);
+    expect(ts21).toBeGreaterThan(ts20);
+  });
+});
+
 // ─── SQL safety analysis ─────────────────────────────────────────────────────
 
 describe("SQL safety: no destructive statements in migrations", () => {
