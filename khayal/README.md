@@ -29,6 +29,20 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 
 ---
 
+## Demo
+
+[![Open live demo](https://img.shields.io/badge/▶%20Watch%20live%20demo-movie--db--one--psi.vercel.app-black?style=for-the-badge&logo=vercel)](https://movie-db-one-psi.vercel.app)
+
+| Feature | What to try |
+|---------|-------------|
+| **Live search** | Type in the search bar → instant results dropdown as you type |
+| **Watchlist** | Open any film or show → click "Add to List" → title appears in your watchlist |
+| **Star rating** | On a detail page → click a star → rating updates immediately |
+
+> No account needed to browse. Sign up (free) to unlock watchlists and ratings.
+
+---
+
 ## Screenshots
 
 | Browse | Detail | Search |
