@@ -169,8 +169,9 @@ def generate_and_store_recommendations(
         ]
 
         if rows:
+            from typing import cast as _cast
             client.table("recommendations").upsert(
-                rows,
+                _cast(Any, rows),
                 on_conflict="user_id,movie_id,algo",
             ).execute()
             total_upserted += len(rows)

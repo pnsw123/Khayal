@@ -12,7 +12,7 @@ on:
 
 jobs:
   check-types:
-    name: Verify database.types.ts matches live schema
+    name: Verify database.types.generated.ts matches live schema
     runs-on: ubuntu-latest
 
     steps:
@@ -35,18 +35,20 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
-      - name: Compare generated types with committed types
+      - name: Compare generated types with committed generated types
         run: |
-          # Strip the comment header (first 10 lines) before diffing so that
-          # date-only changes in the header don't flag as drift.
-          tail -n +11 /tmp/database.types.generated.ts > /tmp/generated-body.ts
-          tail -n +11 src/lib/database.types.ts > /tmp/committed-body.ts
+          # Strip the comment header (first 13 lines of both files) before diffing
+          # so that date-only changes in the header don't flag as drift.
+          # NOTE: only database.types.generated.ts is compared — the hand-authored
+          # convenience aliases in database.types.ts are intentionally not checked here.
+          tail -n +14 /tmp/database.types.generated.ts > /tmp/generated-body.ts
+          tail -n +14 src/lib/database.types.generated.ts > /tmp/committed-body.ts
 
           if ! diff -q /tmp/generated-body.ts /tmp/committed-body.ts > /dev/null 2>&1; then
-            echo "::error::database.types.ts is out of sync with the live schema."
-            echo "Run: npx supabase gen types typescript --project-id iybfarqvntkkfxwbrxll > src/lib/database.types.ts"
+            echo "::error::database.types.generated.ts is out of sync with the live schema."
+            echo "Run: npx supabase gen types typescript --project-id iybfarqvntkkfxwbrxll --schema public > src/lib/database.types.generated.ts"
             diff /tmp/generated-body.ts /tmp/committed-body.ts || true
             exit 1
           fi
 
-          echo "Types are in sync with live schema."
+          echo "Generated types are in sync with live schema."

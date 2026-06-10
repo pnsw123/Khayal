@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import os
 import uuid
+from collections.abc import Generator
 from typing import Any
 
 import pytest
@@ -45,7 +46,7 @@ def _get_client() -> Any:
             "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set. "
             "Run `supabase start` and export those vars to run integration tests."
         )
-    from supabase import create_client  # type: ignore[import-untyped]
+    from supabase import create_client
 
     return create_client(url, key)
 
@@ -57,7 +58,7 @@ def sb() -> Any:
 
 
 @pytest.fixture(scope="module")
-def seeded_data(sb: Any) -> dict[str, Any]:  # noqa: C901
+def seeded_data(sb: Any) -> Generator[dict[str, Any], None, None]:  # noqa: C901
     """Seed 10 genres, 10 000 movies, 5 000 tv_series, then clean up after tests."""
 
     # ------------------------------------------------------------------
