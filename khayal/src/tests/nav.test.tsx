@@ -29,8 +29,8 @@ describe("Nav component source", () => {
     expect(navSource).toContain('"/browse"');
   });
 
-  it("has a /search link", () => {
-    expect(navSource).toContain('"/search"');
+  it("imports NavSearch inline search component (replaces static /search link)", () => {
+    expect(navSource).toContain("NavSearch");
   });
 
   it("exports Nav function", () => {
