@@ -283,6 +283,9 @@ def test_search_all_uses_index_scan_not_seq_scan(sb: Any, seeded_data: dict[str,
 
     This proves the GIN index on the tsvector expression is actually used by
     the query planner after the migrations have been applied.
+
+    Requires the pg_execute_explain RPC defined in migration
+    20240001000010_rpc_pg_execute_explain.sql — run `supabase db reset` first.
     """
     sentinel = seeded_data["sentinel"]
     query_text = sentinel[:12]
@@ -307,19 +310,11 @@ def test_search_all_uses_index_scan_not_seq_scan(sb: Any, seeded_data: dict[str,
     )
     result = sb.rpc("pg_execute_explain", {"query": explain_sql}).execute()
 
-    if result.data is None:
-        # Fallback: query pg_stat_user_indexes to confirm the index exists
-        idx_result = (
-            sb.table("pg_stat_user_indexes")
-            .select("indexrelname")
-            .eq("indexrelname", "idx_movies_fts")
-            .execute()
-        )
-        assert idx_result.data, (
-            "idx_movies_fts index not found in pg_stat_user_indexes. "
-            "Run `supabase db reset` to apply migrations."
-        )
-        return
+    assert result.data is not None, (
+        "pg_execute_explain RPC returned None. "
+        "Ensure migration 20240001000010_rpc_pg_execute_explain.sql has been applied: "
+        "run `supabase db reset` then re-run these tests."
+    )
 
     plan_text: str = str(result.data)
     assert "Index Scan" in plan_text or "Bitmap Index Scan" in plan_text, (
@@ -331,6 +326,37 @@ def test_search_all_uses_index_scan_not_seq_scan(sb: Any, seeded_data: dict[str,
         "Query plan shows Seq Scan without any index. "
         "GIN index may be missing or the planner chose not to use it.\n"
         f"Full plan:\n{plan_text}"
+    )
+
+
+@pytest.mark.integration
+def test_search_all_latency_under_100ms_at_scale(sb: Any, seeded_data: dict[str, Any]) -> None:
+    """search_all must complete in under 100 ms for a single-term query at 10k-row scale.
+
+    The seeded_data fixture inserts 10 000 movies before this test runs.
+    We warm up with one ignored call, then measure 3 timed calls and assert the
+    median is below the 100 ms SLA.  The warm-up avoids counting connection
+    establishment or query-plan cache miss in the timing.
+    """
+    sentinel = seeded_data["sentinel"]
+    query_text = sentinel[:12]
+
+    # Warm-up — result discarded
+    sb.rpc("search_all", {"query_text": query_text, "page_size": 20}).execute()
+
+    latencies_ms: list[float] = []
+    for _ in range(3):
+        t0 = time.perf_counter()
+        sb.rpc("search_all", {"query_text": query_text, "page_size": 20}).execute()
+        latencies_ms.append((time.perf_counter() - t0) * 1000)
+
+    latencies_ms.sort()
+    median_ms = latencies_ms[1]  # middle of 3 sorted values
+
+    assert median_ms < 100.0, (
+        f"search_all median latency {median_ms:.1f} ms exceeds 100 ms SLA at 10k rows.\n"
+        f"Individual measurements: {[f'{v:.1f}ms' for v in latencies_ms]}\n"
+        "Check that idx_movies_fts GIN index exists and `supabase db reset` was run."
     )
 
 
