@@ -254,12 +254,8 @@ npm run dev
 # 5. Open in browser
 open http://localhost:3000
 
-# 6. Run tests
-npm run test
-
-# 7. Type-check and lint
-npm run type-check
-npm run lint
+# 6. Verify everything passes
+npm run validate   # type-check + lint + unit tests in one step
 ```
 
 > For full local setup including database seeding, E2E tests, and Supabase local dev, see [CONTRIBUTING.md](CONTRIBUTING.md).
