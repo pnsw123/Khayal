@@ -28,6 +28,9 @@ jobs:
       - name: Install sync dependencies
         run: pip install -r scripts/requirements.txt
 
+      - name: Clean Python bytecode cache
+        run: find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+
       - name: Run daily sync
         run: python scripts/daily_sync.py
         env:

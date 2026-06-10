@@ -59,6 +59,9 @@ jobs:
       - name: Unit tests (vitest)
         run: npx vitest run
 
+      - name: Clean Python bytecode cache
+        run: find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+
       - name: Unit tests (pytest)
         run: pytest scripts/ -m "not integration"
 
