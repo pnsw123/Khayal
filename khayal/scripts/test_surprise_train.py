@@ -15,6 +15,36 @@ from surprise_train import (
 )
 
 # ---------------------------------------------------------------------------
+# Helper: per-table mock for fetch_ratings
+# ---------------------------------------------------------------------------
+
+
+def _make_table_mock(movie_data: list[Any], tv_data: list[Any]) -> tuple[Any, Any]:
+    """Return (mock_supabase_module, mock_client) with per-table results."""
+    mock_client = MagicMock()
+
+    def table_side_effect(name: str) -> Any:
+        tbl = MagicMock()
+        if name == "movie_ratings":
+            result = MagicMock()
+            result.data = movie_data
+            tbl.select.return_value.execute.return_value = result
+        elif name == "tv_series_ratings":
+            result = MagicMock()
+            result.data = tv_data
+            tbl.select.return_value.execute.return_value = result
+        else:
+            result = MagicMock()
+            result.data = []
+            tbl.select.return_value.execute.return_value = result
+        return tbl
+
+    mock_client.table.side_effect = table_side_effect
+    mock_supabase = MagicMock()
+    mock_supabase.create_client.return_value = mock_client
+    return mock_supabase, mock_client
+
+# ---------------------------------------------------------------------------
 # get_env
 # ---------------------------------------------------------------------------
 
@@ -78,33 +108,59 @@ def test_clamp_rating_float_precision() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_fetch_ratings_returns_list() -> None:
+def test_fetch_ratings_returns_movie_rows() -> None:
     from surprise_train import fetch_ratings
 
-    mock_result = MagicMock()
-    mock_result.data = [{"user_id": "u1", "media_id": "m1", "rating": 9.0}]
-    mock_client = MagicMock()
-    mock_client.table.return_value.select.return_value.execute.return_value = mock_result
-
-    mock_supabase = MagicMock()
-    mock_supabase.create_client.return_value = mock_client
+    mock_supabase, _ = _make_table_mock(
+        movie_data=[{"user_id": "u1", "movie_id": 10, "rating": 9.0}],
+        tv_data=[],
+    )
 
     with patch.dict("sys.modules", {"supabase": mock_supabase}):
         result = fetch_ratings("https://x.supabase.co", "key")
 
-    assert result == [{"user_id": "u1", "media_id": "m1", "rating": 9.0}]
+    assert len(result) == 1
+    assert result[0]["media_id"] == "10"
+    assert result[0]["media_type"] == "movie"
+    assert result[0]["rating"] == 9.0
+
+
+def test_fetch_ratings_returns_tv_rows() -> None:
+    from surprise_train import fetch_ratings
+
+    mock_supabase, _ = _make_table_mock(
+        movie_data=[],
+        tv_data=[{"user_id": "u1", "tv_series_id": 55, "rating": 7.0}],
+    )
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase}):
+        result = fetch_ratings("https://x.supabase.co", "key")
+
+    assert len(result) == 1
+    assert result[0]["media_id"] == "55"
+    assert result[0]["media_type"] == "tv"
+
+
+def test_fetch_ratings_merges_both_tables() -> None:
+    from surprise_train import fetch_ratings
+
+    mock_supabase, _ = _make_table_mock(
+        movie_data=[{"user_id": "u1", "movie_id": 1, "rating": 8.0}],
+        tv_data=[{"user_id": "u2", "tv_series_id": 2, "rating": 6.0}],
+    )
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase}):
+        result = fetch_ratings("https://x.supabase.co", "key")
+
+    assert len(result) == 2
+    types = {r["media_type"] for r in result}
+    assert types == {"movie", "tv"}
 
 
 def test_fetch_ratings_none_data_returns_empty() -> None:
     from surprise_train import fetch_ratings
 
-    mock_result = MagicMock()
-    mock_result.data = None
-    mock_client = MagicMock()
-    mock_client.table.return_value.select.return_value.execute.return_value = mock_result
-
-    mock_supabase = MagicMock()
-    mock_supabase.create_client.return_value = mock_client
+    mock_supabase, _ = _make_table_mock(movie_data=[], tv_data=[])
 
     with patch.dict("sys.modules", {"supabase": mock_supabase}):
         result = fetch_ratings("https://x.supabase.co", "key")

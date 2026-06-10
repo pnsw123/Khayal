@@ -20,22 +20,59 @@ def fetch_ratings(
     supabase_url: str,
     service_key: str,
 ) -> list[dict[str, Any]]:
-    """Fetch user ratings from Supabase."""
+    """Fetch user ratings from Supabase.
+
+    Queries both ``movie_ratings`` and ``tv_series_ratings`` and merges the
+    results into a unified list.  Each row is normalised to:
+
+        {"user_id": str, "media_id": str, "rating": float, "media_type": "movie" | "tv"}
+
+    This preserves the original media type so that
+    :func:`generate_and_store_recommendations` can write to the correct
+    nullable column (``movie_id`` vs ``tv_series_id``) in the
+    ``recommendations`` table.
+    """
     try:
         from supabase import create_client
     except ImportError as exc:
         raise RuntimeError("supabase is required: pip install supabase") from exc
 
+    from typing import cast
+
     client = create_client(supabase_url, service_key)
-    result = (
-        client.table("user_ratings")
-        .select("user_id, media_id, rating")
+    rows: list[dict[str, Any]] = []
+
+    # Movie ratings
+    movie_result = (
+        client.table("movie_ratings")
+        .select("user_id, movie_id, rating")
         .execute()
     )
-    from typing import cast
-    raw: list[Any] = list(result.data) if result.data else []
-    rows: list[dict[str, Any]] = cast(list[dict[str, Any]], [r for r in raw if isinstance(r, dict)])
-    return rows
+    for r in (movie_result.data or []):
+        if isinstance(r, dict):
+            rows.append({
+                "user_id": r.get("user_id", ""),
+                "media_id": str(r.get("movie_id", "")),
+                "rating": float(r.get("rating", 0.0)),
+                "media_type": "movie",
+            })
+
+    # TV-series ratings
+    tv_result = (
+        client.table("tv_series_ratings")
+        .select("user_id, tv_series_id, rating")
+        .execute()
+    )
+    for r in (tv_result.data or []):
+        if isinstance(r, dict):
+            rows.append({
+                "user_id": r.get("user_id", ""),
+                "media_id": str(r.get("tv_series_id", "")),
+                "rating": float(r.get("rating", 0.0)),
+                "media_type": "tv",
+            })
+
+    return cast(list[dict[str, Any]], rows)
 
 
 def clamp_rating(value: float, min_val: float = 1.0, max_val: float = 10.0) -> float:
@@ -110,6 +147,15 @@ def generate_and_store_recommendations(
 ) -> int:
     """Generate top-N recommendations per user and upsert to Supabase.
 
+    ``ratings`` rows must carry a ``media_type`` field (``"movie"`` or
+    ``"tv"``) as returned by :func:`fetch_ratings`.  Items without an entry
+    default to ``"movie"`` for backward-compatibility.
+
+    Movie recommendations are written to ``movie_id`` (``tv_series_id=None``);
+    TV recommendations are written to ``tv_series_id`` (``movie_id=None``).
+    The two media types are upserted separately with the correct conflict key:
+    ``user_id,movie_id,source`` and ``user_id,tv_series_id,source``.
+
     Returns the total number of rows upserted.
     """
     try:
@@ -118,6 +164,7 @@ def generate_and_store_recommendations(
         raise RuntimeError("supabase is required: pip install supabase") from exc
 
     from datetime import datetime
+    from typing import cast as _cast
 
     client = create_client(supabase_url, service_key)
 
@@ -136,6 +183,13 @@ def generate_and_store_recommendations(
             if r.get("media_id") and float(r.get("rating", 0)) > 0
         )
     )
+
+    # Build a lookup from item-id → media_type
+    item_media_types: dict[str, str] = {
+        str(r["media_id"]): str(r.get("media_type", "movie"))
+        for r in ratings
+        if r.get("media_id")
+    }
 
     generated_at = datetime.now(UTC).isoformat()
     total_upserted = 0
@@ -157,24 +211,42 @@ def generate_and_store_recommendations(
         scored.sort(reverse=True)
         top = scored[:top_n]
 
-        rows = [
-            {
-                "user_id": uid,
-                "movie_id": iid,
-                "score": score,
-                "source": algo_name,
-                "created_at": generated_at,
-            }
-            for score, iid in top
-        ]
+        movie_rows: list[dict[str, Any]] = []
+        tv_rows: list[dict[str, Any]] = []
+        for score, iid in top:
+            media_type = item_media_types.get(iid, "movie")
+            if media_type == "tv":
+                tv_rows.append({
+                    "user_id": uid,
+                    "movie_id": None,
+                    "tv_series_id": int(iid),
+                    "score": score,
+                    "source": algo_name,
+                    "created_at": generated_at,
+                })
+            else:
+                movie_rows.append({
+                    "user_id": uid,
+                    "movie_id": int(iid),
+                    "tv_series_id": None,
+                    "score": score,
+                    "source": algo_name,
+                    "created_at": generated_at,
+                })
 
-        if rows:
-            from typing import cast as _cast
+        if movie_rows:
             client.table("recommendations").upsert(
-                _cast(Any, rows),
+                _cast(Any, movie_rows),
                 on_conflict="user_id,movie_id,source",
             ).execute()
-            total_upserted += len(rows)
+            total_upserted += len(movie_rows)
+
+        if tv_rows:
+            client.table("recommendations").upsert(
+                _cast(Any, tv_rows),
+                on_conflict="user_id,tv_series_id,source",
+            ).execute()
+            total_upserted += len(tv_rows)
 
     print(f"[svd] upserted {total_upserted} recommendation rows (algo={algo_name})")
     return total_upserted

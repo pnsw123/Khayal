@@ -113,6 +113,79 @@ describe("middleware — /auth/callback rate limiting (Upstash)", () => {
   });
 });
 
+describe("middleware — /api/image-proxy rate limiting (Upstash)", () => {
+  beforeEach(() => {
+    mockLimit.mockReset();
+  });
+
+  it("allows image-proxy requests when Upstash returns success=true", async () => {
+    mockLimit.mockResolvedValue({ success: true });
+    const middleware = await importMiddleware();
+    const req = new NextRequest(new URL("/api/image-proxy?url=https://image.tmdb.org/t/p/w500/x.jpg", ORIGIN), {
+      headers: { "x-forwarded-for": "1.2.3.4" },
+    });
+    const res = await middleware(req);
+    expect(res.status).not.toBe(429);
+  });
+
+  it("returns 429 on image-proxy when Upstash returns success=false", async () => {
+    mockLimit.mockResolvedValue({ success: false });
+    const middleware = await importMiddleware();
+    const req = new NextRequest(new URL("/api/image-proxy?url=https://image.tmdb.org/t/p/w500/x.jpg", ORIGIN), {
+      headers: { "x-forwarded-for": "5.6.7.8" },
+    });
+    const res = await middleware(req);
+    expect(res.status).toBe(429);
+  });
+
+  it("429 image-proxy response includes Retry-After header", async () => {
+    mockLimit.mockResolvedValue({ success: false });
+    const middleware = await importMiddleware();
+    const req = new NextRequest(new URL("/api/image-proxy?url=https://image.tmdb.org/t/p/w500/x.jpg", ORIGIN), {
+      headers: { "x-forwarded-for": "9.10.11.12" },
+    });
+    const res = await middleware(req);
+    expect(res.headers.get("Retry-After")).toBeTruthy();
+  });
+
+  it("image-proxy calls limit() with the client IP", async () => {
+    mockLimit.mockResolvedValue({ success: true });
+    const middleware = await importMiddleware();
+    const req = new NextRequest(new URL("/api/image-proxy?url=https://image.tmdb.org/t/p/w500/x.jpg", ORIGIN), {
+      headers: { "x-forwarded-for": "172.16.0.1" },
+    });
+    await middleware(req);
+    expect(mockLimit).toHaveBeenCalledWith("172.16.0.1");
+  });
+
+  it("image-proxy does not call limit() when env vars absent in dev", async () => {
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+    vi.stubEnv("NODE_ENV", "development");
+    const middleware = await importMiddleware();
+    const req = new NextRequest(new URL("/api/image-proxy?url=https://image.tmdb.org/t/p/w500/x.jpg", ORIGIN), {
+      headers: { "x-forwarded-for": "1.2.3.4" },
+    });
+    const res = await middleware(req);
+    expect(res.status).not.toBe(429);
+    // Restore
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://fake.upstash.io");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "fake-token");
+    vi.stubEnv("NODE_ENV", "test");
+  });
+
+  it("other routes pass through without calling limit()", async () => {
+    mockLimit.mockResolvedValue({ success: true });
+    const middleware = await importMiddleware();
+    const req = new NextRequest(new URL("/browse", ORIGIN), {
+      headers: { "x-forwarded-for": "1.2.3.4" },
+    });
+    const res = await middleware(req);
+    expect(res.status).not.toBe(429);
+    expect(mockLimit).not.toHaveBeenCalled();
+  });
+});
+
 describe("middleware — production guard: throw when env vars absent", () => {
   it("throws on cold-start in production when UPSTASH_REDIS_REST_URL is missing", async () => {
     vi.resetModules();
