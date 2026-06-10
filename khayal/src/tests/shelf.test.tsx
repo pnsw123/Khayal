@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { Shelf, type ShelfProps, type MovieWithGenres } from "@/components/shelf";
+import { Shelf, type ShelfProps, type ShelfItem } from "@/components/shelf";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
@@ -20,7 +20,7 @@ vi.mock("motion/react", () => ({
   useReducedMotion: () => false,
 }));
 
-const makeMovie = (id: number, title: string): MovieWithGenres => ({
+const makeMovie = (id: number, title: string): ShelfItem => ({
   id,
   title,
   slug: `movie-${id}`,

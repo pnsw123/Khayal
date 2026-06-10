@@ -20,9 +20,6 @@ export type ShelfItem = {
   genre_names?: string[] | null;
 };
 
-/** @deprecated Use ShelfItem directly — kept for any external callers during migration. */
-export type MovieWithGenres = ShelfItem;
-
 export interface ShelfProps {
   title: string;
   kicker?: string;      // small Arabic/eyebrow label
