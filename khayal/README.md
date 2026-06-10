@@ -29,6 +29,18 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 
 ---
 
+## Features
+
+- **Instant search** — full-text RPC across 10,200+ titles with live dropdown
+- **Personalised recommendations** — collaborative filtering via scikit-surprise / cornac, retrained daily
+- **Watchlists & shelves** — add films and shows to custom lists; mark favourites
+- **10-point rating system** — per-user ratings stored in PostgreSQL, aggregated into per-title averages
+- **Reviews with spoiler toggle** — headline + body reviews; readers can hide spoilers
+- **Admin panel** — content moderation and user role management
+- **Daily TMDB sync** — GitHub Actions cron keeps the catalogue fresh
+
+---
+
 ## Demo
 
 [![Open live demo](https://img.shields.io/badge/▶%20Watch%20live%20demo-movie--db--one--psi.vercel.app-black?style=for-the-badge&logo=vercel)](https://movie-db-one-psi.vercel.app)
