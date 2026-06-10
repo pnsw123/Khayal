@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sys
+from datetime import UTC
 from typing import Any
 
 
@@ -69,7 +70,7 @@ def train_bpr_model(
         raise RuntimeError("cornac is required: pip install cornac") from exc
 
     dataset = cornac.data.Dataset.from_uir(
-        zip(user_ids, item_ids, rating_vals)
+        zip(user_ids, item_ids, rating_vals, strict=False)
     )
     model = cornac.models.BPR(k=n_factors, max_iter=n_epochs, verbose=False)
     model.fit(dataset)
@@ -102,13 +103,13 @@ def generate_and_store_recommendations(
     except ImportError as exc:
         raise RuntimeError("supabase is required: pip install supabase") from exc
 
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     client = create_client(supabase_url, service_key)
 
     unique_users = list(dict.fromkeys(user_ids))
     unique_items = list(dict.fromkeys(item_ids))
-    generated_at = datetime.now(timezone.utc).isoformat()
+    generated_at = datetime.now(UTC).isoformat()
 
     total_upserted = 0
     for uid in unique_users:
@@ -117,6 +118,10 @@ def generate_and_store_recommendations(
             try:
                 score = float(model.score(uid, iid))
             except Exception:  # noqa: BLE001
+                import logging  # noqa: PLC0415
+                logging.getLogger(__name__).debug(
+                    "score failed for uid=%s iid=%s", uid, iid, exc_info=True
+                )
                 continue
             scored.append((score, iid))
 
@@ -159,7 +164,9 @@ def run_training() -> None:
     print(f"[train] loaded {len(rating_vals)} ratings from {len(set(user_ids))} users")
 
     model = train_bpr_model(user_ids, item_ids, rating_vals)
-    model_path = os.environ.get("MODEL_PATH", "/tmp/bpr_model.pkl")
+    model_path = os.environ.get("MODEL_PATH") or os.path.join(
+        os.environ.get("TMPDIR", "/tmp"), "bpr_model.pkl"  # noqa: S108
+    )
     save_model(model, model_path)
     print(f"[train] model saved to {model_path}")
 

@@ -7,7 +7,6 @@ import sys
 import time
 from typing import Any
 
-
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 _DEFAULT_MAX_PAGES = 3

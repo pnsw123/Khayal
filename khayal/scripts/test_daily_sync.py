@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import sys
 from typing import Any
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -17,7 +17,6 @@ from daily_sync import (
     get_env,
     upsert_records,
 )
-
 
 # ---------------------------------------------------------------------------
 # get_env
@@ -172,7 +171,6 @@ def test_fetch_trending_calls_tmdb_endpoint() -> None:
 
 def test_fetch_trending_raises_on_missing_httpx() -> None:
     import builtins
-    import importlib
 
     real_import = builtins.__import__
 
@@ -342,7 +340,7 @@ def test_fetch_trending_raises_after_max_retries_exhausted() -> None:
 
     with patch("daily_sync.time.sleep"), \
          patch.dict(sys.modules, {"httpx": mock_httpx}):
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match="429"):  # noqa: B017
             fetch_trending("movie", "day", "key", max_pages=1)
 
     assert mock_httpx.get.call_count == 3  # _MAX_RETRIES
@@ -359,7 +357,9 @@ def test_run_sync_reads_tmdb_max_pages_env() -> None:
 
     captured: list[int] = []
 
-    def fake_fetch(media_type: str, time_window: str, api_key: str, max_pages: int = 3) -> list[Any]:
+    def fake_fetch(  # type: ignore[misc]
+        media_type: str, time_window: str, api_key: str, max_pages: int = 3
+    ) -> list[Any]:
         captured.append(max_pages)
         return []
 
@@ -387,7 +387,9 @@ def test_run_sync_default_max_pages_when_env_unset() -> None:
 
     captured: list[int] = []
 
-    def fake_fetch(media_type: str, time_window: str, api_key: str, max_pages: int = 3) -> list[Any]:
+    def fake_fetch(  # type: ignore[misc]
+        media_type: str, time_window: str, api_key: str, max_pages: int = 3
+    ) -> list[Any]:
         captured.append(max_pages)
         return []
 
@@ -432,7 +434,10 @@ def test_upsert_records_calls_supabase_upsert() -> None:
     mock_supabase_module = MagicMock()
     mock_supabase_module.create_client.return_value = mock_client
 
-    records = [{"tmdb_id": 1, "media_type": "movie", "title": "A"}, {"tmdb_id": 2, "media_type": "movie", "title": "B"}]
+    records = [
+        {"tmdb_id": 1, "media_type": "movie", "title": "A"},
+        {"tmdb_id": 2, "media_type": "movie", "title": "B"},
+    ]
 
     with patch.dict("sys.modules", {"supabase": mock_supabase_module}):
         count = upsert_records(records, "https://x.supabase.co", "key")

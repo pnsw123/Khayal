@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sys
+from datetime import UTC
 from typing import Any
 
 
@@ -48,8 +49,8 @@ def build_surprise_dataset(
 ) -> Any:
     """Convert rating dicts into a surprise Dataset."""
     try:
-        from surprise import Dataset, Reader  # noqa: PLC0415
         import pandas as pd  # noqa: PLC0415
+        from surprise import Dataset, Reader  # noqa: PLC0415
     except ImportError as exc:
         raise RuntimeError(
             "scikit-surprise and pandas are required: pip install scikit-surprise pandas"
@@ -116,7 +117,7 @@ def generate_and_store_recommendations(
     except ImportError as exc:
         raise RuntimeError("supabase is required: pip install supabase") from exc
 
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     client = create_client(supabase_url, service_key)
 
@@ -136,7 +137,7 @@ def generate_and_store_recommendations(
         )
     )
 
-    generated_at = datetime.now(timezone.utc).isoformat()
+    generated_at = datetime.now(UTC).isoformat()
     total_upserted = 0
 
     for uid in unique_users:
@@ -146,6 +147,10 @@ def generate_and_store_recommendations(
                 pred = algo.predict(uid, iid)
                 score = float(pred.est)
             except Exception:  # noqa: BLE001
+                import logging  # noqa: PLC0415
+                logging.getLogger(__name__).debug(
+                    "predict failed for uid=%s iid=%s", uid, iid, exc_info=True
+                )
                 continue
             scored.append((score, iid))
 
@@ -188,7 +193,9 @@ def run_svd_training() -> None:
     print(f"[svd] loaded {len(ratings)} ratings")
 
     model = train_svd(dataset)
-    model_path = os.environ.get("SVD_MODEL_PATH", "/tmp/svd_model.pkl")
+    model_path = os.environ.get("SVD_MODEL_PATH") or os.path.join(
+        os.environ.get("TMPDIR", "/tmp"), "svd_model.pkl"  # noqa: S108
+    )
     save_model(model, model_path)
     print(f"[svd] model saved to {model_path}")
 
