@@ -25,6 +25,21 @@
 
 ---
 
+## Demo
+
+| Feature | What to try | URL |
+|---------|-------------|-----|
+| Browse | Scroll the catalogue, filter by genre | [/browse](https://movie-db-one-psi.vercel.app/browse) |
+| Search | Type any title or actor name | [/search](https://movie-db-one-psi.vercel.app/search) |
+| Rate | Click a title → rate it 1–10 | any title page |
+| Recommendations | Rate 5+ films first — recommendations cold-start after your 5th rating | [/browse](https://movie-db-one-psi.vercel.app/browse) |
+| Reviews | Write a review with optional spoiler blur | any title page |
+| Watchlist | Add titles to a custom list | any title page |
+
+> **Note:** Poster and backdrop images are served via the TMDB image CDN (`image.tmdb.org`). If TMDB's CDN is unreachable in your region, images will not load — the rest of the app remains functional. This product uses the TMDB API but is not endorsed or certified by TMDB.
+
+---
+
 ## What It Does
 
 Browse, search, and track films and TV shows from a curated database of 7,400+ films and 2,800+ TV shows synced nightly from TMDB. Rate titles on a 10-point scale, write reviews with optional spoiler blur, build watchlists, and get personalised recommendations based on your rating history.
