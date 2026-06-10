@@ -1,4 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+vi.mock("@/lib/supabase-browser", () => ({
+  supabaseBrowser: vi.fn(() => ({})),
+}));
+
 import { getUnlitHoverClasses } from "@/components/rate-widget";
 
 describe("getUnlitHoverClasses — color tiers", () => {

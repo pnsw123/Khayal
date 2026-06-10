@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 describe("supabase-server env validation", () => {
   const ORIG_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const ORIG_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
