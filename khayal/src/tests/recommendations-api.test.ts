@@ -25,10 +25,6 @@ function makeErrorChain(message: string) {
   return makeChain({ data: null, error: { message } });
 }
 
-function makeRpcResult(data: unknown, error: { message: string } | null = null): Promise<{ data: unknown; error: { message: string } | null }> {
-  return Promise.resolve({ data, error });
-}
-
 const mockFrom = vi.fn();
 const mockRpc = vi.fn();
 

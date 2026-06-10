@@ -6,7 +6,7 @@ const { mockUseAmbientColor } = vi.hoisted(() => {
   return { mockUseAmbientColor };
 });
 
-vi.mock("@/hooks/use-ambient-color", () => ({
+vi.mock("@/lib/use-ambient-color", () => ({
   useAmbientColor: mockUseAmbientColor,
 }));
 

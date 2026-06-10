@@ -1,6 +1,6 @@
 "use client";
 
-import { useAmbientColor } from "@/hooks/use-ambient-color";
+import { useAmbientColor } from "@/lib/use-ambient-color";
 
 interface AmbientBackdropProps {
   posterUrl: string | null;

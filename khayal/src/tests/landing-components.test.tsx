@@ -66,9 +66,16 @@ vi.mock("motion/react", () => ({
       <h2 className={className} style={style}>{children}</h2>,
     p: ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) =>
       <p className={className} style={style}>{children}</p>,
+    span: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   },
   useReducedMotion: () => true,
   useInView: () => true,
+  useMotionValue: (v: number) => ({
+    set: vi.fn(),
+    on: vi.fn().mockReturnValue(vi.fn()),
+    get: vi.fn().mockReturnValue(v),
+  }),
+  useSpring: (v: unknown) => v,
 }));
 
 import { CTASection } from "@/components/landing/cta-section";
@@ -106,26 +113,6 @@ describe("CTASection", () => {
 });
 
 // ── stats-section ──────────────────────────────────────────────────────────
-
-vi.mock("motion/react", () => ({
-  motion: {
-    div: ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) =>
-      <div className={className} style={style}>{children}</div>,
-    h2: ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) =>
-      <h2 style={style}>{children}</h2>,
-    p: ({ children, style, className }: { children: React.ReactNode; style?: React.CSSProperties; className?: string }) =>
-      <p style={style} className={className}>{children}</p>,
-    span: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-  },
-  useReducedMotion: () => true,
-  useInView: () => true,
-  useMotionValue: (v: number) => ({
-    set: vi.fn(),
-    on: vi.fn().mockReturnValue(vi.fn()),
-    get: vi.fn().mockReturnValue(v),
-  }),
-  useSpring: (v: unknown) => v,
-}));
 
 import { StatsSection } from "@/components/landing/stats-section";
 
