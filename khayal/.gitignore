@@ -59,6 +59,8 @@ scripts/__pycache__/
 
 # Claude Code internal
 .claude/
+# Defense-in-depth: orchestrator plan files (already covered by .claude/ above)
+.claude/fix-*.md
 
 # Personal dev tooling — not part of contributor workflow
 jsrepo.config.mts

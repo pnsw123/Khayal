@@ -10,7 +10,8 @@
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![Framer Motion](https://img.shields.io/badge/Framer%20Motion-animations-EF4D94?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion)
+[![Motion](https://img.shields.io/badge/Motion-12-EF4D94?style=for-the-badge&logo=framer&logoColor=white)](https://motion.dev)
+[![Embla Carousel](https://img.shields.io/badge/Embla%20Carousel-8-000000?style=for-the-badge)](https://www.embla-carousel.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 [![CI](https://github.com/pnsw123/Khayal/actions/workflows/ci.yml/badge.svg)](https://github.com/pnsw123/Khayal/actions/workflows/ci.yml)
