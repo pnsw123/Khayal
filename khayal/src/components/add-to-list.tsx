@@ -69,14 +69,16 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
     start(async () => {
       const sb = supabaseBrowser();
       if (list.member) {
-        const { error } = await sb.from(bridgeTable)
-          .delete()
-          .eq("list_id", list.id)
-          .eq(idField, targetId);
+        const deleteQuery = kind === "movie"
+          ? sb.from("user_list_movies").delete().eq("list_id", list.id).eq("movie_id", targetId)
+          : sb.from("user_list_tv_series").delete().eq("list_id", list.id).eq("tv_series_id", targetId);
+        const { error } = await deleteQuery;
         if (error) { setErr(error.message); return; }
       } else {
-        const { error } = await sb.from(bridgeTable)
-          .upsert({ list_id: list.id, [idField]: targetId });
+        const upsertQuery = kind === "movie"
+          ? sb.from("user_list_movies").upsert({ list_id: list.id, movie_id: targetId })
+          : sb.from("user_list_tv_series").upsert({ list_id: list.id, tv_series_id: targetId });
+        const { error } = await upsertQuery;
         if (error) { setErr(error.message); return; }
       }
       router.refresh();

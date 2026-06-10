@@ -72,7 +72,7 @@ export default async function AdminContent({
 type ContentItem = {
   id: number;
   title: string;
-  slug: string;
+  slug: string | null;
   poster_url: string | null;
   [key: string]: unknown;
 };
@@ -139,7 +139,7 @@ function Section({
               <td className="p-4">
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/${type === "movies" ? "movies" : "tv"}/${item.slug}`}
+                    href={item.slug ? `/${type === "movies" ? "movies" : "tv"}/${item.slug}` : "#"}
                     target="_blank"
                     className="p-1.5 rounded hover:bg-zinc-700 text-zinc-500 hover:text-zinc-300 transition-colors"
                     title="View page"

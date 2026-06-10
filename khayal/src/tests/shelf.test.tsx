@@ -26,14 +26,9 @@ const makeMovie = (id: number, title: string): MovieWithGenres => ({
   slug: `movie-${id}`,
   release_date: "2023-01-01",
   poster_url: null,
-  backdrop_url: null,
   runtime_minutes: 120,
   age_rating: "PG",
   original_language: "en",
-  country: "US",
-  overview: null,
-  tmdb_id: id,
-  trailer_youtube_id: null,
   genre_names: ["Action"],
 });
 

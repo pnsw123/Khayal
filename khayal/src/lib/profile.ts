@@ -43,7 +43,7 @@ export async function getUserProfile(username: string): Promise<UserProfile | nu
     .select("id, username, display_name, avatar_url, created_at")
     .eq("username", username)
     .maybeSingle();
-  return data ?? null;
+  return data as UserProfile | null;
 }
 
 export async function getUserRatings(userId: string): Promise<RatingWithMovie[]> {

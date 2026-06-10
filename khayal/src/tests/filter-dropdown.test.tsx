@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FilterDropdown } from "@/components/filter-dropdown";
@@ -26,7 +26,7 @@ vi.mock("@radix-ui/react-popover", async () => {
   const Trigger = ({ children }: { children: React.ReactNode }) => {
     const { open, setOpen } = React.useContext(PopoverCtx);
     const child = React.Children.only(children) as React.ReactElement;
-    return React.cloneElement(child, { onClick: () => setOpen(!open) });
+    return React.cloneElement(child as React.ReactElement<{ onClick?: () => void }>, { onClick: () => setOpen(!open) });
   };
 
   const Portal = ({ children }: { children: React.ReactNode }) => <>{children}</>;

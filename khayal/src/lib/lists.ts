@@ -33,14 +33,28 @@ export async function loadUserListsForTarget(
     if (fav) lists = [fav, ...(lists ?? [])];
   }
 
-  // 3. Membership check for this target
+  // 3. Membership check for this target — use separate typed branches to
+  //    satisfy the typed Supabase client (dynamic table/column names cause
+  //    SelectQueryError when the Database generic is in scope).
   const listIds = (lists ?? []).map((l: { id: number }) => l.id);
-  const { data: membership } = await sb
-    .from(bridge)
-    .select(`list_id, ${idField}`)
-    .in("list_id", listIds.length ? listIds : [-1])
-    .eq(idField, targetId);
-  const memberSet = new Set((membership ?? []).map((m: { list_id: number }) => m.list_id));
+  const safeListIds = listIds.length ? listIds : [-1];
+  let membershipListIds: number[] = [];
+  if (kind === "movie") {
+    const { data } = await sb
+      .from("user_list_movies")
+      .select("list_id")
+      .in("list_id", safeListIds)
+      .eq("movie_id", targetId);
+    membershipListIds = (data ?? []).map((m) => m.list_id);
+  } else {
+    const { data } = await sb
+      .from("user_list_tv_series")
+      .select("list_id")
+      .in("list_id", safeListIds)
+      .eq("tv_series_id", targetId);
+    membershipListIds = (data ?? []).map((m) => m.list_id);
+  }
+  const memberSet = new Set(membershipListIds);
 
   return (lists ?? []).map((l: { id: number; name: string; is_favorites: boolean; is_public: boolean }) => ({
     id: l.id,

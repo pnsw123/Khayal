@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { Database } from "@/lib/database.types";
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL)
   throw new Error("NEXT_PUBLIC_SUPABASE_URL is required");
@@ -12,7 +13,7 @@ const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export async function supabaseServer() {
   const cookieStore = await cookies();
-  return createServerClient(SUPABASE_URL, SUPABASE_ANON, {
+  return createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON, {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (cs) => {

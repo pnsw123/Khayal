@@ -22,21 +22,24 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     : DEFAULT_LIMIT;
   const algoFilter = req.nextUrl.searchParams.get("algo") ?? undefined;
 
+  // Note: `algo` and `generated_at` columns do not exist on `recommendations`.
+  // The `source` column serves as the algorithm identifier; `created_at` as the
+  // generation timestamp. The response shape is kept the same for API consumers.
   let recQuery = sb
     .from("recommendations")
-    .select("movie_id, score, algo, generated_at")
+    .select("movie_id, score, source, created_at")
     .eq("user_id", user.id)
     .order("score", { ascending: false })
     .limit(limit);
 
   if (algoFilter) {
-    recQuery = recQuery.eq("algo", algoFilter);
+    recQuery = recQuery.eq("source", algoFilter);
   }
 
   const { data: recRows } = await recQuery;
 
-  const algo = recRows?.[0]?.algo ?? algoFilter ?? "cornac-als";
-  const generated_at = recRows?.[0]?.generated_at ?? new Date().toISOString();
+  const algo = recRows?.[0]?.source ?? algoFilter ?? "cornac-als";
+  const generated_at = recRows?.[0]?.created_at ?? new Date().toISOString();
 
   if (recRows && recRows.length > 0) {
     const movieIds = recRows.map((r) => r.movie_id as number);

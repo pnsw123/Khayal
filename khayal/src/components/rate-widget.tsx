@@ -69,11 +69,10 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
     debounceRef.current = setTimeout(() => {
       start(async () => {
         const sb = supabaseBrowser();
-        const table = kind === "movie" ? "movie_ratings" : "tv_series_ratings";
-        const idField = kind === "movie" ? "movie_id" : "tv_series_id";
-        const { error } = await sb
-          .from(table)
-          .upsert({ user_id: userId, [idField]: targetId, rating: n }, { onConflict: `user_id,${idField}` });
+        const upsertQuery = kind === "movie"
+          ? sb.from("movie_ratings").upsert({ user_id: userId, movie_id: targetId, rating: n }, { onConflict: "user_id,movie_id" })
+          : sb.from("tv_series_ratings").upsert({ user_id: userId, tv_series_id: targetId, rating: n }, { onConflict: "user_id,tv_series_id" });
+        const { error } = await upsertQuery;
         if (error) { setErr(error.message); setRating(initialRating); return; }
         router.refresh();
       });
@@ -87,13 +86,10 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
     setRating(null);
     start(async () => {
       const sb = supabaseBrowser();
-      const table = kind === "movie" ? "movie_ratings" : "tv_series_ratings";
-      const idField = kind === "movie" ? "movie_id" : "tv_series_id";
-      const { error } = await sb
-        .from(table)
-        .delete()
-        .eq("user_id", userId)
-        .eq(idField, targetId);
+      const deleteQuery = kind === "movie"
+        ? sb.from("movie_ratings").delete().eq("user_id", userId).eq("movie_id", targetId)
+        : sb.from("tv_series_ratings").delete().eq("user_id", userId).eq("tv_series_id", targetId);
+      const { error } = await deleteQuery;
       if (error) { setErr(error.message); setRating(prev); return; }
       router.refresh();
     });

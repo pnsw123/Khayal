@@ -56,18 +56,20 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
     if (!body.trim()) { setErr("Review body is required."); return; }
     start(async () => {
       const sb = supabaseBrowser();
-      const table = kind === "movie" ? "movie_reviews" : "tv_series_reviews";
-      const idField = kind === "movie" ? "movie_id" : "tv_series_id";
-      const row = {
-        user_id: userId,
-        [idField]: targetId,
-        headline: headline.trim() || null,
-        body: body.trim(),
-        contains_spoiler: spoiler,
-      };
-      const { error } = await sb
-        .from(table)
-        .upsert(row, { onConflict: `user_id,${idField}` });
+      let error: { message: string } | null = null;
+      if (kind === "movie") {
+        const res = await sb.from("movie_reviews").upsert(
+          { user_id: userId, movie_id: targetId, headline: headline.trim() || null, body: body.trim(), contains_spoiler: spoiler },
+          { onConflict: "user_id,movie_id" },
+        );
+        error = res.error;
+      } else {
+        const res = await sb.from("tv_series_reviews").upsert(
+          { user_id: userId, tv_series_id: targetId, headline: headline.trim() || null, body: body.trim(), contains_spoiler: spoiler },
+          { onConflict: "user_id,tv_series_id" },
+        );
+        error = res.error;
+      }
       if (error) { setErr(error.message); return; }
       router.refresh();
     });

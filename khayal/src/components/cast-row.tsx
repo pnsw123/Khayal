@@ -11,7 +11,7 @@ export interface CastMember {
   profile_path: string | null;
   role: "cast" | "crew";
   job: string | null;
-  credit_order: number;
+  credit_order: number | null;
 }
 
 export function CastRow({ cast }: { cast: CastMember[] }) {
