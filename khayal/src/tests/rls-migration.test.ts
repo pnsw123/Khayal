@@ -287,6 +287,54 @@ describe("recommendations table: SELECT owner only", () => {
   });
 });
 
+// ── recommendations deny migration (issue #257) ───────────────────────────────
+
+describe("recommendations deny migration: 20240001000013_rls_recommendations_deny.sql", () => {
+  const DENY_FILENAME = "20240001000013_rls_recommendations_deny.sql";
+  let denySql: string;
+
+  beforeAll(() => {
+    denySql = readFileSync(resolve(MIGRATIONS_DIR, DENY_FILENAME), "utf-8");
+  });
+
+  it("file exists and is non-empty", () => {
+    expect(denySql.length).toBeGreaterThan(50);
+  });
+
+  it("has recommendations_insert_deny policy", () => {
+    expect(denySql).toContain('"recommendations_insert_deny"');
+  });
+
+  it("insert deny uses WITH CHECK (false)", () => {
+    expect(denySql).toContain("WITH CHECK (false)");
+  });
+
+  it("has recommendations_update_deny policy", () => {
+    expect(denySql).toContain('"recommendations_update_deny"');
+  });
+
+  it("update deny uses USING (false)", () => {
+    expect(denySql).toContain("USING (false)");
+  });
+
+  it("has recommendations_delete_deny policy", () => {
+    expect(denySql).toContain('"recommendations_delete_deny"');
+  });
+
+  it("all 3 deny policies have DROP POLICY IF EXISTS guards (idempotent)", () => {
+    const dropCount = (denySql.match(/DROP POLICY IF EXISTS/g) ?? []).length;
+    const createCount = (denySql.match(/CREATE POLICY/g) ?? []).length;
+    expect(dropCount).toBe(createCount);
+    expect(createCount).toBe(3);
+  });
+
+  it("targets recommendations table", () => {
+    expect(denySql.toUpperCase()).toContain("ON RECOMMENDATIONS FOR INSERT");
+    expect(denySql.toUpperCase()).toContain("ON RECOMMENDATIONS FOR UPDATE");
+    expect(denySql.toUpperCase()).toContain("ON RECOMMENDATIONS FOR DELETE");
+  });
+});
+
 // ── Policy naming convention ──────────────────────────────────────────────────
 
 describe("policy naming convention", () => {
