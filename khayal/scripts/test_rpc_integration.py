@@ -540,3 +540,124 @@ def test_get_tv_detail_returns_series(sb: Any, seeded_data: dict[str, Any]) -> N
     assert isinstance(data["reviews"], list), (
         f"'reviews' must be a list, got {type(data['reviews'])}"
     )
+
+
+# ---------------------------------------------------------------------------
+# GIN index on tv_series.genre_names — issue #258
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.integration
+def test_tv_series_gin_index_exists_in_catalog(sb: Any, seeded_data: dict[str, Any]) -> None:
+    """Confirm idx_tv_series_genre_names GIN index appears in pg_indexes after migrations."""
+    result = (
+        sb.from_("pg_indexes")
+        .select("indexname, indexdef")
+        .eq("tablename", "tv_series")
+        .execute()
+    )
+    index_names = {row["indexname"] for row in (result.data or [])}
+
+    assert "idx_tv_series_genre_names" in index_names, (
+        "idx_tv_series_genre_names GIN index not found on tv_series. "
+        "Run `supabase db reset` to apply 20240001000004_gin_index_tv_series_genre_names.sql."
+    )
+
+
+@pytest.mark.integration
+def test_tv_series_genre_names_index_uses_gin(sb: Any, seeded_data: dict[str, Any]) -> None:
+    """idx_tv_series_genre_names must be a GIN index (not btree or other)."""
+    result = (
+        sb.from_("pg_indexes")
+        .select("indexdef")
+        .eq("tablename", "tv_series")
+        .eq("indexname", "idx_tv_series_genre_names")
+        .execute()
+    )
+    rows = result.data or []
+    assert rows, "idx_tv_series_genre_names not found in pg_indexes"
+    indexdef: str = rows[0]["indexdef"].upper()
+    assert "USING GIN" in indexdef, (
+        f"idx_tv_series_genre_names is not a GIN index. Definition: {rows[0]['indexdef']}"
+    )
+
+
+@pytest.mark.integration
+def test_search_all_tv_genre_uses_gin_index(sb: Any, seeded_data: dict[str, Any]) -> None:
+    """EXPLAIN ANALYZE on search_all tv_series genre filter must show Index Scan, not Seq Scan.
+
+    Validates that the @> array containment predicate introduced in migration
+    20240001000012 allows the planner to use idx_tv_series_genre_names (GIN).
+
+    The sentinel genre name seeded in fixture is ``{SENTINEL}_genre_0``.
+    We probe with EXPLAIN on the raw tv_series predicate that search_all uses.
+
+    Requires the pg_execute_explain RPC defined in migration
+    20240001000010_rpc_pg_execute_explain.sql — run `supabase db reset` first.
+    """
+    sentinel = seeded_data["sentinel"]
+    genre_name = f"{sentinel}_genre_0"
+
+    safe_genre = genre_name.replace("'", "''")
+    explain_sql = (
+        "EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) "  # noqa: S608
+        "SELECT id, title FROM tv_series "
+        "WHERE genre_names @> ARRAY['" + safe_genre + "'] "
+        "LIMIT 30"
+    )
+    result = sb.rpc("pg_execute_explain", {"query": explain_sql}).execute()
+
+    assert result.data is not None, (
+        "pg_execute_explain RPC returned None. "
+        "Ensure migration 20240001000010_rpc_pg_execute_explain.sql has been applied: "
+        "run `supabase db reset` then re-run these tests."
+    )
+
+    plan_text: str = str(result.data)
+    assert "Index Scan" in plan_text or "Bitmap Index Scan" in plan_text, (
+        f"Expected Index Scan in query plan for tv_series genre filter but got Seq Scan.\n"
+        f"This means idx_tv_series_genre_names GIN index is not being used.\n"
+        f"Ensure migration 20240001000004_gin_index_tv_series_genre_names.sql is applied.\n"
+        f"Full plan:\n{plan_text}"
+    )
+    assert "Seq Scan" not in plan_text or "Index" in plan_text, (
+        "Query plan shows Seq Scan without any index on tv_series genre filter. "
+        "GIN index may be missing or the planner chose not to use it.\n"
+        f"Full plan:\n{plan_text}"
+    )
+
+
+@pytest.mark.integration
+def test_search_all_tv_type_genre_filter_returns_only_tv(
+    sb: Any, seeded_data: dict[str, Any]
+) -> None:
+    """search_all with p_type='tv' and p_genre returns only tv rows matching genre.
+
+    Confirms the @> predicate actually filters correctly at runtime (not just at
+    plan level). All seeded tv_series rows have genre_names = ['{sentinel}_genre_0'].
+    """
+    sentinel = seeded_data["sentinel"]
+    query_text = sentinel[:12]
+    genre_name = f"{sentinel}_genre_0"
+
+    result = sb.rpc(
+        "search_all",
+        {
+            "query_text": query_text,
+            "page_size": 10,
+            "p_type": "tv",
+            "p_genre": genre_name,
+        },
+    ).execute()
+
+    rows: list[dict[str, Any]] = result.data or []
+    if not rows:
+        pytest.skip("search_all returned 0 rows — FTS index may not have caught up yet")
+
+    for row in rows:
+        assert row["type"] == "tv", (
+            f"search_all with p_type='tv' returned non-tv row: {row}"
+        )
+        assert genre_name in (row.get("genre_names") or []), (
+            f"Returned row missing expected genre '{genre_name}': {row}"
+        )

@@ -66,10 +66,7 @@ AS $$
     AND (p_year_end IS NULL
          OR EXTRACT(YEAR FROM m.release_date::date)::int <= p_year_end)
     AND (p_genre IS NULL
-         OR EXISTS (
-           SELECT 1 FROM unnest(m.genre_names) g
-           WHERE lower(g) = lower(p_genre)
-         ))
+         OR m.genre_names @> ARRAY[p_genre])
 
   UNION ALL
 
@@ -99,10 +96,7 @@ AS $$
     AND (p_year_end IS NULL
          OR EXTRACT(YEAR FROM t.first_air_date::date)::int <= p_year_end)
     AND (p_genre IS NULL
-         OR EXISTS (
-           SELECT 1 FROM unnest(t.genre_names) g
-           WHERE lower(g) = lower(p_genre)
-         ))
+         OR t.genre_names @> ARRAY[p_genre])
 
   ORDER BY relevance DESC
   LIMIT page_size
