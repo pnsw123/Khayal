@@ -43,8 +43,6 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 
 ## Demo
 
-[![Open live demo](https://img.shields.io/badge/▶%20Watch%20live%20demo-movie--db--one--psi.vercel.app-black?style=for-the-badge&logo=vercel)](https://movie-db-one-psi.vercel.app)
-
 | Feature | What to try |
 |---------|-------------|
 | **Live search** | Type in the search bar → instant results dropdown as you type |
