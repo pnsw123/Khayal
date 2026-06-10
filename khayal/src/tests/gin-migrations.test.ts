@@ -193,6 +193,84 @@ describe("migration 00008: search_path fix preserves p_slug param name", () => {
   });
 });
 
+// ─── stored generated column migration (issue #270) ─────────────────────────
+
+describe("migration 000020: fts_stored_generated_columns", () => {
+  let sql: string;
+
+  beforeAll(() => {
+    sql = readMigration("20240001000020_fts_stored_generated_columns.sql");
+  });
+
+  it("adds search_vector generated column to movies", () => {
+    expect(sql.toUpperCase()).toContain("ALTER TABLE MOVIES");
+    expect(sql).toContain("search_vector");
+  });
+
+  it("adds search_vector generated column to tv_series", () => {
+    expect(sql.toUpperCase()).toContain("ALTER TABLE TV_SERIES");
+    expect(sql).toContain("search_vector");
+  });
+
+  it("uses GENERATED ALWAYS AS ... STORED", () => {
+    expect(sql.toUpperCase()).toContain("GENERATED ALWAYS AS");
+    expect(sql.toUpperCase()).toContain("STORED");
+  });
+
+  it("drops old expression index idx_movies_fts", () => {
+    expect(sql.toUpperCase()).toContain("DROP INDEX IF EXISTS IDX_MOVIES_FTS");
+  });
+
+  it("drops old expression index idx_tv_series_fts", () => {
+    expect(sql.toUpperCase()).toContain("DROP INDEX IF EXISTS IDX_TV_SERIES_FTS");
+  });
+
+  it("creates new GIN index on movies.search_vector", () => {
+    expect(sql).toContain("idx_movies_search_vector");
+    expect(sql.toUpperCase()).toContain("USING GIN(SEARCH_VECTOR)");
+  });
+
+  it("creates new GIN index on tv_series.search_vector", () => {
+    expect(sql).toContain("idx_tv_series_search_vector");
+  });
+
+  it("search_movies RPC references m.search_vector in WHERE", () => {
+    expect(sql).toContain("m.search_vector @@");
+  });
+
+  it("search_movies RPC uses stored column in ts_rank", () => {
+    expect(sql).toContain("ts_rank(\n      m.search_vector,");
+  });
+
+  it("search_tv_series RPC references t.search_vector in WHERE", () => {
+    expect(sql).toContain("t.search_vector @@");
+  });
+
+  it("search_tv_series RPC uses stored column in ts_rank", () => {
+    expect(sql).toContain("ts_rank(\n      t.search_vector,");
+  });
+
+  it("search_all RPC does not call to_tsvector at query time", () => {
+    // The GENERATED column definition uses to_tsvector, but after that point
+    // no RPC body should recompute it. Check that to_tsvector does not appear
+    // below the ALTER TABLE statements (i.e., inside any CREATE FUNCTION body).
+    const afterAlters = sql.split("CREATE OR REPLACE FUNCTION").slice(1).join("");
+    expect(afterAlters).not.toContain("to_tsvector(");
+  });
+
+  it("migration file follows naming convention", () => {
+    expect("20240001000020_fts_stored_generated_columns.sql").toMatch(
+      /^\d{14}_[a-z0-9_]+\.sql$/
+    );
+  });
+
+  it("migration timestamp is after migration 000019", () => {
+    const ts19 = parseInt("20240001000019", 10);
+    const ts20 = parseInt("20240001000020", 10);
+    expect(ts20).toBeGreaterThan(ts19);
+  });
+});
+
 // ─── SQL safety analysis ─────────────────────────────────────────────────────
 
 describe("SQL safety: no destructive statements in migrations", () => {

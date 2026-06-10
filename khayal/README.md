@@ -225,9 +225,18 @@ Benchmark source: [`k6/results/search-browse-summary.json`](k6/results/search-br
 | Concurrency | 50 virtual users × 30 s | — |
 | Gate 16 status | **PASS** | — |
 
-Endpoints tested: `GET /api/recommendations`, `GET /browse?genre=<genre>`, `GET /`.
+Endpoints tested: `GET /api/recommendations`, `GET /browse?genre=<genre>`, `GET /`, `GET /api/search` (FTS).
 Re-run: `BASE_URL=https://khayal.app k6 run k6/search-browse-load.js`
 Results auto-committed to `k6/results/search-browse-summary.json` by the [load-test workflow](.github/workflows/load-tests.yml).
+
+### Scenarios
+
+| Scenario | VUs | Duration | Endpoint | Threshold |
+|---|---|---|---|---|
+| `search_browse` | 50 | 30 s | `/api/recommendations`, `/browse`, `/` | p95 < 500 ms |
+| `search_fts` | 20 | 30 s | `GET /api/search?q=<term>&type=movie&page_size=20` | p95 < 500 ms |
+
+`search_fts` exercises the `search_all` full-text search PostgreSQL RPC end-to-end over HTTP, ensuring the FTS path is covered by gate 16.
 
 ---
 
