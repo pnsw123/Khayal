@@ -259,14 +259,24 @@ def _make_pred(est: float) -> Any:
     return pred
 
 
-_SAMPLE_RATINGS: list[dict[str, Any]] = [
-    {"user_id": "u1", "media_id": "m1", "rating": 8.0},
-    {"user_id": "u1", "media_id": "m2", "rating": 6.0},
-    {"user_id": "u2", "media_id": "m1", "rating": 7.0},
+_SAMPLE_MOVIE_RATINGS: list[dict[str, Any]] = [
+    {"user_id": "u1", "media_id": "1", "rating": 8.0, "media_type": "movie"},
+    {"user_id": "u1", "media_id": "2", "rating": 6.0, "media_type": "movie"},
+    {"user_id": "u2", "media_id": "1", "rating": 7.0, "media_type": "movie"},
+]
+
+_SAMPLE_TV_RATINGS: list[dict[str, Any]] = [
+    {"user_id": "u1", "media_id": "10", "rating": 9.0, "media_type": "tv"},
+]
+
+_SAMPLE_MIXED_RATINGS: list[dict[str, Any]] = [
+    {"user_id": "u1", "media_id": "1", "rating": 8.0, "media_type": "movie"},
+    {"user_id": "u1", "media_id": "10", "rating": 9.0, "media_type": "tv"},
 ]
 
 
-def test_svd_generate_and_store_calls_upsert() -> None:
+def test_svd_generate_and_store_calls_upsert_movies_only() -> None:
+    """All items are movies → upsert uses movie conflict key."""
     mock_supabase_mod, mock_client = _make_supabase_mock()
 
     mock_algo = MagicMock()
@@ -275,7 +285,7 @@ def test_svd_generate_and_store_calls_upsert() -> None:
     with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
         total = generate_and_store_recommendations(
             mock_algo,
-            _SAMPLE_RATINGS,
+            _SAMPLE_MOVIE_RATINGS,
             "https://x.supabase.co",
             "key",
             algo_name="surprise-svd",
@@ -284,7 +294,84 @@ def test_svd_generate_and_store_calls_upsert() -> None:
 
     # 2 unique users × top_n=2 = 4 rows
     assert total == 4
-    assert mock_client.table.return_value.upsert.call_count == 2
+    for c in mock_client.table.return_value.upsert.call_args_list:
+        assert c[1]["on_conflict"] == "user_id,movie_id,source"
+
+
+def test_svd_generate_and_store_tv_items_use_tv_series_id() -> None:
+    """TV items → tv_series_id set, movie_id=None, TV conflict key."""
+    mock_supabase_mod, mock_client = _make_supabase_mock()
+
+    mock_algo = MagicMock()
+    mock_algo.predict.return_value = _make_pred(8.0)
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
+        total = generate_and_store_recommendations(
+            mock_algo,
+            _SAMPLE_TV_RATINGS,
+            "https://x.supabase.co",
+            "key",
+            algo_name="surprise-svd",
+        )
+
+    assert total == 1
+    upsert_call = mock_client.table.return_value.upsert.call_args
+    rows = upsert_call[0][0]
+    assert rows[0]["tv_series_id"] == 10
+    assert rows[0]["movie_id"] is None
+    assert upsert_call[1]["on_conflict"] == "user_id,tv_series_id,source"
+
+
+def test_svd_generate_and_store_mixed_media_types() -> None:
+    """Mixed movie + TV → two separate upserts with correct conflict keys."""
+    mock_supabase_mod, mock_client = _make_supabase_mock()
+
+    mock_algo = MagicMock()
+    mock_algo.predict.return_value = _make_pred(5.0)
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
+        total = generate_and_store_recommendations(
+            mock_algo,
+            _SAMPLE_MIXED_RATINGS,
+            "https://x.supabase.co",
+            "key",
+            algo_name="surprise-svd",
+        )
+
+    assert total == 2
+    conflict_keys = {
+        c[1]["on_conflict"]
+        for c in mock_client.table.return_value.upsert.call_args_list
+    }
+    assert conflict_keys == {"user_id,movie_id,source", "user_id,tv_series_id,source"}
+
+
+def test_svd_generate_and_store_movie_row_fields() -> None:
+    """Movie row has movie_id=int, tv_series_id=None, correct source and score."""
+    mock_supabase_mod, mock_client = _make_supabase_mock()
+
+    mock_algo = MagicMock()
+    mock_algo.predict.return_value = _make_pred(7.5)
+
+    ratings: list[dict[str, Any]] = [
+        {"user_id": "u1", "media_id": "3", "rating": 8.0, "media_type": "movie"},
+    ]
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
+        generate_and_store_recommendations(
+            mock_algo,
+            ratings,
+            "https://x.supabase.co",
+            "key",
+            algo_name="surprise-svd",
+        )
+
+    rows = mock_client.table.return_value.upsert.call_args[0][0]
+    assert rows[0]["source"] == "surprise-svd"
+    assert rows[0]["user_id"] == "u1"
+    assert rows[0]["movie_id"] == 3
+    assert rows[0]["tv_series_id"] is None
+    assert rows[0]["score"] == 7.5
 
 
 def test_svd_generate_and_store_skips_predict_errors() -> None:
@@ -296,7 +383,7 @@ def test_svd_generate_and_store_skips_predict_errors() -> None:
     with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
         total = generate_and_store_recommendations(
             mock_algo,
-            _SAMPLE_RATINGS,
+            _SAMPLE_MOVIE_RATINGS,
             "https://x.supabase.co",
             "key",
         )
@@ -309,11 +396,11 @@ def test_svd_generate_and_store_respects_top_n() -> None:
     mock_supabase_mod, mock_client = _make_supabase_mock()
 
     ratings: list[dict[str, Any]] = [
-        {"user_id": "u1", "media_id": f"m{j}", "rating": float(j + 1)}
+        {"user_id": "u1", "media_id": str(j), "rating": float(j + 1), "media_type": "movie"}
         for j in range(10)
     ]
     mock_algo = MagicMock()
-    mock_algo.predict.side_effect = lambda u, i: _make_pred(float(i[1:]))
+    mock_algo.predict.side_effect = lambda u, i: _make_pred(float(i))
 
     with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
         total = generate_and_store_recommendations(
@@ -329,32 +416,6 @@ def test_svd_generate_and_store_respects_top_n() -> None:
     assert len(rows) == 4
 
 
-def test_svd_generate_and_store_algo_name_in_rows() -> None:
-    mock_supabase_mod, mock_client = _make_supabase_mock()
-
-    mock_algo = MagicMock()
-    mock_algo.predict.return_value = _make_pred(7.5)
-
-    ratings: list[dict[str, Any]] = [
-        {"user_id": "u1", "media_id": "m1", "rating": 8.0},
-    ]
-
-    with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
-        generate_and_store_recommendations(
-            mock_algo,
-            ratings,
-            "https://x.supabase.co",
-            "key",
-            algo_name="surprise-svd",
-        )
-
-    rows = mock_client.table.return_value.upsert.call_args[0][0]
-    assert rows[0]["source"] == "surprise-svd"
-    assert rows[0]["user_id"] == "u1"
-    assert rows[0]["movie_id"] == "m1"
-    assert rows[0]["score"] == 7.5
-
-
 def test_svd_generate_and_store_filters_zero_ratings() -> None:
     """Rows with rating <= 0 must not contribute users or items."""
     mock_supabase_mod, mock_client = _make_supabase_mock()
@@ -363,7 +424,7 @@ def test_svd_generate_and_store_filters_zero_ratings() -> None:
     mock_algo.predict.return_value = _make_pred(5.0)
 
     ratings: list[dict[str, Any]] = [
-        {"user_id": "u_zero", "media_id": "m_zero", "rating": 0.0},
+        {"user_id": "u_zero", "media_id": "99", "rating": 0.0, "media_type": "movie"},
     ]
 
     with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):

@@ -37,8 +37,6 @@ def fetch_ratings(
     except ImportError as exc:
         raise RuntimeError("supabase is required: pip install supabase") from exc
 
-    from typing import cast
-
     client = create_client(supabase_url, service_key)
     rows: list[dict[str, Any]] = []
 
@@ -72,7 +70,7 @@ def fetch_ratings(
                 "media_type": "tv",
             })
 
-    return cast(list[dict[str, Any]], rows)
+    return rows
 
 
 def build_triplets(
