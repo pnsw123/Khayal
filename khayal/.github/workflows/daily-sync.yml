@@ -8,6 +8,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +33,7 @@ jobs:
         run: find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 
       - name: Run daily sync
+        timeout-minutes: 15
         run: python scripts/daily_sync.py
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
@@ -42,12 +44,14 @@ jobs:
         run: pip install -r scripts/requirements-ml.txt
 
       - name: Train recommendation model
+        timeout-minutes: 30
         run: python scripts/train_recommendations.py
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Run SVD recommendation training (scikit-surprise)
+        timeout-minutes: 30
         run: python scripts/surprise_train.py
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
