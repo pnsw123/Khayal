@@ -81,6 +81,73 @@ Browse, search, and track films and TV shows from a curated database of 7,400+ f
 
 ---
 
+## Database Schema
+
+Supabase PostgreSQL. All tables live in the `public` schema with Row-Level Security (RLS) enabled.
+Authoritative types: [`src/lib/database.types.generated.ts`](src/lib/database.types.generated.ts).
+
+> **Setup:** apply all files in `supabase/migrations/` with `supabase db reset` (local CLI) or paste the SQL into the Supabase dashboard SQL editor (cloud). See [CONTRIBUTING.md](CONTRIBUTING.md) for full step-by-step instructions.
+
+### Core tables
+
+| Table | Purpose | Key columns |
+|---|---|---|
+| `movies` | Film catalogue (7 400+ titles) | `id`, `title`, `slug`, `release_date`, `runtime_minutes`, `age_rating`, `tmdb_id`, `popularity` |
+| `tv_series` | TV show catalogue (2 800+ titles) | `id`, `title`, `slug`, `first_air_date`, `last_air_date`, `status`, `tmdb_id`, `popularity` |
+| `genres` | Genre lookup | `id`, `name`, `slug`, `tmdb_id` |
+| `people` | Cast & crew directory | `id`, `name`, `slug`, `tmdb_id`, `known_for_department`, `biography` |
+| `seasons` | TV seasons per series | `id`, `tv_series_id` → `tv_series`, `season_number`, `episode_count`, `air_date` |
+| `watch_providers` | Streaming availability by country | `id`, `movie_id` / `tv_series_id`, `provider_name`, `country_code`, `link` |
+| `profiles` | User accounts (mirrors `auth.users`) | `id` UUID, `username`, `display_name`, `email`, `role` (`user` \| `admin`) |
+
+### Junction tables
+
+| Table | Links |
+|---|---|
+| `movie_credits` | `movie_id` → `movies`, `person_id` → `people`; columns: `role` (`cast`\|`crew`), `character_name`, `job`, `credit_order` |
+| `tv_credits` | `tv_series_id` → `tv_series`, `person_id` → `people`; same columns as `movie_credits` |
+| `movie_genres` | `movie_id` → `movies`, `genre_id` → `genres` |
+| `tv_genres` | `tv_series_id` → `tv_series`, `genre_id` → `genres` |
+| `user_list_movies` | `list_id` → `user_lists`, `movie_id` → `movies`; PK: `(list_id, movie_id)` |
+| `user_list_tv_series` | `list_id` → `user_lists`, `tv_series_id` → `tv_series`; PK: `(list_id, tv_series_id)` |
+
+### User-activity tables
+
+| Table | Purpose | Key columns |
+|---|---|---|
+| `movie_ratings` | Per-user film ratings 1–10 | PK: `(user_id, movie_id)`, `rating`, `created_at`, `updated_at` |
+| `tv_series_ratings` | Per-user TV ratings 1–10 | PK: `(user_id, tv_series_id)`, `rating`, `created_at`, `updated_at` |
+| `movie_reviews` | Film reviews with spoiler flag | `id`, `user_id`, `movie_id`, `headline`, `body`, `contains_spoiler` |
+| `tv_series_reviews` | TV reviews with spoiler flag | `id`, `user_id`, `tv_series_id`, `headline`, `body`, `contains_spoiler` |
+| `user_lists` | Named watchlists / collections | `id`, `user_id`, `name`, `is_public`, `is_favorites` |
+| `recommendations` | ML-generated recommendations | `user_id`, `movie_id` / `tv_series_id`, `score` FLOAT, `source` (`cornac-bpr` \| `surprise-svd`) |
+
+### Views
+
+| View | Purpose |
+|---|---|
+| `movies_with_genres` | `movies` + aggregated `genre_names TEXT[]` — used by browse & search |
+| `tv_series_with_genres` | `tv_series` + aggregated `genre_names TEXT[]` — used by browse & search |
+| `movie_stats` | Per-film `avg_rating`, `total_ratings`, `total_reviews` |
+| `tv_series_stats` | Per-show `avg_rating`, `total_ratings`, `total_reviews` |
+
+### RPC functions
+
+| Function | Arguments | Returns |
+|---|---|---|
+| `search_all` | `query_text, page_size?, page_offset?, p_type?, p_year_start?, p_year_end?, p_genre?` | Ranked rows across movies + TV |
+| `search_movies` | `query_text, page_size?, page_offset?` | Movie rows with relevance score |
+| `search_tv_series` | `query_text, page_size?, page_offset?` | TV rows with relevance score |
+| `get_movie_detail` | `p_slug, requesting_user_id?` | Full movie JSON (credits, genres, ratings, reviews, providers) |
+| `get_tv_detail` | `p_slug, requesting_user_id?` | Full TV JSON (same shape) |
+| `get_fallback_recommendations` | `p_user_id, p_limit?` | Top-rated unseen titles for cold-start |
+| `generate_recommendations` | `p_user_id` | Triggers in-DB recommendation refresh |
+| `similar_movies` | `p_movie_id, p_limit?` | Genre-overlap similar films |
+| `similar_tv_series` | `p_tv_series_id, p_limit?` | Genre-overlap similar shows |
+| `is_admin` | — | `BOOLEAN` — checks caller's `profiles.role` |
+
+---
+
 ## Quick Start
 
 ```bash
