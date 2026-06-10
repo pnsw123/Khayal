@@ -119,6 +119,52 @@ def fetch_trending(
     return records
 
 
+def fetch_trending_pages(
+    media_type: str,
+    time_window: str,
+    api_key: str,
+    max_pages: int = _DEFAULT_MAX_PAGES,
+) -> tuple[list[dict[str, Any]], list[int]]:
+    """Fetch trending items page-by-page, tolerating per-page failures.
+
+    Returns a tuple of (records_fetched, failed_pages).  Pages that raise after
+    all retries are logged and skipped so that records from earlier successful
+    pages are not discarded.
+    """
+    try:
+        import httpx
+    except ImportError as exc:
+        raise RuntimeError("httpx is required: pip install httpx") from exc
+
+    url = f"{TMDB_BASE_URL}/trending/{media_type}/{time_window}"
+    headers = build_tmdb_headers(api_key)
+    records: list[dict[str, Any]] = []
+    failed_pages: list[int] = []
+
+    for page in range(1, max_pages + 1):
+        try:
+            data = _fetch_page(url, headers, page, httpx)
+        except Exception as exc:
+            print(
+                f"[sync] {media_type} page={page} FAILED after retries — "
+                f"skipping page, error: {exc}"
+            )
+            failed_pages.append(page)
+            continue
+
+        results = data.get("results", [])
+        total_pages: int = int(data.get("total_pages", 1))
+        records.extend(build_media_record(item, media_type) for item in results)
+        print(
+            f"[sync] {media_type} page={page}/{min(max_pages, total_pages)} "
+            f"fetched={len(results)} cumulative={len(records)}"
+        )
+        if not results or page >= total_pages:
+            break
+
+    return records, failed_pages
+
+
 def upsert_records(
     records: list[dict[str, Any]],
     supabase_url: str,
@@ -143,7 +189,12 @@ def upsert_records(
 
 
 def run_sync() -> None:
-    """Entry point — sync trending movies and TV shows."""
+    """Entry point — sync trending movies and TV shows.
+
+    Uses page-by-page fetching so that records already retrieved from earlier
+    pages are upserted even when a later page hits a TMDB rate-limit or
+    transient 5xx error.  Failed pages are logged but do not abort the sync.
+    """
     tmdb_key = get_env("TMDB_API_KEY")
     supabase_url = get_env("SUPABASE_URL")
     service_key = get_env("SUPABASE_SERVICE_ROLE_KEY")
@@ -151,10 +202,19 @@ def run_sync() -> None:
 
     total = 0
     for media_type in ("movie", "tv"):
-        records = fetch_trending(media_type, "day", tmdb_key, max_pages=max_pages)
+        records, failed_pages = fetch_trending_pages(
+            media_type, "day", tmdb_key, max_pages=max_pages
+        )
         count = upsert_records(records, supabase_url, service_key)
         total += count
-        print(f"[sync] {media_type}: upserted {count} records")
+        if failed_pages:
+            print(
+                f"[sync] {media_type}: upserted {count} records "
+                f"(WARNING: {len(failed_pages)} page(s) failed — "
+                f"missed pages: {failed_pages})"
+            )
+        else:
+            print(f"[sync] {media_type}: upserted {count} records")
 
     print(f"[sync] done — total {total} records")
 

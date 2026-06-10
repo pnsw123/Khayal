@@ -14,6 +14,7 @@ from daily_sync import (
     build_media_record,
     build_tmdb_headers,
     fetch_trending,
+    fetch_trending_pages,
     get_env,
     upsert_records,
 )
@@ -352,16 +353,16 @@ def test_fetch_trending_raises_after_max_retries_exhausted() -> None:
 
 
 def test_run_sync_reads_tmdb_max_pages_env() -> None:
-    """TMDB_MAX_PAGES env var controls pagination depth passed to fetch_trending."""
+    """TMDB_MAX_PAGES env var controls pagination depth passed to fetch_trending_pages."""
     from daily_sync import run_sync
 
     captured: list[int] = []
 
-    def fake_fetch(  # type: ignore[misc]
+    def fake_fetch_pages(  # type: ignore[misc]
         media_type: str, time_window: str, api_key: str, max_pages: int = 3
-    ) -> list[Any]:
+    ) -> tuple[list[Any], list[int]]:
         captured.append(max_pages)
-        return []
+        return [], []
 
     def fake_upsert(records: list[Any], url: str, key: str) -> int:
         return 0
@@ -373,7 +374,7 @@ def test_run_sync_reads_tmdb_max_pages_env() -> None:
         "TMDB_MAX_PAGES": "7",
     }
     with patch.dict(os.environ, env), \
-         patch("daily_sync.fetch_trending", side_effect=fake_fetch), \
+         patch("daily_sync.fetch_trending_pages", side_effect=fake_fetch_pages), \
          patch("daily_sync.upsert_records", side_effect=fake_upsert):
         run_sync()
 
@@ -387,11 +388,11 @@ def test_run_sync_default_max_pages_when_env_unset() -> None:
 
     captured: list[int] = []
 
-    def fake_fetch(  # type: ignore[misc]
+    def fake_fetch_pages(  # type: ignore[misc]
         media_type: str, time_window: str, api_key: str, max_pages: int = 3
-    ) -> list[Any]:
+    ) -> tuple[list[Any], list[int]]:
         captured.append(max_pages)
-        return []
+        return [], []
 
     env = {
         "TMDB_API_KEY": "k",
@@ -402,7 +403,7 @@ def test_run_sync_default_max_pages_when_env_unset() -> None:
     clean_env = {k: v for k, v in os.environ.items() if k != "TMDB_MAX_PAGES"}
     clean_env.update(env)
     with patch.dict(os.environ, clean_env, clear=True), \
-         patch("daily_sync.fetch_trending", side_effect=fake_fetch), \
+         patch("daily_sync.fetch_trending_pages", side_effect=fake_fetch_pages), \
          patch("daily_sync.upsert_records", return_value=0):
         run_sync()
 
@@ -443,3 +444,140 @@ def test_upsert_records_calls_supabase_upsert() -> None:
         count = upsert_records(records, "https://x.supabase.co", "key")
 
     assert count == 2
+
+
+# ---------------------------------------------------------------------------
+# fetch_trending_pages — partial-failure safety (#241)
+# ---------------------------------------------------------------------------
+
+
+def _make_ok_response(items: list[dict[str, Any]], total_pages: int) -> MagicMock:
+    resp = MagicMock()
+    resp.status_code = 200
+    resp.raise_for_status = MagicMock()
+    resp.json.return_value = {"results": items, "total_pages": total_pages}
+    return resp
+
+
+def _make_rate_limit_response() -> MagicMock:
+    resp = MagicMock()
+    resp.status_code = 429
+    resp.raise_for_status.side_effect = Exception("429 Too Many Requests")
+    return resp
+
+
+def test_fetch_trending_pages_returns_records_and_empty_failed_on_success() -> None:
+    """All pages succeed → records returned, failed_pages empty."""
+    item = _make_item(1)
+    page1 = {"results": [item], "total_pages": 2}
+    page2 = {"results": [_make_item(2)], "total_pages": 2}
+    mock_httpx = _make_httpx_mock([page1, page2])
+
+    with patch.dict(sys.modules, {"httpx": mock_httpx}):
+        records, failed = fetch_trending_pages("movie", "day", "key", max_pages=2)
+
+    assert len(records) == 2
+    assert failed == []
+
+
+def test_fetch_trending_pages_skips_failed_page_and_reports_it() -> None:
+    """Page 2 fails after retries → page 1 records kept, page 2 in failed_pages, page 3 fetched."""
+    item1 = _make_item(1)
+    item3 = _make_item(3)
+    ok_resp_1 = _make_ok_response([item1], total_pages=3)
+    rate_limit_resp = _make_rate_limit_response()
+    ok_resp_3 = _make_ok_response([item3], total_pages=3)
+
+    mock_httpx = MagicMock()
+    # page 1 OK; page 2 fails all 3 retry attempts; page 3 OK
+    mock_httpx.get.side_effect = [
+        ok_resp_1,
+        rate_limit_resp,
+        rate_limit_resp,
+        rate_limit_resp,
+        ok_resp_3,
+    ]
+
+    with patch("daily_sync.time.sleep"), patch.dict(sys.modules, {"httpx": mock_httpx}):
+        records, failed = fetch_trending_pages("movie", "day", "key", max_pages=3)
+
+    assert len(records) == 2
+    assert failed == [2]
+    tmdb_ids = {r["tmdb_id"] for r in records}
+    assert tmdb_ids == {1, 3}
+
+
+def test_fetch_trending_pages_continues_after_partial_failure() -> None:
+    """Pages 1 and 3 succeed; page 2 fails → records from p1+p3, failed=[2]."""
+    item1 = _make_item(1)
+    item3 = _make_item(3)
+    ok_resp_1 = _make_ok_response([item1], total_pages=3)
+    rate_limit_resp = _make_rate_limit_response()
+    ok_resp_3 = _make_ok_response([item3], total_pages=3)
+
+    mock_httpx = MagicMock()
+    # page 1 ok; page 2 all 3 retries fail; page 3 ok
+    mock_httpx.get.side_effect = [
+        ok_resp_1,
+        rate_limit_resp,
+        rate_limit_resp,
+        rate_limit_resp,
+        ok_resp_3,
+    ]
+
+    with patch("daily_sync.time.sleep"), patch.dict(sys.modules, {"httpx": mock_httpx}):
+        records, failed = fetch_trending_pages("movie", "day", "key", max_pages=3)
+
+    assert len(records) == 2
+    assert failed == [2]
+    tmdb_ids = {r["tmdb_id"] for r in records}
+    assert tmdb_ids == {1, 3}
+
+
+def test_fetch_trending_pages_all_pages_fail_returns_empty_records() -> None:
+    """All pages fail → empty records list, all pages in failed_pages."""
+    rate_limit_resp = _make_rate_limit_response()
+    mock_httpx = MagicMock()
+    # 2 pages × 3 retries each = 6 calls
+    mock_httpx.get.return_value = rate_limit_resp
+
+    with patch("daily_sync.time.sleep"), patch.dict(sys.modules, {"httpx": mock_httpx}):
+        records, failed = fetch_trending_pages("movie", "day", "key", max_pages=2)
+
+    assert records == []
+    assert failed == [1, 2]
+
+
+def test_run_sync_upserts_partial_records_on_rate_limit() -> None:
+    """run_sync upserts whatever pages succeeded even if later pages rate-limited."""
+    from daily_sync import run_sync
+
+    item1 = _make_item(10)
+    partial_records = [build_media_record(item1, "movie")]
+
+    def fake_fetch_pages(
+        media_type: str, time_window: str, api_key: str, max_pages: int = 3
+    ) -> tuple[list[Any], list[int]]:
+        if media_type == "movie":
+            return partial_records, [2, 3]  # page 1 ok, pages 2-3 failed
+        return [], []
+
+    upserted: list[list[Any]] = []
+
+    def fake_upsert(records: list[Any], url: str, key: str) -> int:
+        upserted.append(records)
+        return len(records)
+
+    env = {
+        "TMDB_API_KEY": "k",
+        "SUPABASE_URL": "https://x.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "sk",
+    }
+    with patch.dict(os.environ, env), \
+         patch("daily_sync.fetch_trending_pages", side_effect=fake_fetch_pages), \
+         patch("daily_sync.upsert_records", side_effect=fake_upsert):
+        run_sync()
+
+    # movie upsert should have received partial_records, not empty list
+    assert len(upserted) == 2
+    assert upserted[0] == partial_records
