@@ -57,7 +57,7 @@ describe("PersonalisedShelf", () => {
     render(<PersonalisedShelf />);
 
     // Skeletons use animate-pulse — look for the section being present with animate-pulse divs
-    const pulsingEls = document.querySelectorAll(".animate-pulse");
+    const _pulsingEls = document.querySelectorAll(".animate-pulse");
     // While getUser hasn't resolved there are no skeletons yet (user unknown)
     // Resolve as logged-in user but keep fetch pending
     global.fetch = vi.fn().mockReturnValue(new Promise(() => {}));

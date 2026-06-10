@@ -46,7 +46,7 @@ describe("getSimilarMovies", () => {
     };
     const { supabaseServer } = await import("@/lib/supabase-server");
     vi.mocked(supabaseServer).mockResolvedValue(
-      makeMockSupabase({ data: [mockMovie], error: null }) as any,
+      makeMockSupabase({ data: [mockMovie], error: null }) as unknown as Awaited<ReturnType<typeof import("@/lib/supabase-server").supabaseServer>>,
     );
 
     const { getSimilarMovies } = await importSimilar();
@@ -60,7 +60,7 @@ describe("getSimilarMovies", () => {
   it("returns empty array when RPC returns no rows", async () => {
     const { supabaseServer } = await import("@/lib/supabase-server");
     vi.mocked(supabaseServer).mockResolvedValue(
-      makeMockSupabase({ data: [], error: null }) as any,
+      makeMockSupabase({ data: [], error: null }) as unknown as Awaited<ReturnType<typeof import("@/lib/supabase-server").supabaseServer>>,
     );
 
     const { getSimilarMovies } = await importSimilar();
@@ -72,7 +72,7 @@ describe("getSimilarMovies", () => {
   it("returns empty array and does not throw when Supabase returns an error", async () => {
     const { supabaseServer } = await import("@/lib/supabase-server");
     vi.mocked(supabaseServer).mockResolvedValue(
-      makeMockSupabase({ data: null, error: { message: "RPC not found" } }) as any,
+      makeMockSupabase({ data: null, error: { message: "RPC not found" } }) as unknown as Awaited<ReturnType<typeof import("@/lib/supabase-server").supabaseServer>>,
     );
 
     const { getSimilarMovies } = await importSimilar();
@@ -84,7 +84,7 @@ describe("getSimilarMovies", () => {
   it("returns empty array when RPC returns null data", async () => {
     const { supabaseServer } = await import("@/lib/supabase-server");
     vi.mocked(supabaseServer).mockResolvedValue(
-      makeMockSupabase({ data: null, error: null }) as any,
+      makeMockSupabase({ data: null, error: null }) as unknown as Awaited<ReturnType<typeof import("@/lib/supabase-server").supabaseServer>>,
     );
 
     const { getSimilarMovies } = await importSimilar();
@@ -121,7 +121,7 @@ describe("getSimilarTvSeries", () => {
     };
     const { supabaseServer } = await import("@/lib/supabase-server");
     vi.mocked(supabaseServer).mockResolvedValue(
-      makeMockSupabase({ data: [mockTv], error: null }) as any,
+      makeMockSupabase({ data: [mockTv], error: null }) as unknown as Awaited<ReturnType<typeof import("@/lib/supabase-server").supabaseServer>>,
     );
 
     const { getSimilarTvSeries } = await importSimilar();
@@ -134,7 +134,7 @@ describe("getSimilarTvSeries", () => {
   it("returns empty array when RPC returns no rows", async () => {
     const { supabaseServer } = await import("@/lib/supabase-server");
     vi.mocked(supabaseServer).mockResolvedValue(
-      makeMockSupabase({ data: [], error: null }) as any,
+      makeMockSupabase({ data: [], error: null }) as unknown as Awaited<ReturnType<typeof import("@/lib/supabase-server").supabaseServer>>,
     );
 
     const { getSimilarTvSeries } = await importSimilar();
@@ -146,7 +146,7 @@ describe("getSimilarTvSeries", () => {
   it("returns empty array and does not throw when Supabase returns an error", async () => {
     const { supabaseServer } = await import("@/lib/supabase-server");
     vi.mocked(supabaseServer).mockResolvedValue(
-      makeMockSupabase({ data: null, error: { message: "permission denied" } }) as any,
+      makeMockSupabase({ data: null, error: { message: "permission denied" } }) as unknown as Awaited<ReturnType<typeof import("@/lib/supabase-server").supabaseServer>>,
     );
 
     const { getSimilarTvSeries } = await importSimilar();

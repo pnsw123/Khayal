@@ -4,7 +4,7 @@ import { AdminPagination } from "@/components/admin-pagination";
 
 // Mock next/link
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...props }: any) => (
+  default: ({ href, children, ...props }: { href: string; children: import("react").ReactNode } & Record<string, unknown>) => (
     <a href={href} {...props}>
       {children}
     </a>

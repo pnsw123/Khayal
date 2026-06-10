@@ -1,5 +1,6 @@
 "use client";
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from "ogl";
+import type { OGLRenderingContext } from "ogl";
 import { useEffect, useRef } from "react";
 
 function debounce(func: (...args: unknown[]) => void, wait: number) {
@@ -26,7 +27,7 @@ function autoBind(instance: object) {
 }
 
 function createTextTexture(
-  gl: WebGLRenderingContext,
+  gl: OGLRenderingContext,
   text: string,
   font = "bold 30px monospace",
   color = "white"
@@ -45,7 +46,7 @@ function createTextTexture(
   context.textAlign = "center";
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillText(text, canvas.width / 2, canvas.height / 2);
-  const texture = new Texture(gl as any, { generateMipmaps: false });
+  const texture = new Texture(gl, { generateMipmaps: false });
   (texture as unknown as { image: HTMLCanvasElement }).image = canvas;
   return { texture, width: canvas.width, height: canvas.height };
 }
@@ -61,12 +62,12 @@ interface ScreenViewport {
 }
 
 class Title {
-  gl: WebGLRenderingContext;
+  gl: OGLRenderingContext;
   plane: Mesh | null = null;
   program: Program | null = null;
 
   constructor(
-    gl: WebGLRenderingContext,
+    gl: OGLRenderingContext,
     scene: Transform,
     geometry: Plane,
     text: string,
@@ -85,7 +86,7 @@ class Title {
     font: string
   ) {
     const { texture, width, height } = createTextTexture(this.gl, text, font, textColor);
-    const program = new Program(this.gl as any, {
+    const program = new Program(this.gl, {
       vertex: `
         attribute vec3 position;
         attribute vec2 uv;
@@ -115,9 +116,9 @@ class Title {
     const textHeight = 0.15;
     const textWidth = textHeight * aspect;
     const mesh = new Mesh(
-      this.gl as any,
+      this.gl,
       {
-        geometry: new Plane(this.gl as any, {
+        geometry: new Plane(this.gl, {
           width: textWidth,
           height: textHeight,
         }),
@@ -136,7 +137,7 @@ class Title {
 
 class Media {
   element: GalleryItem;
-  gl: WebGLRenderingContext;
+  gl: OGLRenderingContext;
   scene: Transform;
   geometry: Plane;
   screen: { width: number; height: number };
@@ -179,7 +180,7 @@ class Media {
     length,
   }: {
     element: GalleryItem;
-    gl: WebGLRenderingContext;
+    gl: OGLRenderingContext;
     scene: Transform;
     geometry: Plane;
     screen: { width: number; height: number };
@@ -211,7 +212,7 @@ class Media {
   }
 
   createShader() {
-    const texture = new Texture(this.gl as any, {
+    const texture = new Texture(this.gl, {
       generateMipmaps: false,
     });
 
@@ -222,7 +223,7 @@ class Media {
       (texture as unknown as { image: HTMLImageElement }).image = img;
     };
 
-    const program = new Program(this.gl as any, {
+    const program = new Program(this.gl, {
       depthTest: false,
       depthWrite: false,
       vertex: `
@@ -278,7 +279,7 @@ class Media {
   }
 
   createMesh() {
-    const mesh = new Mesh(this.gl as any, {
+    const mesh = new Mesh(this.gl, {
       geometry: this.geometry,
       program: this.program!,
     });
@@ -358,7 +359,7 @@ class Media {
 class App {
   container: HTMLDivElement;
   renderer: Renderer | null = null;
-  gl: WebGLRenderingContext | null = null;
+  gl: OGLRenderingContext | null = null;
   camera: Camera | null = null;
   scene: Transform | null = null;
   geometry: Plane | null = null;
@@ -420,7 +421,7 @@ class App {
 
   createRenderer() {
     this.renderer = new Renderer({ alpha: true, antialias: true });
-    this.gl = (this.renderer as unknown as { gl: WebGLRenderingContext }).gl;
+    this.gl = (this.renderer as unknown as { gl: OGLRenderingContext }).gl;
     const canvas = (this.gl as unknown as { canvas: HTMLCanvasElement }).canvas;
     canvas.style.width = "100%";
     canvas.style.height = "100%";
@@ -428,7 +429,7 @@ class App {
   }
 
   createCamera() {
-    this.camera = new Camera(this.gl as any, { fov: 45 });
+    this.camera = new Camera(this.gl!, { fov: 45 });
     (this.camera as unknown as { position: { z: number } }).position.z = 5;
   }
 
@@ -437,7 +438,7 @@ class App {
   }
 
   createGeometry() {
-    this.geometry = new Plane(this.gl as any, {
+    this.geometry = new Plane(this.gl!, {
       widthSegments: 20,
       heightSegments: 1,
     });

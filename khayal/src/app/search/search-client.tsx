@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { MovieCard } from "@/components/movie-card";
 import { cn } from "@/lib/utils";
 import { searchAll } from "@/lib/search";
-import { buildFilterHref, YEARS } from "@/lib/filters";
+import { YEARS } from "@/lib/filters";
 import { Search, Play, LoaderCircle, Table2 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 

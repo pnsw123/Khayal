@@ -22,8 +22,8 @@ const eslintConfig = [
       ...tsPlugin.configs.recommended.rules,
       // TypeScript itself catches undefined identifiers — disable redundant ESLint rule
       "no-undef": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
       "no-unused-expressions": "off",
       "@typescript-eslint/no-unused-expressions": "off",
       // Disallow all console.* in production source; warn causes --max-warnings 0 to fail

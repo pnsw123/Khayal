@@ -8,7 +8,7 @@ vi.mock("react-player/youtube", () => ({
 
 // Mock next/dynamic so our dynamic import resolves synchronously in tests
 vi.mock("next/dynamic", () => ({
-  default: (loader: () => Promise<any>) => {
+  default: (_loader: () => Promise<unknown>) => {
     // Return a component that renders a stubbed player
     const Stub = ({ url }: { url: string }) => (
       <div data-testid="react-player" data-url={url} />

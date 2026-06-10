@@ -25,7 +25,7 @@ vi.mock("next/navigation", () => ({
 
 // Mock next/link
 vi.mock("next/link", () => ({
-  default: ({ href, children, onClick }: any) => (
+  default: ({ href, children, onClick }: { href: string; children: import("react").ReactNode; onClick?: import("react").MouseEventHandler }) => (
     <a href={href} onClick={onClick}>{children}</a>
   ),
 }));

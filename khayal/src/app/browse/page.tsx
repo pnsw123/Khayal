@@ -42,8 +42,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     { code: "", label: "All Genres" },
     ...(genreRows ?? []).map((g: { id: number; name: string; slug: string }) => ({ code: g.name, label: g.name })),
   ];
-  const today = new Date().toISOString().slice(0, 10);
-
   type GridRow = Movie & { genre_names: string[] };
   let gridData: GridRow[] = [];
   let gridTotal = 0;
@@ -200,7 +198,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 // ─── Pagination ───────────────────────────────────────────────────────────
 
 function Pagination({
-  current, total, searchParams, totalRows,
+  current, total, searchParams, totalRows: _totalRows,
 }: { current: number; total: number; searchParams: URLSearchParams; totalRows: number }) {
   const href = (p: number) => {
     const next = new URLSearchParams(searchParams);

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Heart, Lock, Globe, Trash2 } from "lucide-react";
+import { ArrowLeft, Heart, Lock, Globe } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import { currentUser } from "@/lib/auth";
 import { MovieCard } from "@/components/movie-card";

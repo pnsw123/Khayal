@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { useAmbientColor, processColor } from "@/hooks/use-ambient-color";
 
 vi.mock("colorthief", () => ({

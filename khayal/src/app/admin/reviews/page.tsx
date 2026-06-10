@@ -17,7 +17,7 @@ export default async function AdminReviews({
   const params = await searchParams;
   const page = Math.max(1, Number(params.page ?? "1") || 1);
   const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
+  const _to = from + PAGE_SIZE - 1;
 
   const sb = await supabaseServer();
 
