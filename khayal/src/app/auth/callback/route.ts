@@ -30,9 +30,13 @@ export async function GET(req: NextRequest) {
   const code = url.searchParams.get("code");
   const rawNext = url.searchParams.get("next") ?? "/browse";
   // Prevent open redirect: only allow same-origin relative paths.
+  // URL-decode first so encoded bypasses like /%2F/evil.com → //evil.com are caught.
   // "//evil.com" starts with "/" but is protocol-relative and resolves externally.
+  const decodedNext = decodeURIComponent(rawNext);
   const safePath =
-    rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/browse";
+    decodedNext.startsWith("/") && !decodedNext.startsWith("//")
+      ? decodedNext
+      : "/browse";
 
   if (!code) {
     return NextResponse.redirect(new URL("/login", url.origin));

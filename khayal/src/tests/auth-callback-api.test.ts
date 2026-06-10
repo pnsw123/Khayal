@@ -87,6 +87,26 @@ describe("GET /auth/callback — next param validation", () => {
     expect(location).not.toContain("evil.com");
   });
 
+  it("blocks URL-encoded double-slash bypass %2F%2Fevil.com → falls back to /browse", async () => {
+    mockSupabase();
+    const req = makeRequest({ code: "valid-code", next: "%2F%2Fevil.com" });
+    const res = await GET(req);
+    expect(res.status).toBe(307);
+    const location = res.headers.get("location")!;
+    expect(location).toBe(`${ORIGIN}/browse`);
+    expect(location).not.toContain("evil.com");
+  });
+
+  it("blocks single-encoded slash prefix /%2F/evil.com → falls back to /browse", async () => {
+    mockSupabase();
+    const req = makeRequest({ code: "valid-code", next: "/%2F/evil.com" });
+    const res = await GET(req);
+    expect(res.status).toBe(307);
+    const location = res.headers.get("location")!;
+    expect(location).toBe(`${ORIGIN}/browse`);
+    expect(location).not.toContain("evil.com");
+  });
+
   it("blocks bare external domain without leading slash → falls back to /browse", async () => {
     mockSupabase();
     const req = makeRequest({ code: "valid-code", next: "evil.com/path" });

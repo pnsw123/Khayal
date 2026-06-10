@@ -147,6 +147,47 @@ This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 ---
 
+## Academic Context
+
+Khayal was built as a CS436 Database Systems course project. The most technically interesting component is the dual-algorithm recommendation pipeline, described below for academic reviewers.
+
+### Recommendation Pipeline
+
+```
+TMDB API → daily_sync.py → user_ratings table
+                                   │
+                    ┌──────────────┴──────────────┐
+                    ▼                             ▼
+         train_recommendations.py         surprise_train.py
+         cornac BPR (k=64 factors,        scikit-surprise SVD
+         20 epochs)                        (k=100 factors, 20 epochs,
+                    │                      lr=0.005, reg=0.02)
+                    └──────────────┬──────────────┘
+                                   ▼
+                      recommendations table
+                      (user_id, movie_id, score FLOAT,
+                       source TEXT — "cornac-bpr" | "surprise-svd",
+                       created_at TIMESTAMPTZ)
+                                   │
+                     GET /api/recommendations
+                     (ordered by score DESC, limit 12–100)
+```
+
+**Algorithms used:**
+
+| Algorithm | Library | Variant | Hyperparameters |
+|---|---|---|---|
+| Bayesian Personalised Ranking | cornac | BPR | k=64 latent factors, 20 epochs |
+| Matrix Factorisation | scikit-surprise | SVD | k=100 factors, 20 epochs, lr=0.005, reg=0.02 |
+
+**How scores are stored:** each training run upserts rows into the `recommendations` table with a float `score` — predicted rating on the 1–10 scale for SVD; relative preference score for BPR — and a `source` label identifying the algorithm. The API reads `score DESC` so highest-confidence items surface first. Both algorithms write to the same table; the `source` column lets the API caller filter by algorithm via `?algo=cornac-bpr` or `?algo=surprise-svd`.
+
+**Cold-start handling:** new users with no ratings have no rows in `recommendations`. The API falls back to an RPC call (`get_fallback_recommendations`) that returns globally top-rated titles the user has not yet seen, providing a meaningful browse experience from day one. The Demo section above notes that personalised recommendations activate after 5 ratings — once the nightly GitHub Actions cron at `03:00 UTC` runs both training scripts, personalised rows are upserted and the fallback path is bypassed automatically.
+
+**ETL summary:** `daily_sync.py` fetches new and updated titles from the TMDB API and populates the `movies` and `tv_shows` tables. User rating events (1–10 scale) are written to `user_ratings` by the application layer. Both ML scripts read `user_ratings` directly via the Supabase service-role client, train in-process on the GitHub Actions runner, and write results back to `recommendations` — no separate ML infrastructure required.
+
+---
+
 ## License
 
 [MIT](LICENSE)
