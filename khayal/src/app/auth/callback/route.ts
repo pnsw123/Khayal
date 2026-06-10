@@ -14,7 +14,11 @@ import { supabaseServer } from "@/lib/supabase-server";
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") || "/browse";
+  const rawNext = url.searchParams.get("next") ?? "/browse";
+  // Prevent open redirect: only allow same-origin relative paths.
+  // "//evil.com" starts with "/" but is protocol-relative and resolves externally.
+  const safePath =
+    rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/browse";
 
   if (!code) {
     return NextResponse.redirect(new URL("/login", url.origin));
@@ -28,5 +32,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(login);
   }
 
-  return NextResponse.redirect(new URL(next, url.origin));
+  return NextResponse.redirect(new URL(safePath, url.origin));
 }
