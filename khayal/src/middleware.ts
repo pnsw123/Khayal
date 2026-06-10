@@ -44,7 +44,6 @@ function buildRatelimiter(): Ratelimit | null {
       );
     }
 
-    // eslint-disable-next-line no-console
     console.warn(
       "[middleware] UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN not set — " +
         "rate limiting DISABLED. Set these vars in production."

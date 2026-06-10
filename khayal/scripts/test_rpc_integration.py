@@ -24,6 +24,7 @@ Skip integration tests (default CI run)::
 from __future__ import annotations
 
 import os
+import time
 import uuid
 from collections.abc import Generator
 from typing import Any
