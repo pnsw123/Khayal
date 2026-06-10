@@ -8,6 +8,10 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15.x-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![Framer Motion](https://img.shields.io/badge/Framer%20Motion-animations-EF4D94?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 [![CI](https://github.com/pnsw123/Khayal/actions/workflows/ci.yml/badge.svg)](https://github.com/pnsw123/Khayal/actions/workflows/ci.yml)
 [![Daily Sync](https://github.com/pnsw123/Khayal/actions/workflows/daily-sync.yml/badge.svg)](https://github.com/pnsw123/Khayal/actions/workflows/daily-sync.yml)
