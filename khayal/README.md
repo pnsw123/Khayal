@@ -49,8 +49,12 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 | **Live search** | Type in the search bar → instant results dropdown as you type |
 | **Watchlist** | Open any film or show → click "Add to List" → title appears in your watchlist |
 | **Star rating** | On a detail page → click a star → rating updates immediately |
+| **Recommendations** | Sign in → rate 5+ films → reload your profile → see a personalised shelf built from your taste |
+| **Reviews** | On a detail page → write a review → toggle the spoiler flag → other users see a hidden blur until they click reveal |
+| **Filters** | Browse page → filter by genre + year + type (film / TV) → results update instantly without a page reload |
+| **Admin panel** | Sign in as admin → go to `/admin` → moderate pending reviews or promote a user to admin |
 
-> No account needed to browse. Sign up (free) to unlock watchlists and ratings.
+> No account needed to browse. Sign up (free) to unlock watchlists, ratings, reviews, and personalised recommendations.
 
 ---
 
