@@ -207,8 +207,6 @@ npm run dev
 open http://localhost:3000
 ```
 
-> For full local setup including database seeding, see the [AGENTS.md](AGENTS.md) guide.
-
 ---
 
 ## Deploy to Vercel
