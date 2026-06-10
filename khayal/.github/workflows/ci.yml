@@ -8,12 +8,13 @@ on:
 
 jobs:
   ci:
-    name: Type-check · Lint · Test · Build
+    name: Type-check · Lint · Test · Security · E2E · Build
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
+      # ── Node setup ────────────────────────────────────────────────────────
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -23,14 +24,57 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Type check
+      # ── Python setup ──────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Python deps
+        run: pip install -r scripts/requirements.txt -r scripts/requirements-dev.txt
+
+      # ── TypeScript gates ──────────────────────────────────────────────────
+      - name: Type check (TS)
         run: npx tsc --noEmit
 
-      - name: Lint
+      - name: Lint (ESLint)
         run: npx eslint src/ --max-warnings 0
 
-      - name: Unit tests
+      # ── Python gates ──────────────────────────────────────────────────────
+      - name: Lint (ruff)
+        run: ruff check scripts/
+
+      - name: Type check (mypy)
+        run: mypy scripts/ --strict
+
+      # ── Security SAST ─────────────────────────────────────────────────────
+      - name: Security SAST (semgrep TS)
+        run: npx semgrep --config=p/typescript --config=p/owasp-top-ten src/ --error
+
+      - name: Security SAST (bandit Python)
+        run: bandit -r scripts/ -ll
+
+      # ── Unit tests ────────────────────────────────────────────────────────
+      - name: Unit tests (vitest)
         run: npx vitest run
 
+      - name: Unit tests (pytest)
+        run: pytest scripts/ -m "not integration"
+
+      # ── E2E / smoke tests ─────────────────────────────────────────────────
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E smoke tests
+        run: npx playwright test --grep @smoke
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      # ── Build ─────────────────────────────────────────────────────────────
       - name: Build
         run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
