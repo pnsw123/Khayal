@@ -10,6 +10,20 @@ import { supabaseServer } from "@/lib/supabase-server";
  * (or at least `<origin>` with this handler living at root). Without this
  * handler the signup email link lands on `/?code=...` and just renders
  * the catalog without actually logging the user in.
+ *
+ * SECURITY — PKCE is the CSRF mitigation for this flow:
+ *   Supabase uses PKCE (RFC 7636) for the email magic-link / OAuth code flow.
+ *   The code_verifier is stored in an HttpOnly cookie during signUp/signIn;
+ *   `exchangeCodeForSession()` retrieves it and validates the code_challenge
+ *   against the ?code= parameter server-side.  An attacker who intercepts or
+ *   forges the ?code= cannot complete the exchange without the code_verifier,
+ *   so no additional CSRF token is required for this handler.
+ *
+ *   The ?next= open-redirect is already mitigated below: only same-origin
+ *   relative paths are accepted (startsWith("/") && !startsWith("//")).
+ *
+ *   Rate limiting for this route is enforced at the middleware layer
+ *   (src/middleware.ts): 10 requests / 60 s per IP to prevent code enumeration.
  */
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
