@@ -40,7 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# AI agent / internal tooling config (not for public consumption)
-CLAUDE.md
-AGENTS.md
+# Local test/scratch files
 TEST_PLAN.md
