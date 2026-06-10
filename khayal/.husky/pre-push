@@ -1,18 +1,101 @@
 #!/usr/bin/env sh
-# pre-push: block push when ESLint reports errors or warnings
-# Mirrors the CI gate at .github/workflows/ci.yml (Lint step)
+# pre-push: Gate 9 — full cumulative regression from cold state (fixes #325)
+#           Gate 13 — visual regression snapshots on UI component changes (fixes #326)
+# Runs pnpm verify (tsc + eslint + vitest + playwright) as a hard block.
+# No partial green. All tests must pass, zero skips allowed.
 
-cd "$(git rev-parse --show-toplevel)/khayal" 2>/dev/null || cd "$(dirname "$0")/.."
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+PROJECT_DIR="$REPO_ROOT/khayal"
 
-echo "Running ESLint (pre-push gate)..."
-npx eslint src/ --max-warnings 0
-status=$?
+# Support both monorepo layout (../khayal) and standalone repo
+if [ ! -f "$PROJECT_DIR/package.json" ]; then
+  PROJECT_DIR="$REPO_ROOT"
+fi
 
-if [ $status -ne 0 ]; then
+cd "$PROJECT_DIR" || exit 1
+
+# ── Gate 13: Visual Regression (Lost Pixel / Playwright snapshots) ─────────────
+# Triggered only when UI component files changed in the push.
+UI_CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E \
+  '(src/components/|src/app/.*/page\.tsx|src/app/.*/layout\.tsx|globals\.css|tailwind)' \
+  | wc -l | tr -d ' ')
+
+if [ "$UI_CHANGED" -gt "0" ]; then
   echo ""
-  echo "ESLint failed. Fix all warnings/errors before pushing."
-  echo "Run: cd khayal && npx eslint src/ --max-warnings 0"
+  echo "======================================================="
+  echo "  Gate 13: Visual regression snapshots"
+  echo "  UI files changed: $UI_CHANGED file(s)"
+  echo "  Running: npx playwright test visual-regression"
+  echo "======================================================="
+  echo ""
+
+  npx playwright test visual-regression
+  VISUAL_STATUS=$?
+
+  if [ $VISUAL_STATUS -ne 0 ]; then
+    echo ""
+    echo "======================================================="
+    echo "  PUSH BLOCKED -- Gate 13 (visual regression) failed."
+    echo ""
+    echo "  If this is expected (intentional UI change):"
+    echo "    npx playwright test visual-regression --update-snapshots"
+    echo "    git add e2e/__snapshots__"
+    echo "    git commit -m 'chore: update visual snapshots'"
+    echo "======================================================="
+    exit 1
+  fi
+
+  echo ""
+  echo "  Gate 13 passed."
+  echo ""
+fi
+
+# ── Gate 9: Full cumulative regression ─────────────────────────────────────────
+echo ""
+echo "======================================================="
+echo "  Gate 9: Full cumulative regression (pnpm verify)"
+echo "  Zero test failures. Zero skips allowed."
+echo "======================================================="
+echo ""
+
+# Run full verify suite
+pnpm verify
+VERIFY_STATUS=$?
+
+if [ $VERIFY_STATUS -ne 0 ]; then
+  echo ""
+  echo "======================================================="
+  echo "  PUSH BLOCKED -- Gate 9 failed."
+  echo "  Fix all test failures before pushing."
+  echo "  Run: pnpm verify"
+  echo "  To inspect: npx vitest run --reporter=verbose"
+  echo "======================================================="
   exit 1
 fi
 
-echo "ESLint passed."
+# Check for skipped tests (vitest outputs "X skipped")
+SKIP_COUNT=$(pnpm vitest run --reporter=json 2>/dev/null | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    skipped = sum(s.get('skipped', 0) for s in data.get('testResults', []))
+    print(skipped)
+except Exception:
+    print(0)
+" 2>/dev/null || echo "0")
+
+if [ "$SKIP_COUNT" -gt "0" ] && [ "$ALLOW_SKIPS" != "1" ]; then
+  echo ""
+  echo "======================================================="
+  echo "  PUSH BLOCKED -- $SKIP_COUNT skipped test(s) detected."
+  echo "  Fix skipped tests or set ALLOW_SKIPS=1 (requires"
+  echo "  justification in commit message)."
+  echo "======================================================="
+  exit 1
+fi
+
+echo ""
+echo "======================================================="
+echo "  Gate 9 passed. Push allowed."
+echo "======================================================="
+echo ""

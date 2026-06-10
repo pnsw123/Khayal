@@ -5,6 +5,7 @@ import { StatsSection } from "@/components/landing/stats-section";
 import { CTASection } from "@/components/landing/cta-section";
 import { GallerySection } from "@/components/landing/gallery-section";
 import { ScrollReveal } from "@/components/landing/scroll-reveal";
+import { AuthHashHandler } from "@/components/auth-hash-handler";
 
 export default async function HomePage({
   searchParams,
@@ -57,6 +58,10 @@ export default async function HomePage({
 
   return (
     <main>
+      {/* Completes the Supabase implicit email-confirmation flow when the
+          verify redirect lands on `/#access_token=…` instead of /auth/callback. */}
+      <AuthHashHandler />
+
       {/* Section 1 — Hero (above the fold, animates on load) */}
       <HeroSection />
 

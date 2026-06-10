@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+# pre-commit: fast gates (tsc + eslint + vitest unit tests)
+# Full Gate 9 (playwright E2E) runs in pre-push to avoid slow commits.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+PROJECT_DIR="$REPO_ROOT/khayal"
+
+if [ ! -f "$PROJECT_DIR/package.json" ]; then
+  PROJECT_DIR="$REPO_ROOT"
+fi
+
+cd "$PROJECT_DIR" || exit 1
+
+echo "pre-commit: running type check..."
+npx tsc --noEmit
+TSC_STATUS=$?
+
+echo "pre-commit: running eslint..."
+npx eslint src/ --max-warnings 0
+LINT_STATUS=$?
+
+echo "pre-commit: running unit tests..."
+npx vitest run
+TEST_STATUS=$?
+
+if [ $TSC_STATUS -ne 0 ] || [ $LINT_STATUS -ne 0 ] || [ $TEST_STATUS -ne 0 ]; then
+  echo ""
+  echo "======================================================="
+  echo "  COMMIT BLOCKED -- pre-commit gates failed."
+  echo "  tsc: $TSC_STATUS | eslint: $LINT_STATUS | vitest: $TEST_STATUS"
+  echo "  Fix errors before committing."
+  echo "======================================================="
+  exit 1
+fi
+
+echo "pre-commit gates passed."
