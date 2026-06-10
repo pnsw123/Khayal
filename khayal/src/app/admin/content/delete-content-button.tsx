@@ -1,12 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
-
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { deleteContent } from "./actions";
 
 export function DeleteContentButton({ id, type, title }: {
   id: number; type: "movies" | "tv"; title: string;
@@ -19,10 +14,9 @@ export function DeleteContentButton({ id, type, title }: {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     setLoading(true);
     setError(null);
-    const table = type === "movies" ? "movies" : "tv_series";
-    const { error: err } = await sb.from(table).delete().eq("id", id);
-    if (err) {
-      setError(err.message);
+    const result = await deleteContent(id, type);
+    if (!result.success) {
+      setError(result.error);
       setLoading(false);
       return;
     }
