@@ -19,3 +19,13 @@ test("API returns 401 unauthenticated @smoke", async ({ request }) => {
   const res = await request.get("/api/recommendations");
   expect([401, 200]).toContain(res.status());
 });
+
+test("movie detail page renders title @smoke", async ({ page }) => {
+  await page.goto("/movies/inception-2010");
+  await expect(page.locator("h1")).toContainText("Inception", { timeout: 10000 });
+});
+
+test("tv detail page renders title @smoke", async ({ page }) => {
+  await page.goto("/tv/breaking-bad");
+  await expect(page.locator("h1")).toContainText("Breaking Bad", { timeout: 10000 });
+});

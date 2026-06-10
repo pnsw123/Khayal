@@ -27,7 +27,17 @@ export const revalidate = 0;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const sb = await supabaseServer();
-  const { data } = await sb.rpc("get_movie_detail", { movie_slug: slug });
+  let data: unknown = null;
+  try {
+    const result = await sb.rpc("get_movie_detail", { movie_slug: slug });
+    if (result.error) {
+      // RPC missing or DB error — return minimal metadata rather than crashing
+      return {};
+    }
+    data = result.data;
+  } catch {
+    return {};
+  }
   if (!data) return {};
   const m = (data as MovieDetail).movie;
   const yr = m.release_date ? `(${m.release_date.split("-")[0]})` : "";
@@ -68,9 +78,17 @@ export default async function MovieDetailPage({
 }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const sb = await supabaseServer();
-  const { data, error } = await sb.rpc("get_movie_detail", { movie_slug: slug });
-
-  if (error) throw new Error(error.message);
+  let data: unknown = null;
+  try {
+    const result = await sb.rpc("get_movie_detail", { movie_slug: slug });
+    if (result.error) {
+      // RPC undefined or DB error — treat as not found rather than crashing
+      notFound();
+    }
+    data = result.data;
+  } catch {
+    notFound();
+  }
   if (!data) notFound();
 
   const d = data as MovieDetail;
