@@ -112,7 +112,7 @@ def seeded_data(sb: Any) -> Generator[dict[str, Any], None, None]:  # noqa: C901
             }
             for i in range(batch_size)
         ]
-        res = sb.table("movies").insert(batch).execute()
+        res = sb.table("tv_series").insert(batch).execute()
         tv_ids.extend(row["id"] for row in res.data)
 
     # ------------------------------------------------------------------
@@ -128,11 +128,15 @@ def seeded_data(sb: Any) -> Generator[dict[str, Any], None, None]:  # noqa: C901
     # ------------------------------------------------------------------
     # Teardown — delete in reverse dependency order
     # ------------------------------------------------------------------
-    all_ids = movie_ids + tv_ids
-    for batch_start in range(0, len(all_ids), batch_size):
-        chunk = all_ids[batch_start : batch_start + batch_size]
+    for batch_start in range(0, len(movie_ids), batch_size):
+        chunk = movie_ids[batch_start : batch_start + batch_size]
         sb.table("movie_genres").delete().in_("movie_id", chunk).execute()
         sb.table("movies").delete().in_("id", chunk).execute()
+
+    for batch_start in range(0, len(tv_ids), batch_size):
+        chunk = tv_ids[batch_start : batch_start + batch_size]
+        sb.table("tv_genres").delete().in_("tv_series_id", chunk).execute()
+        sb.table("tv_series").delete().in_("id", chunk).execute()
 
     sb.table("genres").delete().in_("id", genre_ids).execute()
 
