@@ -10,6 +10,9 @@
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 
 [![CI](https://github.com/pnsw123/Khayal/actions/workflows/ci.yml/badge.svg)](https://github.com/pnsw123/Khayal/actions/workflows/ci.yml)
+[![Daily Sync](https://github.com/pnsw123/Khayal/actions/workflows/daily-sync.yml/badge.svg)](https://github.com/pnsw123/Khayal/actions/workflows/daily-sync.yml)
+[![Load Tests](https://github.com/pnsw123/Khayal/actions/workflows/load-tests.yml/badge.svg)](https://github.com/pnsw123/Khayal/actions/workflows/load-tests.yml)
+[![Gen Types](https://github.com/pnsw123/Khayal/actions/workflows/gen-types.yml/badge.svg)](https://github.com/pnsw123/Khayal/actions/workflows/gen-types.yml)
 
 </div>
 
