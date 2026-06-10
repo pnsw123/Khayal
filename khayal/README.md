@@ -58,7 +58,7 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 
 | Browse | Detail | Search |
 |--------|--------|--------|
-| [![Browse](https://raw.githubusercontent.com/pnsw123/Khayal/main/docs/screenshots/browse.png)](https://movie-db-one-psi.vercel.app/browse) | [![Detail](https://raw.githubusercontent.com/pnsw123/Khayal/main/docs/screenshots/detail.png)](https://movie-db-one-psi.vercel.app/movies/the-shawshank-redemption-1994) | [![Search](https://raw.githubusercontent.com/pnsw123/Khayal/main/docs/screenshots/search.png)](https://movie-db-one-psi.vercel.app/search?q=inception) |
+| [![Browse](docs/screenshots/browse.png)](https://movie-db-one-psi.vercel.app/browse) | [![Detail](docs/screenshots/detail.png)](https://movie-db-one-psi.vercel.app/movies/the-shawshank-redemption-1994) | [![Search](docs/screenshots/search.png)](https://movie-db-one-psi.vercel.app/search?q=inception) |
 
 ---
 
@@ -224,6 +224,12 @@ The `/auth/callback` route is protected by a **distributed sliding-window rate l
 |---|---|
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key for Python sync scripts |
 | `TMDB_API_KEY` | TMDB API v3 key — [get one free](https://www.themoviedb.org/settings/api) |
+
+### Type generation — required for `supabase gen types` locally and in CI
+
+| Variable | Description |
+|---|---|
+| `SUPABASE_ACCESS_TOKEN` | Supabase personal access token — required for the `gen-types` CI workflow and local type generation. [Get one](https://supabase.com/dashboard/account/tokens) |
 
 ---
 
