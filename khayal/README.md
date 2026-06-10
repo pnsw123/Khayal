@@ -287,6 +287,12 @@ Film and TV data, images, and metadata are provided by [The Movie Database (TMDB
 
 ---
 
+## Contributing
+
+Bug reports, fixes, and documentation improvements welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, database seeding, the full test stack, and branch/PR conventions.
+
+---
+
 ## License
 
 [MIT](LICENSE) — see `LICENSE` for details.
