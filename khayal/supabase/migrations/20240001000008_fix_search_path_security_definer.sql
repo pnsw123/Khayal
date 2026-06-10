@@ -7,11 +7,15 @@
 -- Fix: add `SET search_path = public, pg_catalog` to both function declarations.
 -- Both functions are idempotent (CREATE OR REPLACE FUNCTION).
 -- Safe to run on a live DB: no data modifications, no table locks.
+--
+-- Param names kept as p_slug (matching migration 00007 and all call sites).
+-- Do NOT rename the param — PostgREST named-param calls use { p_slug: slug }
+-- and would receive "parameter does not exist" errors with any other name.
 
 -- ── get_movie_detail ──────────────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION get_movie_detail(
-  movie_slug            text,
+  p_slug                text,
   requesting_user_id    uuid DEFAULT NULL
 )
 RETURNS json
@@ -29,7 +33,7 @@ BEGIN
   SELECT row_to_json(m)
   INTO   v_movie
   FROM   movies m
-  WHERE  m.slug = movie_slug;
+  WHERE  m.slug = p_slug;
 
   IF v_movie IS NULL THEN
     RETURN NULL;
@@ -77,7 +81,7 @@ $$;
 -- ── get_tv_detail ─────────────────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION get_tv_detail(
-  series_slug           text,
+  p_slug                text,
   requesting_user_id    uuid DEFAULT NULL
 )
 RETURNS json
@@ -95,7 +99,7 @@ BEGIN
   SELECT row_to_json(ts)
   INTO   v_series
   FROM   tv_series ts
-  WHERE  ts.slug = series_slug;
+  WHERE  ts.slug = p_slug;
 
   IF v_series IS NULL THEN
     RETURN NULL;

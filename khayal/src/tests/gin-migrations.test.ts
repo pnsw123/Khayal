@@ -135,6 +135,64 @@ describe("migration file naming", () => {
   });
 });
 
+// ─── RPC param name consistency (issue #242) ─────────────────────────────────
+//
+// Migration 00008 previously renamed params to movie_slug/series_slug while
+// call sites use { p_slug: slug }.  These tests lock the param name to p_slug
+// across both migrations so a future edit cannot silently re-introduce the mismatch.
+
+describe("migration 00007: get_movie_detail + get_tv_detail use p_slug param", () => {
+  let sql: string;
+
+  beforeAll(() => {
+    sql = readMigration("20240001000007_rpc_get_movie_and_tv_detail.sql");
+  });
+
+  it("get_movie_detail param is named p_slug", () => {
+    // Must contain p_slug as a parameter — not movie_slug or any other name
+    expect(sql).toContain("p_slug");
+  });
+
+  it("get_tv_detail param is named p_slug", () => {
+    expect(sql).toContain("p_slug");
+  });
+
+  it("does not use movie_slug param name", () => {
+    expect(sql).not.toContain("movie_slug");
+  });
+
+  it("does not use series_slug param name", () => {
+    expect(sql).not.toContain("series_slug");
+  });
+});
+
+describe("migration 00008: search_path fix preserves p_slug param name", () => {
+  let sql: string;
+
+  beforeAll(() => {
+    sql = readMigration("20240001000008_fix_search_path_security_definer.sql");
+  });
+
+  it("get_movie_detail uses p_slug (not movie_slug)", () => {
+    expect(sql).toContain("p_slug");
+    expect(sql).not.toContain("movie_slug");
+  });
+
+  it("get_tv_detail uses p_slug (not series_slug)", () => {
+    expect(sql).toContain("p_slug");
+    expect(sql).not.toContain("series_slug");
+  });
+
+  it("adds SET search_path security fix", () => {
+    expect(sql).toContain("SET search_path = public, pg_catalog");
+  });
+
+  it("both function definitions are present", () => {
+    expect(sql).toContain("get_movie_detail");
+    expect(sql).toContain("get_tv_detail");
+  });
+});
+
 // ─── SQL safety analysis ─────────────────────────────────────────────────────
 
 describe("SQL safety: no destructive statements in migrations", () => {
