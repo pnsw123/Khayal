@@ -11,6 +11,7 @@
 		"lint": "eslint src/ --max-warnings 0",
 		"type-check": "tsc --noEmit",
 		"validate": "npm run type-check && npm run lint && npm run test",
+		"gen-types": "supabase gen types typescript --project-id iybfarqvntkkfxwbrxll --schema public > src/lib/database.types.generated.ts",
 		"load-test": "k6 run k6/search-browse-load.js",
 		"load-test:sync": "k6 run k6/daily-sync-upsert-load.js"
 	},
