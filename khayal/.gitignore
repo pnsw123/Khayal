@@ -70,3 +70,16 @@ jsrepo.config.mts
 # k6 load test raw output (large JSON; keep only .gitkeep and committed summary)
 /k6/results/*.json
 !/k6/results/search-browse-summary.json
+
+# Academic / course submission files — live in parent directory by design, never inside repo.
+# These patterns guard against accidental `git add` if shell cwd drifts to repo root
+# while these files exist nearby (e.g. /Desktop/Projects/DB/*.pdf copied into repo root).
+*.pdf
+*.docx
+*.tex
+*.aux
+*.log
+*.out
+PRD.md
+PROJECT_REQUIREMENTS.md
+khayal-report.*

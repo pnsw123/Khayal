@@ -11,6 +11,7 @@ Khayal is an academic project (Bilkent University CS436) that also aims for prod
 3. [Seeding the Database from TMDB](#3-seeding-the-database-from-tmdb)
 4. [Running the Full Test Stack](#4-running-the-full-test-stack)
 5. [Branch / PR / Commit Conventions](#5-branch--pr--commit-conventions)
+6. [File Naming Conventions](#6-file-naming-conventions)
 
 ---
 
@@ -243,6 +244,24 @@ A PR is mergeable when:
 - [ ] TypeScript strict mode — zero errors
 - [ ] No high-severity CVEs (`grype`, `pip-audit`)
 - [ ] Issue linked and will auto-close on merge
+
+---
+
+## 6. Academic Files — Stay Outside the Repo
+
+Khayal is also a Bilkent University CS436 course submission. The following files live in the **parent directory** (`../`) by design and **must never be committed**:
+
+| File | Why it stays out |
+|------|-----------------|
+| `khayal-report.pdf` | Academic submission PDF — contains names, student IDs |
+| `khayal-report.tex` / `.aux` / `.log` / `.out` | LaTeX source for the above |
+| `PRD.md` | Internal product requirements — not public API |
+| `README.docx` | Word draft — superseded by `README.md` |
+| `PROJECT_REQUIREMENTS.md` | Course rubric — irrelevant to open-source contributors |
+
+`.gitignore` blocks `*.pdf`, `*.docx`, `*.tex`, `*.aux`, `*.log`, `*.out`, `PRD.md`, `PROJECT_REQUIREMENTS.md`, and `khayal-report.*` at the repo root as a defense-in-depth measure. If you accidentally copy one of these into the repo directory, `git status` will not surface it and `git add -A` will skip it.
+
+**Never force-add these files** (`git add -f`). They contain personally identifiable student information and course-internal content not meant for the public repository.
 
 ---
 

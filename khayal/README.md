@@ -89,6 +89,170 @@ Authoritative types: [`src/lib/database.types.generated.ts`](src/lib/database.ty
 
 > **Setup:** apply all files in `supabase/migrations/` with `supabase db reset` (local CLI) or paste the SQL into the Supabase dashboard SQL editor (cloud). See [CONTRIBUTING.md](CONTRIBUTING.md) for full step-by-step instructions.
 
+### Entity-Relationship Diagram
+
+```mermaid
+erDiagram
+    movies {
+        uuid id PK
+        text title
+        text slug
+        date release_date
+        int runtime_minutes
+        text age_rating
+        int tmdb_id
+        float popularity
+    }
+    tv_series {
+        uuid id PK
+        text title
+        text slug
+        date first_air_date
+        date last_air_date
+        text status
+        int tmdb_id
+        float popularity
+    }
+    genres {
+        uuid id PK
+        text name
+        text slug
+        int tmdb_id
+    }
+    people {
+        uuid id PK
+        text name
+        text slug
+        int tmdb_id
+        text known_for_department
+    }
+    profiles {
+        uuid id PK
+        text username
+        text display_name
+        text email
+        text role
+    }
+    seasons {
+        uuid id PK
+        uuid tv_series_id FK
+        int season_number
+        int episode_count
+        date air_date
+    }
+    watch_providers {
+        uuid id PK
+        uuid movie_id FK
+        uuid tv_series_id FK
+        text provider_name
+        text country_code
+    }
+    movie_credits {
+        uuid movie_id FK
+        uuid person_id FK
+        text role
+        text character_name
+        text job
+        int credit_order
+    }
+    tv_credits {
+        uuid tv_series_id FK
+        uuid person_id FK
+        text role
+        text character_name
+        text job
+        int credit_order
+    }
+    movie_genres {
+        uuid movie_id FK
+        uuid genre_id FK
+    }
+    tv_genres {
+        uuid tv_series_id FK
+        uuid genre_id FK
+    }
+    movie_ratings {
+        uuid user_id FK
+        uuid movie_id FK
+        int rating
+        timestamp created_at
+        timestamp updated_at
+    }
+    tv_series_ratings {
+        uuid user_id FK
+        uuid tv_series_id FK
+        int rating
+        timestamp created_at
+        timestamp updated_at
+    }
+    movie_reviews {
+        uuid id PK
+        uuid user_id FK
+        uuid movie_id FK
+        text headline
+        text body
+        boolean contains_spoiler
+    }
+    tv_series_reviews {
+        uuid id PK
+        uuid user_id FK
+        uuid tv_series_id FK
+        text headline
+        text body
+        boolean contains_spoiler
+    }
+    user_lists {
+        uuid id PK
+        uuid user_id FK
+        text name
+        boolean is_public
+        boolean is_favorites
+    }
+    user_list_movies {
+        uuid list_id FK
+        uuid movie_id FK
+    }
+    user_list_tv_series {
+        uuid list_id FK
+        uuid tv_series_id FK
+    }
+    recommendations {
+        uuid user_id FK
+        uuid movie_id FK
+        uuid tv_series_id FK
+        float score
+        text source
+    }
+
+    movies ||--o{ movie_genres : "tagged with"
+    genres ||--o{ movie_genres : "tags"
+    tv_series ||--o{ tv_genres : "tagged with"
+    genres ||--o{ tv_genres : "tags"
+    movies ||--o{ movie_credits : "has credits"
+    people ||--o{ movie_credits : "appears in"
+    tv_series ||--o{ tv_credits : "has credits"
+    people ||--o{ tv_credits : "appears in"
+    tv_series ||--o{ seasons : "has"
+    movies ||--o{ watch_providers : "available via"
+    tv_series ||--o{ watch_providers : "available via"
+    profiles ||--o{ movie_ratings : "rates"
+    movies ||--o{ movie_ratings : "rated by"
+    profiles ||--o{ tv_series_ratings : "rates"
+    tv_series ||--o{ tv_series_ratings : "rated by"
+    profiles ||--o{ movie_reviews : "writes"
+    movies ||--o{ movie_reviews : "reviewed in"
+    profiles ||--o{ tv_series_reviews : "writes"
+    tv_series ||--o{ tv_series_reviews : "reviewed in"
+    profiles ||--o{ user_lists : "owns"
+    user_lists ||--o{ user_list_movies : "contains"
+    movies ||--o{ user_list_movies : "listed in"
+    user_lists ||--o{ user_list_tv_series : "contains"
+    tv_series ||--o{ user_list_tv_series : "listed in"
+    profiles ||--o{ recommendations : "receives"
+    movies ||--o{ recommendations : "recommended as"
+    tv_series ||--o{ recommendations : "recommended as"
+```
+
 ### Core tables
 
 | Table | Purpose | Key columns |
