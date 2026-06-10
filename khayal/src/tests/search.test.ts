@@ -48,16 +48,34 @@ describe("searchAll", () => {
     expect(mockRpc).toHaveBeenCalledWith("search_all", {
       query_text: "batman",
       page_size: 30,
+      page_offset: 0,
     });
   });
 
-  it("sends correct body params including page_size", async () => {
+  it("sends correct body params including page_size and page_offset defaults", async () => {
     mockRpc.mockResolvedValue({ data: [], error: null });
     await searchAll("batman");
     const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
     expect(call[0]).toBe("search_all");
     expect(call[1].query_text).toBe("batman");
     expect(call[1].page_size).toBe(30);
+    expect(call[1].page_offset).toBe(0);
+  });
+
+  it("passes pageOffset to RPC for pagination", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { pageOffset: 30 });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[0]).toBe("search_all");
+    expect(call[1].page_offset).toBe(30);
+  });
+
+  it("passes custom pageSize and pageOffset together", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { pageSize: 10, pageOffset: 20 });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].page_size).toBe(10);
+    expect(call[1].page_offset).toBe(20);
   });
 
   it("passes type filter by client-side filtering", async () => {

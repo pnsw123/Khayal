@@ -3,6 +3,7 @@ export interface SearchFilters {
   year?: string;
   genre?: string;
   pageSize?: number;
+  pageOffset?: number;
 }
 
 export interface SearchResult {
@@ -47,6 +48,7 @@ export async function searchAll(
   const { data, error } = await supabase.rpc("search_all", {
     query_text: text,
     page_size: filters.pageSize ?? 30,
+    page_offset: filters.pageOffset ?? 0,
   });
 
   if (error || !data) return [];
