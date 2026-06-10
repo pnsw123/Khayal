@@ -13,12 +13,19 @@ export function DeleteContentButton({ id, type, title }: {
 }) {
   const [deleted, setDeleted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function del() {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     setLoading(true);
+    setError(null);
     const table = type === "movies" ? "movies" : "tv_series";
-    await sb.from(table).delete().eq("id", id);
+    const { error: err } = await sb.from(table).delete().eq("id", id);
+    if (err) {
+      setError(err.message);
+      setLoading(false);
+      return;
+    }
     setDeleted(true);
     setLoading(false);
   }
@@ -26,13 +33,21 @@ export function DeleteContentButton({ id, type, title }: {
   if (deleted) return <span className="text-xs text-zinc-500">Deleted</span>;
 
   return (
-    <button
-      onClick={del}
-      disabled={loading}
-      className="p-1.5 rounded hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-50"
-      title="Delete"
-    >
-      <Trash2 size={13} />
-    </button>
+    <span className="inline-flex flex-col items-end gap-0.5">
+      {error && (
+        <span className="text-xs text-red-400" data-testid="delete-content-error">
+          {error}
+        </span>
+      )}
+      <button
+        onClick={del}
+        disabled={loading}
+        data-testid="delete-content-button"
+        className="p-1.5 rounded hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-50"
+        title="Delete"
+      >
+        <Trash2 size={13} />
+      </button>
+    </span>
   );
 }

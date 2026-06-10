@@ -10,10 +10,17 @@ const sb = createClient(
 export function PromoteButton({ userId }: { userId: string }) {
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function promote() {
     setLoading(true);
-    await sb.from("profiles").update({ role: "admin" }).eq("id", userId);
+    setError(null);
+    const { error: err } = await sb.from("profiles").update({ role: "admin" }).eq("id", userId);
+    if (err) {
+      setError(err.message);
+      setLoading(false);
+      return;
+    }
     setDone(true);
     setLoading(false);
   }
@@ -21,12 +28,20 @@ export function PromoteButton({ userId }: { userId: string }) {
   if (done) return <span className="text-xs text-amber-400">Promoted</span>;
 
   return (
-    <button
-      onClick={promote}
-      disabled={loading}
-      className="text-xs px-2 py-1 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/40 transition-colors disabled:opacity-50"
-    >
-      {loading ? "..." : "Make Admin"}
-    </button>
+    <span className="inline-flex flex-col items-end gap-0.5">
+      {error && (
+        <span className="text-xs text-red-400" data-testid="promote-error">
+          {error}
+        </span>
+      )}
+      <button
+        onClick={promote}
+        disabled={loading}
+        data-testid="promote-button"
+        className="text-xs px-2 py-1 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/40 transition-colors disabled:opacity-50"
+      >
+        {loading ? "..." : "Make Admin"}
+      </button>
+    </span>
   );
 }
