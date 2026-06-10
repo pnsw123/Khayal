@@ -1,0 +1,96 @@
+name: Bug Report
+description: Something broken? Help us fix it.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug in **Khayal**. Fill in as much detail as possible — it speeds up the fix.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Clear description of the bug.
+      placeholder: "e.g. Clicking 'Add to Watchlist' on a film detail page throws a 500 and the item never appears."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps that reliably trigger the bug.
+      placeholder: |
+        1. Go to any film detail page (e.g. /films/550)
+        2. Click "Add to Watchlist"
+        3. See error in console / no item added
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should have happened?
+      placeholder: Film is added to watchlist and confirmation toast appears.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What actually happened?
+      placeholder: 500 error in console, watchlist unchanged.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production (movie-db-one-psi.vercel.app)
+        - Local dev (localhost:3000)
+        - Both
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & version
+      placeholder: "e.g. Chrome 124, Firefox 126, Safari 17"
+    validations:
+      required: false
+
+  - type: input
+    id: node_version
+    attributes:
+      label: Node.js version (local only)
+      placeholder: "e.g. v20.14.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / screenshots
+      description: Paste browser console errors, server logs, or attach screenshots.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I can reliably reproduce this bug.
+          required: true

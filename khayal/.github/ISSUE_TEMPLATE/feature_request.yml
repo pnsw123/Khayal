@@ -1,0 +1,96 @@
+name: Feature Request
+description: Propose a new feature or enhancement for Khayal.
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea that would make **Khayal** better? Describe it below using the user-story format so we can evaluate scope and fit.
+
+  - type: textarea
+    id: user_story
+    attributes:
+      label: User story
+      description: "As a [type of user], I want [goal] so that [reason / benefit]."
+      placeholder: |
+        As a signed-in user, I want to create custom film lists (beyond Watchlist/Watched)
+        so that I can organise films by mood, genre, or personal theme.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem it solves
+      description: What pain point or gap does this address?
+      placeholder: Right now there's no way to group films outside the two built-in shelves.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: How should this work from the user's perspective?
+      placeholder: |
+        - "New List" button on the profile page
+        - List has a name and optional description
+        - Any film's detail page has an "Add to list" dropdown
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area of the app
+      options:
+        - Discovery / Browse
+        - Film / Show detail page
+        - Watchlist / Shelves
+        - Search
+        - Recommendations
+        - Auth / Profile
+        - Data sync (Python scripts)
+        - Performance
+        - Accessibility
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority_guess
+    attributes:
+      label: How important is this to you?
+      options:
+        - Nice to have
+        - Would use regularly
+        - Blocker for my use case
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds you tried, or other approaches worth considering.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context / mockups
+      description: Links, screenshots, reference implementations from other products.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
