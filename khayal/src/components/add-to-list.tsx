@@ -59,8 +59,8 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
     );
   }
 
-  const bridgeTable = kind === "movie" ? "user_list_movies" : "user_list_tv_series";
-  const idField = kind === "movie" ? "movie_id" : "tv_series_id";
+  const _bridgeTable = kind === "movie" ? "user_list_movies" : "user_list_tv_series";
+  const _idField = kind === "movie" ? "movie_id" : "tv_series_id";
 
   const toggle = (list: UserList) => {
     setErr(null);
