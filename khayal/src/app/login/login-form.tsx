@@ -36,7 +36,7 @@ export function LoginForm({
         router.push(nextPath || "/browse");
         router.refresh();
       } else {
-        const { error } = await sb.auth.signUp({
+        const { data, error } = await sb.auth.signUp({
           email,
           password,
           options: {
@@ -44,6 +44,13 @@ export function LoginForm({
           },
         });
         if (error) { setError(error.message); return; }
+        // When email confirmation is disabled, signUp returns an active session
+        // — sign the user straight in instead of telling them to check email.
+        if (data.session) {
+          router.push(nextPath || "/browse");
+          router.refresh();
+          return;
+        }
         setInfo("Account created. Check your email — click the link to confirm.");
         setMode("signin");
       }

@@ -75,7 +75,7 @@ export function StatsSection(props: StatsSectionProps) {
           className="font-mono text-center text-[10px] tracking-[0.4em] uppercase mb-16"
           style={{ color: "var(--cream-muted)", opacity: 0.5 }}
         >
-          By the numbers — بالأرقام
+          By the numbers بالأرقام
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-0 md:divide-x divide-[var(--taupe)]/20">
           {STATS.map((stat) => (

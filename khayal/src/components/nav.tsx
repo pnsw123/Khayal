@@ -42,8 +42,9 @@ export async function Nav() {
           </span>
         </Link>
 
-        {/* Static nav links */}
-        <nav className="flex items-center shrink-0">
+        {/* Static nav links — hidden on mobile so the row fits; /browse is still
+            reachable via the logo and the search. */}
+        <nav className="hidden sm:flex items-center shrink-0">
           {links.map((l) => <NavLink key={l.href} href={l.href} label={l.label} />)}
         </nav>
 

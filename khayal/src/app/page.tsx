@@ -1,10 +1,28 @@
+import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import { HeroSection } from "@/components/landing/hero-section";
 import { StatsSection } from "@/components/landing/stats-section";
 import { CTASection } from "@/components/landing/cta-section";
 import { GallerySection } from "@/components/landing/gallery-section";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string; error?: string; error_description?: string }>;
+}) {
+  // Supabase email-confirmation / OAuth links sometimes redirect to the Site
+  // URL root (`/`) with the auth `?code=` attached instead of `/auth/callback`
+  // (e.g. when /auth/callback is not in the project's allowed Redirect URLs).
+  // Forward it to the callback handler so the session is actually exchanged —
+  // otherwise the user lands back on the homepage still logged out.
+  const sp = await searchParams;
+  if (sp.code) {
+    redirect(`/auth/callback?code=${encodeURIComponent(sp.code)}`);
+  }
+  if (sp.error) {
+    redirect(`/login?error=${encodeURIComponent(sp.error_description ?? sp.error)}`);
+  }
+
   const sb = await supabaseServer();
 
   const { data: featuredRaw } = await sb

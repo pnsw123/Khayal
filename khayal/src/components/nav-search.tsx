@@ -70,7 +70,7 @@ export function NavSearch() {
   };
 
   return (
-    <div ref={wrapRef} className="relative flex-1 max-w-xl">
+    <div ref={wrapRef} className="relative flex-1 min-w-0 max-w-xl">
       <div className="relative flex items-center">
         <Search size={13} className="absolute left-3 text-[var(--cream-muted)] pointer-events-none z-10" />
         <input
