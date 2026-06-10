@@ -26,8 +26,8 @@ const eslintConfig = [
       "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
       "no-unused-expressions": "off",
       "@typescript-eslint/no-unused-expressions": "off",
-      // Disallow all console.* in production source; warn causes --max-warnings 0 to fail
-      "no-console": "warn",
+      // Disallow all console.* in production source; error blocks regardless of how ESLint is invoked
+      "no-console": "error",
     },
   },
   {

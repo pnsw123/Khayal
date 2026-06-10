@@ -34,6 +34,17 @@ function buildRatelimiter(): Ratelimit | null {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!url || !token) {
+    if (process.env.NODE_ENV === "production") {
+      // Hard-fail in production: running without rate limiting exposes /auth/callback
+      // to ?code= enumeration attacks. Throw so the process exits on cold-start
+      // rather than silently serving requests unprotected.
+      throw new Error(
+        "[middleware] FATAL: UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN " +
+          "must be set in production. Rate limiting cannot be disabled in production."
+      );
+    }
+
+    // eslint-disable-next-line no-console
     console.warn(
       "[middleware] UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN not set — " +
         "rate limiting DISABLED. Set these vars in production."
