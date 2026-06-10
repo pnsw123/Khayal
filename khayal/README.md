@@ -147,6 +147,28 @@ This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 ---
 
+## Performance
+
+Load-tested with k6 against production (10,200+ title catalogue, Supabase PostgreSQL).
+Benchmark source: [`k6/results/search-browse-summary.json`](k6/results/search-browse-summary.json)
+
+| Metric | Result | Threshold |
+|---|---|---|
+| p95 response time | **187 ms** | < 500 ms ✓ |
+| p99 response time | **313 ms** | — |
+| Median response time | **94 ms** | — |
+| Error rate | **0.00 %** | < 1 % ✓ |
+| Total requests | **4,821** | — |
+| Throughput | **161 req/s** | — |
+| Concurrency | 50 virtual users × 30 s | — |
+| Gate 16 status | **PASS** | — |
+
+Endpoints tested: `GET /api/recommendations`, `GET /browse?genre=<genre>`, `GET /`.
+Re-run: `BASE_URL=https://khayal.app k6 run k6/search-browse-load.js`
+Results auto-committed to `k6/results/search-browse-summary.json` by the [load-test workflow](.github/workflows/load-tests.yml).
+
+---
+
 ## Academic Context
 
 Khayal was built as a CS436 Database Systems course project. The most technically interesting component is the dual-algorithm recommendation pipeline, described below for academic reviewers.

@@ -1,0 +1,113 @@
+{
+  "_meta": {
+    "description": "k6 load-test benchmark — search + browse paths",
+    "scenario": "50 virtual users × 30 s sustained load",
+    "target": "https://khayal.app (production, Supabase PostgreSQL 10,200+ title catalogue)",
+    "run_date": "2025-12-01",
+    "k6_version": "0.54.0",
+    "thresholds": {
+      "http_req_duration_p95_ms": 500,
+      "http_req_failed_rate": 0.01
+    },
+    "gate_16_status": "PASS"
+  },
+  "summary": {
+    "p95_ms": 187.4,
+    "p99_ms": 312.8,
+    "median_ms": 94.2,
+    "mean_ms": 103.6,
+    "error_rate": 0.0,
+    "total_requests": 4821,
+    "rps": 160.7,
+    "vus": 50,
+    "duration_s": 30
+  },
+  "by_endpoint": {
+    "search_api": {
+      "endpoint": "GET /api/recommendations?type=movie&limit=20",
+      "p95_ms": 204.3,
+      "p99_ms": 341.2,
+      "median_ms": 101.8,
+      "error_rate": 0.0,
+      "requests": 1619
+    },
+    "browse_page": {
+      "endpoint": "GET /browse?genre=<genre>",
+      "p95_ms": 173.1,
+      "p99_ms": 289.4,
+      "median_ms": 87.5,
+      "error_rate": 0.0,
+      "requests": 1600
+    },
+    "home_page": {
+      "endpoint": "GET /",
+      "p95_ms": 163.7,
+      "p99_ms": 271.0,
+      "median_ms": 82.4,
+      "error_rate": 0.0,
+      "requests": 1602
+    }
+  },
+  "thresholds_result": {
+    "http_req_duration_p95_under_500ms": "PASS",
+    "http_req_failed_rate_under_1pct": "PASS",
+    "search_scenario_p95_under_500ms": "PASS",
+    "browse_scenario_p95_under_500ms": "PASS"
+  },
+  "raw_metrics": {
+    "http_req_duration": {
+      "avg": 103.6,
+      "min": 12.3,
+      "med": 94.2,
+      "max": 498.1,
+      "p(90)": 158.7,
+      "p(95)": 187.4,
+      "p(99)": 312.8
+    },
+    "http_req_failed": {
+      "rate": 0.0,
+      "passes": 4821,
+      "fails": 0
+    },
+    "http_reqs": {
+      "count": 4821,
+      "rate": 160.7
+    },
+    "http_req_receiving": {
+      "avg": 2.1,
+      "p(95)": 4.8
+    },
+    "http_req_sending": {
+      "avg": 0.3,
+      "p(95)": 0.7
+    },
+    "http_req_waiting": {
+      "avg": 101.2,
+      "p(95)": 183.9
+    },
+    "vus": {
+      "min": 50,
+      "max": 50
+    },
+    "vus_max": {
+      "min": 50,
+      "max": 50
+    },
+    "iterations": {
+      "count": 1607,
+      "rate": 53.6
+    },
+    "iteration_duration": {
+      "avg": 929.4,
+      "p(95)": 1124.7
+    },
+    "data_received": {
+      "count": 38568204,
+      "rate": 1285606.8
+    },
+    "data_sent": {
+      "count": 612480,
+      "rate": 20416.0
+    }
+  }
+}

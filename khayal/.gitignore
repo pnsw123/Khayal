@@ -63,5 +63,6 @@ scripts/__pycache__/
 # Personal dev tooling — not part of contributor workflow
 jsrepo.config.mts
 
-# k6 load test raw output (large JSON; keep only .gitkeep)
+# k6 load test raw output (large JSON; keep only .gitkeep and committed summary)
 /k6/results/*.json
+!/k6/results/search-browse-summary.json
