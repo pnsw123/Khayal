@@ -143,4 +143,26 @@ describe("GET /api/image-proxy — Content-Type whitelist", () => {
     const res = await GET(req);
     expect(res.status).toBe(404);
   });
+
+  it("returns 502 when fetch throws a network error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new TypeError("fetch failed"))
+    );
+    const { GET } = await import("@/app/api/image-proxy/route");
+    const req = makeRequest("https://image.tmdb.org/t/p/w500/poster.jpg");
+    const res = await GET(req);
+    expect(res.status).toBe(502);
+  });
+
+  it("returns 502 when fetch times out (AbortError)", async () => {
+    const abortErr = Object.assign(new Error("The operation was aborted"), {
+      name: "AbortError",
+    });
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(abortErr));
+    const { GET } = await import("@/app/api/image-proxy/route");
+    const req = makeRequest("https://image.tmdb.org/t/p/w500/poster.jpg");
+    const res = await GET(req);
+    expect(res.status).toBe(502);
+  });
 });
