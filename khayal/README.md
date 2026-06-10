@@ -353,14 +353,22 @@ npm run dev
 
 | Variable | Description |
 |---|---|
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key — bypasses RLS; used by sync scripts and ML training |
+| `SUPABASE_URL` | Server-side Supabase URL (no `NEXT_PUBLIC_` prefix) — used by `daily-sync.yml` GitHub Actions; value identical to `NEXT_PUBLIC_SUPABASE_URL` |
 | `TMDB_API_KEY` | TMDB API v3 key — [free at themoviedb.org](https://www.themoviedb.org/settings/api) |
+| `TMDB_MAX_PAGES` | TMDB trending pages fetched per media type (default: `3`, max recommended: `10`; each page ≈ 20 results) |
+
+### CI / type generation
+
+| Variable | Description |
+|---|---|
+| `SUPABASE_ACCESS_TOKEN` | Supabase CLI personal access token — required for `gen-types.yml` workflow and local `supabase gen types` command; get from [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) |
 
 ---
 
 ## Deploy
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fpnsw123%2FKhayal&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,UPSTASH_REDIS_REST_URL,UPSTASH_REDIS_REST_TOKEN)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fpnsw123%2FKhayal&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,UPSTASH_REDIS_REST_URL,UPSTASH_REDIS_REST_TOKEN,SUPABASE_SERVICE_ROLE_KEY,TMDB_API_KEY)
 
 ---
 
