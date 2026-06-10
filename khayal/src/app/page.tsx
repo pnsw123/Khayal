@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/landing/hero-section";
 import { StatsSection } from "@/components/landing/stats-section";
 import { CTASection } from "@/components/landing/cta-section";
 import { GallerySection } from "@/components/landing/gallery-section";
+import { ScrollReveal } from "@/components/landing/scroll-reveal";
 
 export default async function HomePage({
   searchParams,
@@ -56,21 +57,27 @@ export default async function HomePage({
 
   return (
     <main>
-      {/* Section 1 — Hero */}
+      {/* Section 1 — Hero (above the fold, animates on load) */}
       <HeroSection />
 
       {/* Section 2 — Circular gallery */}
-      <GallerySection items={galleryItems} />
+      <ScrollReveal>
+        <GallerySection items={galleryItems} />
+      </ScrollReveal>
 
       {/* Section 3 — Stats */}
-      <StatsSection
-        filmCount={filmCount ?? 0}
-        ratingCount={ratingCount ?? 0}
-        reviewCount={reviewCount ?? 0}
-      />
+      <ScrollReveal>
+        <StatsSection
+          filmCount={filmCount ?? 0}
+          ratingCount={ratingCount ?? 0}
+          reviewCount={reviewCount ?? 0}
+        />
+      </ScrollReveal>
 
       {/* Section 4 — CTA */}
-      <CTASection />
+      <ScrollReveal>
+        <CTASection />
+      </ScrollReveal>
     </main>
   );
 }
