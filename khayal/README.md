@@ -15,6 +15,20 @@
 
 ---
 
+## Quickstart
+
+```bash
+git clone https://github.com/pnsw123/Khayal.git
+cd Khayal
+npm install
+cp .env.example .env.local   # add NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY
+npm run dev                  # open http://localhost:3000
+```
+
+> Full local Supabase setup (migrations, seed data, Python sync) → [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
 ## Screenshots
 
 | Browse | Detail | Search | Recommendations |
