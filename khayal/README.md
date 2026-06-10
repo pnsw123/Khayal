@@ -68,66 +68,108 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 
 ```
 movies
-├── id            UUID  PK
-├── tmdb_id       INT   UNIQUE
-├── title         TEXT
-├── slug          TEXT  UNIQUE
-├── overview      TEXT
-├── release_date  DATE
-├── poster_path   TEXT
-├── backdrop_path TEXT
-├── runtime       INT
-├── vote_average  NUMERIC
-└── vote_count    INT
+├── id               INT   PK
+├── tmdb_id          INT   UNIQUE
+├── title            TEXT
+├── slug             TEXT  UNIQUE
+├── overview         TEXT
+├── release_date     DATE
+├── poster_url       TEXT
+├── backdrop_url     TEXT
+├── runtime_minutes  INT
+├── age_rating       TEXT
+├── original_language TEXT
+├── country          TEXT
+├── trailer_youtube_id TEXT
+└── created_at / updated_at  TIMESTAMPTZ
 
-tv_shows
-├── id              UUID  PK
-├── tmdb_id         INT   UNIQUE
-├── name            TEXT
-├── slug            TEXT  UNIQUE
-├── overview        TEXT
-├── first_air_date  DATE
-├── poster_path     TEXT
-├── backdrop_path   TEXT
-├── vote_average    NUMERIC
-└── vote_count      INT
+tv_series
+├── id                 INT   PK
+├── tmdb_id            INT   UNIQUE
+├── title              TEXT
+├── slug               TEXT  UNIQUE
+├── overview           TEXT
+├── first_air_date     DATE
+├── last_air_date      DATE
+├── status             TEXT
+├── poster_url         TEXT
+├── backdrop_url       TEXT
+├── trailer_youtube_id TEXT
+└── created_at / updated_at  TIMESTAMPTZ
 
 genres
 ├── id    INT  PK
 └── name  TEXT
 
-movie_genres  (junction: movies ↔ genres)
-tv_genres     (junction: tv_shows ↔ genres)
+movie_genres   (junction: movies ↔ genres)
+tv_genres      (junction: tv_series ↔ genres)
 
-users
-├── id         UUID  PK  (Supabase Auth)
-├── username   TEXT  UNIQUE
-└── created_at TIMESTAMPTZ
+profiles  (one row per Supabase Auth user)
+├── id           UUID  PK  (matches auth.users.id)
+├── username     TEXT  UNIQUE
+├── display_name TEXT
+├── avatar_url   TEXT
+├── bio          TEXT
+├── role         TEXT  ('user' | 'admin')
+└── created_at   TIMESTAMPTZ
 
-ratings
-├── user_id    UUID  FK → users
-├── media_type TEXT  ('movie' | 'tv')
-├── media_id   UUID  FK → movies | tv_shows
-├── score      INT   (1–10)
-└── created_at TIMESTAMPTZ
+movie_ratings
+├── id           INT   PK
+├── user_id      UUID  FK → profiles
+├── movie_id     INT   FK → movies
+├── rating       INT   (1–10)
+└── updated_at   TIMESTAMPTZ
 
-lists
-├── id         UUID  PK
-├── user_id    UUID  FK → users
-├── name       TEXT
-└── is_public  BOOL
+tv_series_ratings
+├── id             INT   PK
+├── user_id        UUID  FK → profiles
+├── tv_series_id   INT   FK → tv_series
+├── rating         INT   (1–10)
+└── updated_at     TIMESTAMPTZ
+
+movie_reviews
+├── id               INT   PK
+├── user_id          UUID  FK → profiles
+├── movie_id         INT   FK → movies
+├── headline         TEXT
+├── body             TEXT
+├── contains_spoiler BOOL
+└── created_at       TIMESTAMPTZ
+
+tv_series_reviews
+├── id               INT   PK
+├── user_id          UUID  FK → profiles
+├── tv_series_id     INT   FK → tv_series
+├── headline         TEXT
+├── body             TEXT
+├── contains_spoiler BOOL
+└── created_at       TIMESTAMPTZ
+
+user_lists
+├── id           INT   PK
+├── user_id      UUID  FK → profiles
+├── name         TEXT
+├── is_public    BOOL
+├── is_favorites BOOL
+└── created_at   TIMESTAMPTZ
+
+user_list_movies     (junction: user_lists ↔ movies)
+user_list_tv_series  (junction: user_lists ↔ tv_series)
 
 recommendations
-├── user_id    UUID
-├── media_type TEXT
-├── media_id   UUID
-└── score      NUMERIC
+├── user_id      UUID  FK → profiles
+├── movie_id     INT   FK → movies
+├── score        NUMERIC
+├── algo         TEXT  (e.g. 'cornac-als')
+└── generated_at TIMESTAMPTZ
 ```
 
 **Views & RPCs:**
-- `movies_with_genres` — movies joined with genre arrays
-- `tv_with_genres` — TV shows joined with genre arrays
-- `search_all(query)` — full-text search across movies + TV shows
+- `movies_with_genres` — movies joined with genre arrays (`genre_names TEXT[]`)
+- `movie_stats` — per-movie `avg_rating`, `total_ratings`, `total_reviews`
+- `search_all(query)` — full-text search RPC across movies + TV series
+- `similar_movies(p_movie_id, p_limit)` — RPC for related films
+- `similar_tv_series(p_tv_series_id, p_limit)` — RPC for related shows
 
 ---
 
