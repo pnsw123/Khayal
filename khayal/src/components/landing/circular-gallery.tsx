@@ -80,7 +80,7 @@ class Title {
 
   createMesh(
     scene: Transform,
-    geometry: Plane,
+    _geometry: Plane,
     text: string,
     textColor: string,
     font: string

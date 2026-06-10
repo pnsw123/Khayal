@@ -4,7 +4,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // We test the module's observable behaviour by mocking its dependency.
 
 const mockGetUser = vi.fn();
-const _mockSingle = vi.fn();
 const mockMaybeSingle = vi.fn();
 
 vi.mock("@/lib/supabase-server", () => ({

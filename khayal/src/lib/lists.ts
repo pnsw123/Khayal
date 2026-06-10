@@ -11,8 +11,6 @@ export async function loadUserListsForTarget(
   targetId: number,
 ): Promise<UserList[]> {
   const sb = await supabaseServer();
-  const _bridge = kind === "movie" ? "user_list_movies" : "user_list_tv_series";
-  const _idField = kind === "movie" ? "movie_id" : "tv_series_id";
 
   // 1. Load user's lists
   let { data: lists } = await sb
