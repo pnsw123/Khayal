@@ -1,4 +1,6 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
+import { createClient } from "@supabase/supabase-js";
 import { supabaseServer } from "@/lib/supabase-server";
 import type { Movie } from "@/lib/supabase";
 
@@ -28,13 +30,54 @@ export interface BrowseRows {
   ratingByMovie: Map<number, number>;
 }
 
+/**
+ * Returns genre names that have ≥5 films, cached for 5 minutes.
+ *
+ * Genre counts change rarely (daily syncs at most), so caching eliminates
+ * the N+1 count queries that previously fired on every browse page load.
+ * Uses a plain anon client (no cookies) because genre counts are public data.
+ */
+const loadQualifiedGenreNames = unstable_cache(
+  async (): Promise<string[]> => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return [];
+
+    const sb = createClient(url, key);
+
+    // Single query: fetch all genre names, then count per genre via
+    // the genre_names array column. One round-trip replaces N count queries.
+    const { data } = await sb
+      .from("movies_with_genres")
+      .select("genre_names")
+      .not("poster_url", "is", null);
+
+    if (!data) return [];
+
+    const counts = new Map<string, number>();
+    for (const row of data as { genre_names: string[] | null }[]) {
+      for (const g of row.genre_names ?? []) {
+        counts.set(g, (counts.get(g) ?? 0) + 1);
+      }
+    }
+
+    return [...counts.entries()]
+      .filter(([, c]) => c >= 5)
+      .map(([name]) => name)
+      .sort();
+  },
+  ["browse-qualified-genres"],
+  { revalidate: 300, tags: ["browse-genres"] },
+);
+
 export async function loadBrowseRows(): Promise<BrowseRows> {
   const sb = await supabaseServer();
   const today = new Date().toISOString().slice(0, 10);
   const fourteenDaysAgo = new Date(Date.now() - 14 * 86_400_000).toISOString().slice(0, 10);
 
-  // Load top rated, new this week, and genres in parallel
-  const [topRatedResult, newThisWeekResult, genresResult] = await Promise.all([
+  // Resolve qualified genres from cache (single query, cached 5 min)
+  // in parallel with top-rated and new-this-week shelf queries.
+  const [topRatedResult, newThisWeekResult, qualifiedGenreNames] = await Promise.all([
     sb
       .from("movie_stats")
       .select(`movie_id, avg_rating, movies_with_genres!inner(${SHELF_SELECT})`)
@@ -50,45 +93,30 @@ export async function loadBrowseRows(): Promise<BrowseRows> {
       .lte("release_date", today)
       .order("release_date", { ascending: false })
       .limit(15),
-    sb.from("genres").select("id, name").order("name", { ascending: true }),
+    loadQualifiedGenreNames(),
   ]);
 
   const topRated: Movie[] = (topRatedResult.data ?? []).map(
-    (r: any) => r.movies_with_genres as unknown as Movie,
+    (r: { movies_with_genres: unknown }) => r.movies_with_genres as unknown as Movie,
   );
   const newThisWeek: Movie[] = (newThisWeekResult.data ?? []) as unknown as Movie[];
-  const allGenres: { id: number; name: string }[] = (genresResult.data ?? []) as any[];
-
-  // Count films per genre, filter to >= 5
-  const countResults = await Promise.all(
-    allGenres.map((g) =>
-      sb
-        .from("movies_with_genres")
-        .select("id", { count: "exact", head: true })
-        .contains("genre_names", [g.name]),
-    ),
-  );
-
-  const qualifiedGenres = allGenres.filter(
-    (_, i) => (countResults[i].count ?? 0) >= 5,
-  );
 
   // Fetch items for each qualified genre in parallel
   const genreItemResults = await Promise.all(
-    qualifiedGenres.map((g) =>
+    qualifiedGenreNames.map((name) =>
       sb
         .from("movies_with_genres")
         .select(SHELF_SELECT)
         .not("poster_url", "is", null)
-        .contains("genre_names", [g.name])
+        .contains("genre_names", [name])
         .order("release_date", { ascending: false })
         .limit(15),
     ),
   );
 
-  const genreRows: GenreRow[] = qualifiedGenres
-    .map((g, i) => ({
-      name: g.name,
+  const genreRows: GenreRow[] = qualifiedGenreNames
+    .map((name, i) => ({
+      name,
       items: (genreItemResults[i].data ?? []) as unknown as Movie[],
     }))
     .filter((r) => r.items.length > 0);
@@ -107,7 +135,7 @@ export async function loadBrowseRows(): Promise<BrowseRows> {
     .in("movie_id", uniqueIds.length ? uniqueIds : [-1]);
 
   const ratingByMovie = new Map<number, number>();
-  (statsData ?? []).forEach((s: any) => {
+  (statsData ?? []).forEach((s: { movie_id: number; avg_rating: number | null }) => {
     if (s.avg_rating != null) ratingByMovie.set(s.movie_id, Number(s.avg_rating));
   });
 
