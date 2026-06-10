@@ -7,7 +7,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import type { Movie } from "@/lib/supabase";
 import { MovieCard } from "@/components/movie-card";
 import { FilterDropdown } from "@/components/filter-dropdown";
-import { PosterCarousel } from "@/components/PosterCarousel";
+import { PosterCarousel } from "@/components/poster-carousel";
 import { LANGUAGES, RATINGS, YEARS, SCORES, SORT_OPTIONS, hasAnyFilter } from "@/lib/filters";
 import { buildBrowseQuery, loadBrowseRows } from "@/lib/browse";
 import { year } from "@/lib/utils";

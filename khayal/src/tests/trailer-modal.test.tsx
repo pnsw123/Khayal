@@ -18,7 +18,7 @@ vi.mock("next/dynamic", () => ({
   },
 }));
 
-import { TrailerModal } from "@/components/TrailerModal";
+import { TrailerModal } from "@/components/trailer-modal";
 
 const TRAILER_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 const TITLE = "Test Movie";

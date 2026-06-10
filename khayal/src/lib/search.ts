@@ -41,27 +41,17 @@ export async function searchAll(
   const text = query.trim();
   if (text.length < 2) return [];
 
-  const body: Record<string, unknown> = {
+  const { supabaseBrowser } = await import("@/lib/supabase-browser");
+  const supabase = supabaseBrowser();
+
+  const { data, error } = await supabase.rpc("search_all", {
     query_text: text,
     page_size: filters.pageSize ?? 30,
-  };
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-
-  const res = await fetch(`${supabaseUrl}/rest/v1/rpc/search_all`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: supabaseKey,
-    },
-    body: JSON.stringify(body),
   });
 
-  if (!res.ok) return [];
+  if (error || !data) return [];
 
-  const data: SearchResult[] = await res.json().catch(() => []);
-  const rows = Array.isArray(data) ? data : [];
+  const rows = Array.isArray(data) ? (data as SearchResult[]) : [];
 
   const filtered = rows.filter((r) => {
     if (filters.type && r.type !== filters.type) return false;

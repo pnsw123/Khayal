@@ -30,6 +30,12 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+// Mock supabase-browser so no real credentials needed
+const mockRpc = vi.fn();
+vi.mock("@/lib/supabase-browser", () => ({
+  supabaseBrowser: () => ({ rpc: mockRpc }),
+}));
+
 const MOCK_RESULTS = [
   { id: 1, type: "movie", title: "Batman Begins", slug: "batman-begins-2005", poster_url: null, release_year: 2005 },
   { id: 2, type: "movie", title: "Batman Returns", slug: "batman-returns-1992", poster_url: null, release_year: 1992 },
@@ -37,13 +43,11 @@ const MOCK_RESULTS = [
 
 describe("NavSearch", () => {
   beforeEach(() => {
-    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://test.supabase.co");
-    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "test-key");
+    mockRpc.mockReset();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    vi.unstubAllEnvs();
     mockPush.mockClear();
   });
 
@@ -60,10 +64,7 @@ describe("NavSearch", () => {
   });
 
   it("shows results dropdown after typing 2+ characters", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => MOCK_RESULTS,
-    });
+    mockRpc.mockResolvedValue({ data: MOCK_RESULTS, error: null });
 
     render(<NavSearch />);
     const input = screen.getByRole("textbox");
@@ -76,10 +77,7 @@ describe("NavSearch", () => {
   });
 
   it("shows year and type for each result", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => MOCK_RESULTS,
-    });
+    mockRpc.mockResolvedValue({ data: MOCK_RESULTS, error: null });
 
     render(<NavSearch />);
     await userEvent.type(screen.getByRole("textbox"), "bat");
@@ -91,10 +89,7 @@ describe("NavSearch", () => {
   });
 
   it("shows 'no results' when API returns empty array", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [],
-    });
+    mockRpc.mockResolvedValue({ data: [], error: null });
 
     render(<NavSearch />);
     await userEvent.type(screen.getByRole("textbox"), "xyzzy");
@@ -113,10 +108,7 @@ describe("NavSearch", () => {
   });
 
   it("closes dropdown on Escape", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => MOCK_RESULTS,
-    });
+    mockRpc.mockResolvedValue({ data: MOCK_RESULTS, error: null });
 
     render(<NavSearch />);
     await userEvent.type(screen.getByRole("textbox"), "bat");
@@ -126,18 +118,17 @@ describe("NavSearch", () => {
     expect(screen.queryByText("Batman Begins")).not.toBeInTheDocument();
   });
 
-  it("calls search_all RPC with correct endpoint and method", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => [] });
-    global.fetch = mockFetch;
+  it("calls search_all RPC with correct params", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
 
     render(<NavSearch />);
     await userEvent.type(screen.getByRole("textbox"), "inception");
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalled(), { timeout: 1500 });
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled(), { timeout: 1500 });
 
-    const [url, opts] = mockFetch.mock.calls[0];
-    expect(url).toContain("/rest/v1/rpc/search_all");
-    expect(opts.method).toBe("POST");
-    expect(JSON.parse(opts.body).page_size).toBe(8);
+    expect(mockRpc).toHaveBeenCalledWith("search_all", {
+      query_text: "inception",
+      page_size: 8,
+    });
   });
 });

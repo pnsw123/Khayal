@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, LoaderCircle, Film, Tv } from "lucide-react";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
 interface Result {
   id: number;
@@ -13,9 +14,6 @@ interface Result {
   poster_url: string | null;
   release_year: number | null;
 }
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export function NavSearch() {
   const router = useRouter();
@@ -39,14 +37,12 @@ export function NavSearch() {
     const timer = setTimeout(async () => {
       const id = ++reqId.current;
       try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/search_all`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
-          body: JSON.stringify({ query_text: text, page_size: 8 }),
+        const { data, error } = await supabaseBrowser().rpc("search_all", {
+          query_text: text,
+          page_size: 8,
         });
-        const data = res.ok ? await res.json() : [];
         if (id !== reqId.current) return;
-        setResults(Array.isArray(data) ? data : []);
+        setResults(!error && Array.isArray(data) ? (data as Result[]) : []);
         setOpen(true);
       } catch {
         if (id === reqId.current) setResults([]);

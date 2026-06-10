@@ -13,7 +13,7 @@ vi.mock("next/image", () => ({
   ),
 }));
 
-import { PosterCarousel } from "@/components/PosterCarousel";
+import { PosterCarousel } from "@/components/poster-carousel";
 
 const ITEMS = [
   { slug: "movie-a", title: "Movie A", poster_url: "https://example.com/a.jpg", href: "/movies/movie-a" },
