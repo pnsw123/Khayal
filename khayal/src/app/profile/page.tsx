@@ -55,14 +55,25 @@ export default async function ProfilePage() {
     sb.from("user_list_tv_series").select("list_id").in("list_id", listIds.length ? listIds : [-1]),
   ]);
   const countMap = new Map<number, number>();
-  [...(movieCounts ?? []), ...(tvCounts ?? [])].forEach((r: any) => {
+  [...(movieCounts ?? []), ...(tvCounts ?? [])].forEach((r: { list_id: number }) => {
     countMap.set(r.list_id, (countMap.get(r.list_id) ?? 0) + 1);
   });
 
+  type ReviewWithTarget = {
+    id: number;
+    headline: string | null;
+    body: string;
+    created_at: string;
+    kind: "movie" | "tv_series";
+    target: { title: string; slug: string };
+  };
+
   const displayName = profile?.display_name || profile?.username || user.email?.split("@")[0] || "you";
-  const allReviews = [
-    ...(movieReviews ?? []).map((r: any) => ({ ...r, kind: "movie", target: r.movies })),
-    ...(tvReviews ?? []).map((r: any) => ({ ...r, kind: "tv_series", target: r.tv_series })),
+  type RawMovieReview = { id: number; headline: string | null; body: string; created_at: string; movies: unknown };
+  type RawTvReview = { id: number; headline: string | null; body: string; created_at: string; tv_series: unknown };
+  const allReviews: ReviewWithTarget[] = [
+    ...(movieReviews as unknown as RawMovieReview[] ?? []).map((r) => ({ ...r, kind: "movie" as const, target: r.movies as { title: string; slug: string } })),
+    ...(tvReviews as unknown as RawTvReview[] ?? []).map((r) => ({ ...r, kind: "tv_series" as const, target: r.tv_series as { title: string; slug: string } })),
   ].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)).slice(0, 6);
 
   return (
@@ -139,7 +150,7 @@ export default async function ProfilePage() {
         <section className="mb-14">
           <h2 className="font-display text-2xl text-[var(--cream)] mb-6">Recent reviews</h2>
           <div className="flex flex-col divide-y divide-[var(--taupe)]/10">
-            {allReviews.map((r: any) => (
+            {allReviews.map((r) => (
               <Link
                 key={`${r.kind}-${r.id}`}
                 href={r.kind === "movie" ? `/movies/${r.target.slug}` : `/tv/${r.target.slug}`}
@@ -161,7 +172,7 @@ export default async function ProfilePage() {
         <section>
           <h2 className="font-display text-2xl text-[var(--cream)] mb-6">Recently rated</h2>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {(ratedMovies ?? []).map((r: any) => (
+            {(ratedMovies as unknown as { rating: number; movies: { title: string; slug: string; poster_url: string | null } }[] ?? []).map((r) => (
               <Link
                 key={r.movies.slug}
                 href={`/movies/${r.movies.slug}`}

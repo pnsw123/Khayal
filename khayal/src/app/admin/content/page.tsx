@@ -69,6 +69,14 @@ export default async function AdminContent({
   );
 }
 
+type ContentItem = {
+  id: number;
+  title: string;
+  slug: string;
+  poster_url: string | null;
+  [key: string]: unknown;
+};
+
 function Section({
   title,
   items,
@@ -80,7 +88,7 @@ function Section({
   basePath,
 }: {
   title: string;
-  items: any[];
+  items: ContentItem[];
   type: "movies" | "tv";
   dateField: string;
   current: number;
@@ -126,7 +134,7 @@ function Section({
                 </div>
               </td>
               <td className="p-4 text-zinc-400 text-xs">
-                {item[dateField] ? new Date(item[dateField]).getFullYear() : "—"}
+                {item[dateField] ? new Date(item[dateField] as string).getFullYear() : "—"}
               </td>
               <td className="p-4">
                 <div className="flex items-center gap-2">

@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const sb = await supabaseServer();
   const { data } = await sb.rpc("get_tv_detail", { p_slug: slug });
   if (!data) return {};
-  const s = (data as any).series;
+  const s = (data as TvDetail).tv_series;
   const yr = s.first_air_date ? `(${s.first_air_date.split("-")[0]})` : "";
   const releaseYear = s.first_air_date ? s.first_air_date.split("-")[0] : "";
 
@@ -71,7 +71,7 @@ export default async function TvDetailPage({
   const user = await currentUser();
   let myRating: number | null = null;
   let myReview: { id: number; headline: string | null; body: string; contains_spoiler: boolean } | null = null;
-  let myLists: any[] = [];
+  let myLists: { id: number; name: string; is_favorites: boolean; is_public: boolean; member: boolean }[] = [];
 
   const [castResult, seasonsResult, similarSeries, ...userResults] = await Promise.all([
     sb.from("tv_credits")
@@ -96,13 +96,26 @@ export default async function TvDetailPage({
   ]);
 
   if (user) {
-    const [{ data: r }, { data: rv }, lists] = userResults as any;
+    const [{ data: r }, { data: rv }, lists] = userResults as [
+      { data: { rating: number } | null },
+      { data: { id: number; headline: string | null; body: string; contains_spoiler: boolean } | null },
+      { id: number; name: string; is_favorites: boolean; is_public: boolean; member: boolean }[],
+    ];
     myRating = r?.rating ?? null;
     myReview = rv ?? null;
     myLists = lists ?? [];
   }
 
-  const cast: CastMember[] = (castResult.data ?? []).map((c: any) => ({
+  type CastRow = {
+    person_id: number;
+    role: "cast" | "crew";
+    character_name: string | null;
+    job: string | null;
+    credit_order: number;
+    people: { name: string; profile_path: string | null } | null;
+  };
+
+  const cast: CastMember[] = (castResult.data as unknown as CastRow[] ?? []).map((c) => ({
     person_id:      c.person_id,
     name:           c.people?.name ?? "Unknown",
     character_name: c.character_name,

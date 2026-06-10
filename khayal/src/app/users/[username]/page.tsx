@@ -4,6 +4,7 @@ import { Star, MessageSquare, List, Film, Tv, CalendarDays } from "lucide-react"
 import { supabaseServer } from "@/lib/supabase-server";
 import { currentUser } from "@/lib/auth";
 import type { Metadata } from "next";
+import type { MovieReviewWithTarget, TvSeriesReviewWithTarget, UserMovieRatingRow, UserListRow } from "@/lib/database.types";
 
 export const revalidate = 0;
 
@@ -73,11 +74,11 @@ export default async function UserProfilePage({
   ]);
 
   const allReviews = [
-    ...(recentMovieReviews ?? []).map((r: any) => ({
+    ...(recentMovieReviews as unknown as MovieReviewWithTarget[] ?? []).map((r) => ({
       id: r.id, headline: r.headline, created_at: r.created_at,
       title: r.movies?.title, slug: r.movies?.slug, poster: r.movies?.poster_url, type: "movie" as const,
     })),
-    ...(recentTvReviews ?? []).map((r: any) => ({
+    ...(recentTvReviews as unknown as TvSeriesReviewWithTarget[] ?? []).map((r) => ({
       id: r.id, headline: r.headline, created_at: r.created_at,
       title: r.tv_series?.title, slug: r.tv_series?.slug, poster: r.tv_series?.poster_url, type: "tv" as const,
     })),
@@ -149,7 +150,7 @@ export default async function UserProfilePage({
                 <Star size={16} className="text-[var(--saffron)]" /> Recent Ratings
               </h2>
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-                {(recentRatings ?? []).map((r: any) => (
+                {(recentRatings as unknown as UserMovieRatingRow[] ?? []).map((r) => (
                   <Link key={r.movies?.slug} href={`/movies/${r.movies?.slug}`} className="group">
                     <div className="relative aspect-[2/3] rounded-sm overflow-hidden border border-[var(--taupe)]/15 group-hover:border-[var(--saffron)]/40 transition-colors">
                       {r.movies?.poster_url ? (
@@ -213,7 +214,7 @@ export default async function UserProfilePage({
               <List size={16} className="text-[var(--saffron)]" /> Lists
             </h2>
             <div className="space-y-2">
-              {(publicLists ?? []).map((l: any) => (
+              {(publicLists as UserListRow[] ?? []).map((l) => (
                 <Link
                   key={l.id}
                   href={`/lists/${l.id}`}

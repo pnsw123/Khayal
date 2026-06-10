@@ -7,6 +7,7 @@ import { MovieCard } from "@/components/movie-card";
 import { year } from "@/lib/utils";
 import { ListActions } from "./list-actions";
 import { EmptyState } from "@/components/empty-state";
+import type { UserListMovieJoinRow, UserListTvJoinRow } from "@/lib/database.types";
 
 export const revalidate = 0;
 
@@ -53,8 +54,8 @@ export default async function ListPage({
       .order("added_at", { ascending: false }),
   ]);
 
-  const movies: any[] = (movieRows ?? []).map((r: any) => r.movies).filter(Boolean);
-  const series: any[] = (tvRows ?? []).map((r: any) => r.tv_series).filter(Boolean);
+  const movies = (movieRows as unknown as UserListMovieJoinRow[] ?? []).map((r) => r.movies).filter(Boolean);
+  const series = (tvRows as unknown as UserListTvJoinRow[] ?? []).map((r) => r.tv_series).filter(Boolean);
   const total = movies.length + series.length;
 
   return (
@@ -104,7 +105,7 @@ export default async function ListPage({
         />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-5 gap-y-10">
-          {movies.map((m: any) => (
+          {movies.map((m) => (
             <MovieCard
               key={`m-${m.id}`}
               title={m.title}
@@ -113,7 +114,7 @@ export default async function ListPage({
               href={`/movies/${m.slug}`}
             />
           ))}
-          {series.map((t: any) => (
+          {series.map((t) => (
             <MovieCard
               key={`t-${t.id}`}
               title={t.title}

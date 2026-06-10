@@ -4,10 +4,12 @@ import type { Movie } from "@/lib/supabase";
 import { MovieCard } from "./movie-card";
 import { year } from "@/lib/utils";
 
+export type MovieWithGenres = Movie & { genre_names?: string[] | null };
+
 export interface ShelfProps {
   title: string;
   kicker?: string;      // small Arabic/eyebrow label
-  items: Movie[];
+  items: MovieWithGenres[];
   /** Optional "view all" URL with filters applied. */
   viewAllHref?: string;
   /** Ratings map: movieId -> avg_rating. */
@@ -51,7 +53,7 @@ export function Shelf({ title, kicker, items, viewAllHref, ratingByMovie }: Shel
                 posterUrl={m.poster_url}
                 rating={ratingByMovie?.get(m.id) ?? null}
                 href={`/movies/${m.slug}`}
-                genres={(m as any).genre_names ?? []}
+                genres={m.genre_names ?? []}
                 language={m.original_language}
                 runtime={m.runtime_minutes}
                 ageRating={m.age_rating}

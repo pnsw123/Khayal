@@ -17,6 +17,8 @@ export type Movie = {
   tmdb_id: number | null;
   trailer_youtube_id: string | null;
   relevance?: number;
+  /** Present when queried from the movies_with_genres view. */
+  genre_names?: string[] | null;
 };
 
 export type TvSeries = {

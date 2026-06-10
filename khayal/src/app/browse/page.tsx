@@ -40,18 +40,19 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     .order("name", { ascending: true });
   const genres = [
     { code: "", label: "All Genres" },
-    ...(genreRows ?? []).map((g: any) => ({ code: g.name, label: g.name })),
+    ...(genreRows ?? []).map((g: { id: number; name: string; slug: string }) => ({ code: g.name, label: g.name })),
   ];
   const today = new Date().toISOString().slice(0, 10);
 
-  let gridData: any[] = [];
+  type GridRow = Movie & { genre_names: string[] };
+  let gridData: GridRow[] = [];
   let gridTotal = 0;
 
   {
     const base = sb
       .from("movies_with_genres")
       .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language, genre_names", { count: "exact" });
-    const q = buildBrowseQuery(base as any, {
+    const q = buildBrowseQuery(base as unknown as import("@/lib/browse-logic").ChainableQuery, {
       genre:  activeGenre  || undefined,
       lang:   activeLang   || undefined,
       rating: activeRating || undefined,
@@ -60,21 +61,21 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
       sort:   activeSort   || undefined,
       page,
     });
-    const { data, count } = await (q as any);
-    gridData = (data ?? []) as typeof gridData;
-    gridTotal = (count as number | null) ?? 0;
+    const { data, count } = await (q as unknown as Promise<{ data: GridRow[] | null; count: number | null }>);
+    gridData = (data ?? []);
+    gridTotal = count ?? 0;
   }
 
-  const grid = gridData as (Movie & { genre_names: string[] })[];
+  const grid = gridData;
   const totalPages = Math.max(1, Math.ceil((gridTotal ?? 0) / PAGE_SIZE));
 
-  const idList = (gridData ?? []).map((m: any) => m.id);
+  const idList = gridData.map((m) => m.id);
   const { data: stats } = await sb
     .from("movie_stats")
     .select("movie_id, avg_rating")
     .in("movie_id", idList.length ? idList : [-1]);
   const ratingByMovie = new Map<number, number>();
-  (stats ?? []).forEach((s: any) => { if (s.avg_rating != null) ratingByMovie.set(s.movie_id, Number(s.avg_rating)); });
+  (stats ?? []).forEach((s: { movie_id: number; avg_rating: number | null }) => { if (s.avg_rating != null) ratingByMovie.set(s.movie_id, Number(s.avg_rating)); });
 
   // Load shelf rows only when not filtered
   const browseRows = !filtersActive && page === 1 ? await loadBrowseRows() : null;
@@ -175,7 +176,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
                         posterUrl={m.poster_url}
                         rating={ratingByMovie.get(m.id) ?? null}
                         href={`/movies/${m.slug}`}
-                        genres={(m as any).genre_names ?? []}
+                        genres={m.genre_names ?? []}
                         language={m.original_language}
                         runtime={m.runtime_minutes}
                         ageRating={m.age_rating}

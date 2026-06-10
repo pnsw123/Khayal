@@ -23,7 +23,7 @@ export async function loadUserListsForTarget(
     .order("created_at", { ascending: true });
 
   // 2. Auto-create Favorites if missing
-  const hasFav = (lists ?? []).some((l: any) => l.is_favorites);
+  const hasFav = (lists ?? []).some((l: { is_favorites: boolean }) => l.is_favorites);
   if (!hasFav) {
     const { data: fav } = await sb
       .from("user_lists")
@@ -34,15 +34,15 @@ export async function loadUserListsForTarget(
   }
 
   // 3. Membership check for this target
-  const listIds = (lists ?? []).map((l: any) => l.id);
+  const listIds = (lists ?? []).map((l: { id: number }) => l.id);
   const { data: membership } = await sb
     .from(bridge)
     .select(`list_id, ${idField}`)
     .in("list_id", listIds.length ? listIds : [-1])
     .eq(idField, targetId);
-  const memberSet = new Set((membership ?? []).map((m: any) => m.list_id));
+  const memberSet = new Set((membership ?? []).map((m: { list_id: number }) => m.list_id));
 
-  return (lists ?? []).map((l: any) => ({
+  return (lists ?? []).map((l: { id: number; name: string; is_favorites: boolean; is_public: boolean }) => ({
     id: l.id,
     name: l.name,
     is_favorites: l.is_favorites,

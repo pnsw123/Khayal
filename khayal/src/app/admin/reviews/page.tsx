@@ -1,6 +1,7 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import { DeleteReviewButton } from "./delete-review-button";
 import { AdminPagination } from "@/components/admin-pagination";
+import type { MovieReviewAdminRow, TvSeriesReviewAdminRow } from "@/lib/database.types";
 
 export const revalidate = 0;
 
@@ -52,15 +53,15 @@ export default async function AdminReviews({
   ]);
 
   const allReviews = [
-    ...(movieReviews ?? []).map((r) => ({
+    ...(movieReviews as unknown as MovieReviewAdminRow[] ?? []).map((r) => ({
       ...r,
       type: "movie" as const,
-      title: (r.movies as any)?.title,
+      title: r.movies?.title,
     })),
-    ...(tvReviews ?? []).map((r) => ({
+    ...(tvReviews as unknown as TvSeriesReviewAdminRow[] ?? []).map((r) => ({
       ...r,
       type: "tv" as const,
-      title: (r.tv_series as any)?.title,
+      title: r.tv_series?.title,
     })),
   ]
     .sort(
@@ -97,7 +98,7 @@ export default async function AdminReviews({
                       {r.title}
                     </span>
                     <span className="text-zinc-500 text-xs">
-                      by {(r.profiles as any)?.username ?? "unknown"}
+                      by {r.profiles?.username ?? "unknown"}
                     </span>
                     <span className="text-zinc-600 text-xs">
                       {new Date(r.created_at).toLocaleDateString()}

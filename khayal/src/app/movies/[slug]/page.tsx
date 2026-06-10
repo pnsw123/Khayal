@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { Clock, Globe, CalendarDays, ArrowLeft, Film, Star } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import type { MovieDetail } from "@/lib/supabase";
+import type { MovieCreditRow, MovieWithGenresRow } from "@/lib/database.types";
+import type { UserList } from "@/components/add-to-list";
 import { currentUser } from "@/lib/auth";
 import { year, runtime } from "@/lib/utils";
 import { RateWidget } from "@/components/rate-widget";
@@ -27,13 +29,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const sb = await supabaseServer();
   const { data } = await sb.rpc("get_movie_detail", { p_slug: slug });
   if (!data) return {};
-  const m = (data as any).movie;
+  const m = (data as MovieDetail).movie;
   const yr = m.release_date ? `(${m.release_date.split("-")[0]})` : "";
   const releaseYear = m.release_date ? m.release_date.split("-")[0] : "";
 
   // Fetch genres for fallback description
   const { data: genreRow } = await sb.from("movies_with_genres").select("genre_names").eq("id", m.id).maybeSingle();
-  const genres: string[] = (genreRow as any)?.genre_names ?? [];
+  const genres: string[] = (genreRow as MovieWithGenresRow | null)?.genre_names ?? [];
 
   const desc = m.overview
     ? m.overview.slice(0, 155).trimEnd() + (m.overview.length > 155 ? "\u2026" : "")
@@ -77,7 +79,7 @@ export default async function MovieDetailPage({
   const user = await currentUser();
   let myRating: number | null = null;
   let myReview: { id: number; headline: string | null; body: string; contains_spoiler: boolean } | null = null;
-  let myLists: any[] = [];
+  let myLists: UserList[] = [];
 
   const [castResult, genreResult, ...userResults] = await Promise.all([
     sb.from("movie_credits")
@@ -97,19 +99,23 @@ export default async function MovieDetailPage({
       : Promise.resolve([]),
   ]);
 
-  const genres: string[] = (genreResult.data as any)?.genre_names ?? [];
+  const genres: string[] = (genreResult.data as MovieWithGenresRow | null)?.genre_names ?? [];
 
   // Similar movies via RPC — genre overlap + year proximity scoring
   const [similarMovies] = await Promise.all([getSimilarMovies(movie.id, 6)]);
 
   if (user) {
-    const [{ data: r }, { data: rv }, lists] = userResults as any;
-    myRating = r?.rating ?? null;
-    myReview = rv ?? null;
+    const [ratingResult, reviewResult, lists] = userResults as [
+      { data: { rating: number } | null },
+      { data: { id: number; headline: string | null; body: string; contains_spoiler: boolean } | null },
+      UserList[],
+    ];
+    myRating = ratingResult.data?.rating ?? null;
+    myReview = reviewResult.data ?? null;
     myLists = lists ?? [];
   }
 
-  const cast: CastMember[] = (castResult.data ?? []).map((c: any) => ({
+  const cast: CastMember[] = (castResult.data as unknown as MovieCreditRow[] ?? []).map((c) => ({
     person_id:      c.person_id,
     name:           c.people?.name ?? "Unknown",
     character_name: c.character_name,
