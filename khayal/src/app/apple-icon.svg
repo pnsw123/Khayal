@@ -1,18 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="KHAYAL">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="30%" r="80%">
+    <radialGradient id="bg" cx="50%" cy="28%" r="85%">
       <stop offset="0%" stop-color="#1a1a2e"/>
       <stop offset="100%" stop-color="#08080e"/>
     </radialGradient>
   </defs>
   <rect width="180" height="180" rx="39.375" fill="url(#bg)"/>
-  <rect x="22.5" y="45" width="135" height="90" rx="8.4375" fill="none" stroke="#eeeef8" stroke-width="6.75" opacity="0.9"/>
-  <rect x="45" y="56.25" width="90" height="67.5" rx="5.625" fill="#eeeef8" opacity="0.15"/>
-  <path d="M75.9375 75.9375 L75.9375 104.0625 L106.875 90 Z" fill="#eeeef8" opacity="0.9"/>
-  <rect x="30.9375" y="56.25" width="8.4375" height="11.25" rx="2.25" fill="#eeeef8" opacity="0.5"/>
-  <rect x="30.9375" y="78.75" width="8.4375" height="11.25" rx="2.25" fill="#eeeef8" opacity="0.5"/>
-  <rect x="30.9375" y="101.25" width="8.4375" height="11.25" rx="2.25" fill="#eeeef8" opacity="0.5"/>
-  <rect x="140.625" y="56.25" width="8.4375" height="11.25" rx="2.25" fill="#eeeef8" opacity="0.5"/>
-  <rect x="140.625" y="78.75" width="8.4375" height="11.25" rx="2.25" fill="#eeeef8" opacity="0.5"/>
-  <rect x="140.625" y="101.25" width="8.4375" height="11.25" rx="2.25" fill="#eeeef8" opacity="0.5"/>
+  <path transform="translate(43.795,121.999) scale(0.18335,-0.18335)" d="M132 -200Q89 -187 57.0 -147.0Q25 -107 25 -37Q25 -14 33.0 12.0Q41 38 57.0 62.5Q73 87 96 105Q80 121 64.5 139.0Q49 157 36.0 176.5Q23 196 13 214L79 342Q116 286 161.0 240.0Q206 194 249.0 167.0Q292 140 323 140H491L431 0H217Q205 0 188.0 -7.5Q171 -15 158.5 -30.5Q146 -46 146 -72Q146 -104 163.0 -123.5Q180 -143 207.0 -151.5Q234 -160 264.5 -161.0Q295 -162 323.5 -158.0Q352 -154 371 -147Q348 -174 306.0 -190.0Q264 -206 217.0 -208.5Q170 -211 132 -200ZM150 442Q126 442 109.0 459.0Q92 476 92 500Q92 524 109.0 541.0Q126 558 150 558Q174 558 191.0 541.0Q208 524 208 500Q208 476 191.0 459.0Q174 442 150 442Z" fill="#eeeef8"/>
 </svg>
