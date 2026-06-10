@@ -1,11 +1,6 @@
 "use client";
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { promoteUser } from "./actions";
 
 export function PromoteButton({ userId }: { userId: string }) {
   const [done, setDone] = useState(false);
@@ -15,9 +10,9 @@ export function PromoteButton({ userId }: { userId: string }) {
   async function promote() {
     setLoading(true);
     setError(null);
-    const { error: err } = await sb.from("profiles").update({ role: "admin" }).eq("id", userId);
-    if (err) {
-      setError(err.message);
+    const result = await promoteUser(userId);
+    if (!result.success) {
+      setError(result.error);
       setLoading(false);
       return;
     }
