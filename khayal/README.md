@@ -420,7 +420,7 @@ Khayal was built as a **Bilkent University CS436** Database Systems course proje
 ### Recommendation Pipeline
 
 ```
-TMDB API → daily_sync.py → user_ratings table
+TMDB API → daily_sync.py → movie_ratings / tv_series_ratings tables
                                    │
                     ┌──────────────┴──────────────┐
                     ▼                             ▼
@@ -450,7 +450,7 @@ TMDB API → daily_sync.py → user_ratings table
 
 **Cold-start handling:** new users with no ratings have no rows in `recommendations`. The API falls back to an RPC call (`get_fallback_recommendations`) that returns globally top-rated titles the user has not yet seen, providing a meaningful browse experience from day one. The Demo section above notes that personalised recommendations activate after 5 ratings — once the nightly GitHub Actions cron at `03:00 UTC` runs both training scripts, personalised rows are upserted and the fallback path is bypassed automatically.
 
-**ETL summary:** `daily_sync.py` fetches new and updated titles from the TMDB API and populates the `movies` and `tv_shows` tables. User rating events (1–10 scale) are written to `user_ratings` by the application layer. Both ML scripts read `user_ratings` directly via the Supabase service-role client, train in-process on the GitHub Actions runner, and write results back to `recommendations` — no separate ML infrastructure required.
+**ETL summary:** `daily_sync.py` fetches new and updated titles from the TMDB API and populates the `movies` and `tv_series` tables. User rating events (1–10 scale) are written to `movie_ratings` and `tv_series_ratings` by the application layer. Both ML scripts read those tables directly via the Supabase service-role client, train in-process on the GitHub Actions runner, and write results back to `recommendations` — no separate ML infrastructure required.
 
 ---
 
