@@ -24,7 +24,7 @@ export async function Nav() {
       .toUpperCase();
 
   return (
-    <header className="relative z-20">
+    <header className="sticky top-0 z-20 backdrop-blur-sm bg-[var(--ink)]/80">
       <div className="mx-auto max-w-[1600px] px-4 md:px-6 h-16 flex items-center justify-between gap-6">
         <Link href="/" className="group flex items-center gap-2.5 shrink-0">
           {/* Icon mark */}

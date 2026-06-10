@@ -52,4 +52,13 @@ describe("Nav component source", () => {
   it("shows KHAYAL wordmark", () => {
     expect(navSource).toContain("KHAYAL");
   });
+
+  it("header is sticky positioned (issue #152)", () => {
+    expect(navSource).toContain("sticky");
+    expect(navSource).toContain("top-0");
+  });
+
+  it("header has backdrop blur glassmorphism (issue #152)", () => {
+    expect(navSource).toContain("backdrop-blur-sm");
+  });
 });
