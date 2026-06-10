@@ -447,7 +447,7 @@ def test_get_movie_detail_returns_movie_stats_reviews(sb: Any, seeded_data: dict
         "has not been applied. Run `supabase db reset`."
     )
 
-    data: dict[str, Any] = result.data  # type: ignore[assignment]
+    data: dict[str, Any] = result.data
 
     # --- movie sub-object ---------------------------------------------------
     assert "movie" in data, f"Response missing 'movie' key: {data}"
@@ -519,7 +519,7 @@ def test_get_tv_detail_returns_series(sb: Any, seeded_data: dict[str, Any]) -> N
         "has not been applied. Run `supabase db reset`."
     )
 
-    data: dict[str, Any] = result.data  # type: ignore[assignment]
+    data: dict[str, Any] = result.data
 
     # --- tv_series sub-object -----------------------------------------------
     assert "tv_series" in data, f"Response missing 'tv_series' key: {data}"

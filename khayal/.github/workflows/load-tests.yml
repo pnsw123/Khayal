@@ -1,0 +1,112 @@
+name: Load Tests (Gate 16)
+
+# Gate 16 per CLAUDE.md Definition of Done:
+#   "Load tests — Pre-release — k6 (JS) / Locust (Python)"
+#
+# Trigger manually before a production release:
+#   gh workflow run load-tests.yml -f base_url=https://khayal.app
+#
+# Or call from a release workflow:
+#   uses: ./.github/workflows/load-tests.yml
+#   with:
+#     base_url: https://khayal.app
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL to load test (e.g. https://khayal.app)"
+        required: true
+        default: "https://khayal.app"
+
+  workflow_call:
+    inputs:
+      base_url:
+        description: "Base URL to load test"
+        required: true
+        type: string
+
+jobs:
+  search-browse-load:
+    name: "Load test: search + browse (50 VU × 30s)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Install k6 ─────────────────────────────────────────────────────────
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 \
+            --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      # ── Create results dir ──────────────────────────────────────────────────
+      - name: Create results directory
+        run: mkdir -p k6/results
+
+      # ── Run search + browse load test ───────────────────────────────────────
+      - name: Run search-browse load test
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+        run: |
+          k6 run \
+            --env BASE_URL="${BASE_URL}" \
+            --out json=k6/results/search-browse-raw.json \
+            k6/search-browse-load.js
+
+      # ── Upload results ──────────────────────────────────────────────────────
+      - name: Upload load test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-search-browse
+          path: k6/results/
+          retention-days: 30
+
+  daily-sync-upsert-load:
+    name: "Load test: daily-sync upsert (50 VU × 30s)"
+    runs-on: ubuntu-latest
+    # Upsert test requires a live Supabase instance — only run when secrets exist
+    if: ${{ vars.RUN_UPSERT_LOAD_TEST == 'true' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 \
+            --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Create results directory
+        run: mkdir -p k6/results
+
+      - name: Run daily-sync upsert load test
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          k6 run \
+            --env SUPABASE_URL="${SUPABASE_URL}" \
+            --env SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY}" \
+            --out json=k6/results/daily-sync-upsert-raw.json \
+            k6/daily-sync-upsert-load.js
+
+      - name: Upload load test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-daily-sync-upsert
+          path: k6/results/
+          retention-days: 30

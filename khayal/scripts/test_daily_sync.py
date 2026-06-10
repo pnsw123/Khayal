@@ -358,7 +358,7 @@ def test_run_sync_reads_tmdb_max_pages_env() -> None:
 
     captured: list[int] = []
 
-    def fake_fetch_pages(  # type: ignore[misc]
+    def fake_fetch_pages(
         media_type: str, time_window: str, api_key: str, max_pages: int = 3
     ) -> tuple[list[Any], list[int]]:
         captured.append(max_pages)
@@ -388,7 +388,7 @@ def test_run_sync_default_max_pages_when_env_unset() -> None:
 
     captured: list[int] = []
 
-    def fake_fetch_pages(  # type: ignore[misc]
+    def fake_fetch_pages(
         media_type: str, time_window: str, api_key: str, max_pages: int = 3
     ) -> tuple[list[Any], list[int]]:
         captured.append(max_pages)

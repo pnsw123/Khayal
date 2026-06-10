@@ -247,7 +247,7 @@ def test_generate_and_store_algo_name_in_rows() -> None:
         )
 
     rows = mock_client.table.return_value.upsert.call_args[0][0]
-    assert rows[0]["algo"] == "cornac-bpr"
+    assert rows[0]["source"] == "cornac-bpr"
     assert rows[0]["user_id"] == "u1"
     assert rows[0]["movie_id"] == "m1"
     assert rows[0]["score"] == 5.0
