@@ -12,7 +12,15 @@ export async function GET(request: NextRequest) {
   const upstream = await fetch(url, { next: { revalidate: 86400 } });
   if (!upstream.ok) return new NextResponse("Upstream error", { status: upstream.status });
 
-  const contentType = upstream.headers.get("Content-Type") ?? "image/jpeg";
+  const ALLOWED_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+  ]);
+  const rawType = upstream.headers.get("Content-Type") ?? "";
+  const baseType = rawType.split(";")[0].trim();
+  const contentType = ALLOWED_TYPES.has(baseType) ? rawType : "image/jpeg";
   const buffer = await upstream.arrayBuffer();
 
   return new NextResponse(buffer, {
