@@ -32,7 +32,7 @@ const eslintConfig = [
   },
   // Server-side files: allow console.warn and console.error for structured logging
   {
-    files: ["src/app/api/**/*.ts", "src/middleware.ts"],
+    files: ["src/app/api/**/*.ts", "src/middleware.ts", "src/lib/**/*.ts"],
     rules: {
       "no-console": ["error", { allow: ["warn", "error"] }],
     },
