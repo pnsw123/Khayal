@@ -16,7 +16,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   const limitParam = req.nextUrl.searchParams.get("limit");
-  const limit = limitParam ? Math.max(1, parseInt(limitParam, 10)) : DEFAULT_LIMIT;
+  const parsedLimit = limitParam ? parseInt(limitParam, 10) : NaN;
+  const limit = Number.isFinite(parsedLimit) && parsedLimit > 0
+    ? Math.min(parsedLimit, 100)
+    : DEFAULT_LIMIT;
   const algoFilter = req.nextUrl.searchParams.get("algo") ?? undefined;
 
   let recQuery = sb

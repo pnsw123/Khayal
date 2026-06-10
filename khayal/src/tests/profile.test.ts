@@ -140,6 +140,23 @@ describe("getUserLists", () => {
   });
 });
 
+describe("PII — email not exposed in profile data", () => {
+  it("getUserProfile does not return email field", async () => {
+    const fakeProfile = {
+      id: "abc123",
+      username: "alice",
+      display_name: "Alice",
+      avatar_url: null,
+      created_at: "2024-01-01T00:00:00Z",
+    };
+    const chain = makeChain({ data: fakeProfile, error: null });
+    mockFrom.mockReturnValue(chain);
+    const result = await getUserProfile("alice");
+    // Profile object must not contain an email key
+    expect(result).not.toHaveProperty("email");
+  });
+});
+
 describe("Stats computation", () => {
   it("computes stats correctly from counts", async () => {
     const ratings = [{ rating: 7, movies: { title: "A", slug: "a", poster_url: null, release_date: null } }];

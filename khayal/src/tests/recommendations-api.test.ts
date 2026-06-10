@@ -100,6 +100,52 @@ describe("GET /api/recommendations", () => {
     expect(body.algo).toBe("surprise-svd");
   });
 
+  it("non-numeric limit param falls back to DEFAULT_LIMIT (no NaN passed to Supabase)", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
+
+    const recRows = [
+      { movie_id: 1, score: 9.1, algo: "surprise-svd", generated_at: "2026-05-07T00:00:00Z" },
+    ];
+
+    let callCount = 0;
+    let capturedLimit: unknown;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      const chain = makeChain({ data: callCount === 1 ? recRows : [MOCK_MOVIES[0]], error: null });
+      const origLimit = (chain as Record<string, unknown>).limit as (...args: unknown[]) => unknown;
+      (chain as Record<string, unknown>).limit = vi.fn((...args: unknown[]) => {
+        if (callCount === 1) capturedLimit = args[0];
+        return origLimit(...args);
+      });
+      return chain;
+    });
+
+    await GET(makeRequest({ limit: "abc" }));
+    // limit passed to Supabase must be a finite number (DEFAULT_LIMIT = 12), not NaN
+    expect(Number.isFinite(capturedLimit as number)).toBe(true);
+    expect(capturedLimit).toBe(12);
+  });
+
+  it("limit param capped at 100 to prevent over-fetching", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
+
+    let callCount = 0;
+    let capturedLimit: unknown;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      const chain = makeChain({ data: [], error: null });
+      const origLimit = (chain as Record<string, unknown>).limit as (...args: unknown[]) => unknown;
+      (chain as Record<string, unknown>).limit = vi.fn((...args: unknown[]) => {
+        if (callCount === 1) capturedLimit = args[0];
+        return origLimit(...args);
+      });
+      return chain;
+    });
+
+    await GET(makeRequest({ limit: "9999" }));
+    expect(capturedLimit).toBe(100);
+  });
+
   it("fallback triggered when recommendations table is empty for user", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "user-2" } } });
 

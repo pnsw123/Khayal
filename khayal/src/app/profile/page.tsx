@@ -78,9 +78,6 @@ export default async function ProfilePage() {
           <div>
             <h1 className="font-display text-5xl text-[var(--cream)]">{displayName}</h1>
             {profile?.bio && <p className="mt-2 text-sm text-[var(--cream-muted)] max-w-md">{profile.bio}</p>}
-            <p className="mt-1 font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--cream-muted)]">
-              {user.email}
-            </p>
           </div>
         </div>
       </header>
