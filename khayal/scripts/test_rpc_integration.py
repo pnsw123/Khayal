@@ -95,7 +95,7 @@ def seeded_data(sb: Any) -> Generator[dict[str, Any], None, None]:  # noqa: C901
         for i in range(min(10_000, len(movie_ids)))
     ]
     for batch_start in range(0, len(mg_rows), batch_size):
-        sb.table("movie_genre").insert(mg_rows[batch_start : batch_start + batch_size]).execute()
+        sb.table("movie_genres").insert(mg_rows[batch_start : batch_start + batch_size]).execute()
 
     # ------------------------------------------------------------------
     # 4. TV series (5 000 rows)
@@ -131,7 +131,7 @@ def seeded_data(sb: Any) -> Generator[dict[str, Any], None, None]:  # noqa: C901
     all_ids = movie_ids + tv_ids
     for batch_start in range(0, len(all_ids), batch_size):
         chunk = all_ids[batch_start : batch_start + batch_size]
-        sb.table("movie_genre").delete().in_("movie_id", chunk).execute()
+        sb.table("movie_genres").delete().in_("movie_id", chunk).execute()
         sb.table("movies").delete().in_("id", chunk).execute()
 
     sb.table("genres").delete().in_("id", genre_ids).execute()

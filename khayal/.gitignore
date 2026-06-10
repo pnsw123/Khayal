@@ -58,3 +58,6 @@ __pycache__/
 
 # Claude Code internal
 .claude/
+
+# Personal dev tooling — not part of contributor workflow
+jsrepo.config.mts
