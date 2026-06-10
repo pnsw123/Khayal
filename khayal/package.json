@@ -7,7 +7,10 @@
 		"build": "next build",
 		"start": "next start",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"lint": "eslint src/ --max-warnings 0",
+		"type-check": "tsc --noEmit",
+		"validate": "npm run type-check && npm run lint && npm run test"
 	},
 	"dependencies": {
 		"@radix-ui/react-avatar": "^1.1.11",
