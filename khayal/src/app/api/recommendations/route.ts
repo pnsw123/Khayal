@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase-server";
-import type { Movie } from "@/lib/supabase";
+import type { Movie } from "@/lib/supabase-types";
 
 const DEFAULT_LIMIT = 12;
 

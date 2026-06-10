@@ -1,6 +1,6 @@
 import "server-only";
 import { supabaseServer } from "@/lib/supabase-server";
-import type { Movie } from "@/lib/supabase";
+import type { Movie } from "@/lib/supabase-types";
 
 const SHELF_SELECT =
   "id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language";

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Movie, TvSeries, SearchAllRow, MovieStats, Review } from "@/lib/supabase";
+import type { Movie, TvSeries, SearchAllRow, MovieStats, Review } from "@/lib/supabase-types";
 
 // Type-shape tests — verify the exported types have the expected fields.
 // These run at type-check time too (TypeScript compile step) but we also

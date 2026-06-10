@@ -1,6 +1,6 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import { MovieCard } from "@/components/movie-card";
-import type { Movie } from "@/lib/supabase";
+import type { Movie } from "@/lib/supabase-types";
 import { year } from "@/lib/utils";
 
 export function RecommendationsSkeleton() {

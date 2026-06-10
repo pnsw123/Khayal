@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, Globe, CalendarDays, ArrowLeft, Film, Star } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
-import type { MovieDetail } from "@/lib/supabase";
+import type { MovieDetail } from "@/lib/supabase-types";
 import type { MovieCreditWithPeopleRow, MovieWithGenresRow } from "@/lib/database.types";
 import type { UserList } from "@/components/add-to-list";
 import { currentUser } from "@/lib/auth";

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarDays, ArrowLeft, Film } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
-import type { TvDetail } from "@/lib/supabase";
+import type { TvDetail } from "@/lib/supabase-types";
 import type { TvCreditWithPeopleRow } from "@/lib/database.types";
 import { currentUser } from "@/lib/auth";
 import { year } from "@/lib/utils";
