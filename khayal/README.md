@@ -196,6 +196,17 @@ recommendations
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
 
+### Rate limiting — required in production (optional in dev)
+
+| Variable | Description |
+|---|---|
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL — [create a free DB](https://console.upstash.com) |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token |
+
+The `/auth/callback` route is protected by a **distributed sliding-window rate limiter** (10 req / 60 s per IP) backed by Upstash Redis. This works correctly across multiple Fly.io machines and Vercel serverless instances because every process shares the same atomic counter over HTTP.
+
+> **Dev / CI:** If these env vars are absent the rate limiter is disabled automatically. A warning is printed once to the server console. Set the vars before deploying to production.
+
 ### Python scripts only — not needed for frontend dev
 
 | Variable | Description |
