@@ -73,60 +73,30 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ movies: ordered, algo, generated_at });
   }
 
-  // Fallback — top-rated movies not yet seen by the user
-  const { data: seenRows, error: seenError } = await sb
-    .from("movie_ratings")
-    .select("movie_id")
-    .eq("user_id", user.id);
-
-  if (seenError) {
-    console.error("[recommendations] seenRows error:", seenError.message);
-    return NextResponse.json(
-      { error: `Supabase query failed: ${seenError.message}` },
-      { status: 500 },
-    );
-  }
-
-  const seenSet = new Set<number>((seenRows ?? []).map((r) => r.movie_id as number));
-
-  const { data: statRows, error: statsError } = await sb
-    .from("movie_stats")
-    .select("movie_id, avg_rating")
-    .order("avg_rating", { ascending: false })
-    .limit(limit * 10);
-
-  if (statsError) {
-    console.error("[recommendations] statRows error:", statsError.message);
-    return NextResponse.json(
-      { error: `Supabase query failed: ${statsError.message}` },
-      { status: 500 },
-    );
-  }
-
-  const candidateIds = (statRows ?? [])
-    .map((r) => r.movie_id as number)
-    .filter((id) => !seenSet.has(id))
-    .slice(0, limit);
-
-  if (candidateIds.length === 0) {
-    return NextResponse.json({ movies: [], algo: "fallback", generated_at: new Date().toISOString() });
-  }
-
-  const { data: fallbackMovies, error: fallbackError } = await sb
-    .from("movies")
-    .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language")
-    .in("id", candidateIds);
+  // Fallback — single RPC: top-rated movies not yet seen by the user.
+  // Replaces the previous 3-round-trip path (fetch seen set, fetch limit*10 stats,
+  // fetch movie details) with one DB call that pushes the NOT EXISTS filter
+  // server-side and applies LIMIT p_limit inside the query (issue #255).
+  const { data: fallbackRows, error: fallbackError } = await sb
+    .rpc("get_fallback_recommendations", { p_user_id: user.id, p_limit: limit });
 
   if (fallbackError) {
-    console.error("[recommendations] fallbackMovies error:", fallbackError.message);
+    console.error("[recommendations] fallback RPC error:", fallbackError.message);
     return NextResponse.json(
       { error: `Supabase query failed: ${fallbackError.message}` },
       { status: 500 },
     );
   }
 
+  if (!fallbackRows || fallbackRows.length === 0) {
+    return NextResponse.json({ movies: [], algo: "fallback", generated_at: new Date().toISOString() });
+  }
+
+  // Strip avg_rating from the response — Movie type doesn't include it.
+  const fallbackMovies = fallbackRows.map(({ avg_rating: _avg, ...m }) => m as Movie);
+
   return NextResponse.json({
-    movies: fallbackMovies ?? [],
+    movies: fallbackMovies,
     algo: "fallback",
     generated_at: new Date().toISOString(),
   });

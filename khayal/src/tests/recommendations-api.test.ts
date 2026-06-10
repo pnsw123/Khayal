@@ -25,12 +25,18 @@ function makeErrorChain(message: string) {
   return makeChain({ data: null, error: { message } });
 }
 
+function makeRpcResult(data: unknown, error: { message: string } | null = null): Promise<{ data: unknown; error: { message: string } | null }> {
+  return Promise.resolve({ data, error });
+}
+
 const mockFrom = vi.fn();
+const mockRpc = vi.fn();
 
 vi.mock("@/lib/supabase-server", () => ({
   supabaseServer: async () => ({
     auth: { getUser: mockGetUser },
     from: mockFrom,
+    rpc: mockRpc,
   }),
 }));
 
@@ -47,6 +53,16 @@ const MOCK_MOVIES = [
     poster_url: null, runtime_minutes: 148, age_rating: "PG-13", original_language: "en" },
   { id: 2, title: "Dune", slug: "dune-2021", release_date: "2021-10-22",
     poster_url: null, runtime_minutes: 155, age_rating: "PG-13", original_language: "en" },
+];
+
+// Fallback RPC rows include avg_rating (stripped before returning to client)
+const MOCK_FALLBACK_ROWS = [
+  { id: 1, title: "Inception", slug: "inception-2010", release_date: "2010-07-16",
+    poster_url: null, runtime_minutes: 148, age_rating: "PG-13", original_language: "en",
+    avg_rating: 9.0 },
+  { id: 2, title: "Dune", slug: "dune-2021", release_date: "2021-10-22",
+    poster_url: null, runtime_minutes: 155, age_rating: "PG-13", original_language: "en",
+    avg_rating: 8.5 },
 ];
 
 describe("GET /api/recommendations", () => {
@@ -145,85 +161,91 @@ describe("GET /api/recommendations", () => {
       });
       return chain;
     });
+    // recommendations empty → fallback RPC; just return empty so test completes
+    mockRpc.mockResolvedValue({ data: [], error: null });
 
     await GET(makeRequest({ limit: "9999" }));
     expect(capturedLimit).toBe(100);
   });
 
-  it("fallback triggered when recommendations table is empty for user", async () => {
+  // ── Fallback path (issue #255) — single RPC replaces 3-query sequence ────
+
+  it("fallback triggered when recommendations table is empty — calls get_fallback_recommendations RPC", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "user-2" } } });
 
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs
-      if (callCount === 2) return makeChain({ data: [], error: null }); // no rated
-      if (callCount === 3) return makeChain({ data: [{ movie_id: 1, avg_rating: 9 }, { movie_id: 2, avg_rating: 8 }], error: null }); // stats
-      return makeChain({ data: MOCK_MOVIES, error: null }); // fallback movies
-    });
+    // recommendations table empty → fallback
+    mockFrom.mockImplementation(() => makeChain({ data: [], error: null }));
+    mockRpc.mockResolvedValue({ data: MOCK_FALLBACK_ROWS, error: null });
 
     const res = await GET(makeRequest());
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.algo).toBe("fallback");
     expect(Array.isArray(body.movies)).toBe(true);
+    expect(body.movies.length).toBe(2);
+
+    // Confirm RPC called with correct args
+    expect(mockRpc).toHaveBeenCalledWith("get_fallback_recommendations", {
+      p_user_id: "user-2",
+      p_limit: 12,
+    });
   });
 
-  it("fallback excludes seen movies via Set (O(1) lookup)", async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-3" } } });
+  it("fallback passes correct p_limit to RPC", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-2" } } });
 
-    // movie_id 1 already seen — must not appear in fallback
-    const seenMovieId = 1;
+    mockFrom.mockImplementation(() => makeChain({ data: [], error: null }));
+    mockRpc.mockResolvedValue({ data: [], error: null });
 
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs
-      if (callCount === 2) return makeChain({ data: [{ movie_id: seenMovieId }], error: null }); // rated
-      if (callCount === 3)
-        return makeChain({
-          data: [
-            { movie_id: seenMovieId, avg_rating: 9.5 }, // seen — must be excluded
-            { movie_id: 2, avg_rating: 8.0 },
-          ],
-          error: null,
-        }); // stats
-      return makeChain({ data: [MOCK_MOVIES[1]], error: null }); // only unseen movie fetched
+    await GET(makeRequest({ limit: "50" }));
+
+    expect(mockRpc).toHaveBeenCalledWith("get_fallback_recommendations", {
+      p_user_id: "user-2",
+      p_limit: 50,
     });
+  });
+
+  it("fallback response strips avg_rating field from movies", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-2" } } });
+
+    mockFrom.mockImplementation(() => makeChain({ data: [], error: null }));
+    mockRpc.mockResolvedValue({ data: MOCK_FALLBACK_ROWS, error: null });
 
     const res = await GET(makeRequest());
-    expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.algo).toBe("fallback");
-    const returnedIds: number[] = (body.movies as Array<{ id: number }>).map((m) => m.id);
-    expect(returnedIds).not.toContain(seenMovieId);
+    for (const movie of body.movies as Record<string, unknown>[]) {
+      expect(Object.keys(movie)).not.toContain("avg_rating");
+    }
   });
 
-  it("fallback returns empty array when all top-rated movies already seen", async () => {
+  it("fallback returns empty array when RPC returns no rows", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "user-4" } } });
 
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs
-      if (callCount === 2)
-        return makeChain({ data: [{ movie_id: 1 }, { movie_id: 2 }], error: null }); // both seen
-      if (callCount === 3)
-        return makeChain({
-          data: [
-            { movie_id: 1, avg_rating: 9.5 },
-            { movie_id: 2, avg_rating: 8.0 },
-          ],
-          error: null,
-        }); // stats — all seen
-      return makeChain({ data: [], error: null });
-    });
+    mockFrom.mockImplementation(() => makeChain({ data: [], error: null }));
+    mockRpc.mockResolvedValue({ data: [], error: null });
 
     const res = await GET(makeRequest());
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.algo).toBe("fallback");
     expect(body.movies).toEqual([]);
+  });
+
+  it("fallback uses only 1 round-trip (no from() calls after recs empty)", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-5" } } });
+
+    let fromCallCount = 0;
+    mockFrom.mockImplementation(() => {
+      fromCallCount++;
+      return makeChain({ data: [], error: null }); // recs empty → fallback
+    });
+    mockRpc.mockResolvedValue({ data: MOCK_FALLBACK_ROWS, error: null });
+
+    await GET(makeRequest());
+
+    // Only 1 from() call (the initial recommendations query), then 1 rpc() call
+    expect(fromCallCount).toBe(1);
+    expect(mockRpc).toHaveBeenCalledTimes(1);
   });
 
   // ── Error-propagation tests (issue #239) ─────────────────────────────────
@@ -256,55 +278,15 @@ describe("GET /api/recommendations", () => {
     expect(body.error).toMatch(/movies table not found/);
   });
 
-  it("returns 500 when movie_ratings fetch errors during fallback", async () => {
+  it("returns 500 when fallback RPC errors", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "user-7" } } });
 
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs → fallback
-      return makeErrorChain("movie_ratings unavailable");
-    });
+    mockFrom.mockImplementation(() => makeChain({ data: [], error: null })); // no recs → fallback
+    mockRpc.mockResolvedValue({ data: null, error: { message: "get_fallback_recommendations not found" } });
 
     const res = await GET(makeRequest());
     expect(res.status).toBe(500);
     const body = await res.json();
-    expect(body.error).toMatch(/movie_ratings unavailable/);
-  });
-
-  it("returns 500 when movie_stats fetch errors during fallback", async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-8" } } });
-
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs
-      if (callCount === 2) return makeChain({ data: [], error: null }); // no seen
-      return makeErrorChain("movie_stats view missing");
-    });
-
-    const res = await GET(makeRequest());
-    expect(res.status).toBe(500);
-    const body = await res.json();
-    expect(body.error).toMatch(/movie_stats view missing/);
-  });
-
-  it("returns 500 when fallback movies fetch errors", async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-9" } } });
-
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs
-      if (callCount === 2) return makeChain({ data: [], error: null }); // no seen
-      if (callCount === 3)
-        return makeChain({ data: [{ movie_id: 10, avg_rating: 8 }], error: null }); // stats
-      return makeErrorChain("network timeout on fallback movies");
-    });
-
-    const res = await GET(makeRequest());
-    expect(res.status).toBe(500);
-    const body = await res.json();
-    expect(body.error).toMatch(/network timeout on fallback movies/);
+    expect(body.error).toMatch(/get_fallback_recommendations not found/);
   });
 });

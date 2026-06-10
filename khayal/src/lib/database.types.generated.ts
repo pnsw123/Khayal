@@ -883,6 +883,23 @@ export interface Database {
         };
         Returns: undefined;
       };
+      get_fallback_recommendations: {
+        Args: {
+          p_user_id: string;
+          p_limit?: number;
+        };
+        Returns: {
+          id: number;
+          title: string;
+          slug: string | null;
+          release_date: string | null;
+          poster_url: string | null;
+          runtime_minutes: number | null;
+          age_rating: string | null;
+          original_language: string | null;
+          avg_rating: number | null;
+        }[];
+      };
       get_movie_detail: {
         Args: {
           p_slug: string;
