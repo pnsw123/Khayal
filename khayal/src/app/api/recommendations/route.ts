@@ -46,7 +46,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const algo = recRows?.[0]?.source ?? algoFilter ?? "cornac-bpr";
+  const algo = recRows?.[0]?.source ?? algoFilter ?? "unknown";
   const generated_at = recRows?.[0]?.created_at ?? new Date().toISOString();
 
   if (recRows && recRows.length > 0) {
