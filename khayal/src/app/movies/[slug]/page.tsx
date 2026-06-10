@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const sb = await supabaseServer();
   let data: unknown = null;
   try {
-    const result = await sb.rpc("get_movie_detail", { movie_slug: slug });
+    const result = await sb.rpc("get_movie_detail", { p_slug: slug });
     if (result.error) {
       // RPC missing or DB error — return minimal metadata rather than crashing
       return {};
@@ -80,7 +80,7 @@ export default async function MovieDetailPage({
   const sb = await supabaseServer();
   let data: unknown = null;
   try {
-    const result = await sb.rpc("get_movie_detail", { movie_slug: slug });
+    const result = await sb.rpc("get_movie_detail", { p_slug: slug });
     if (result.error) {
       // RPC undefined or DB error — treat as not found rather than crashing
       notFound();

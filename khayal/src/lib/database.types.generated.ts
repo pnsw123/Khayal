@@ -885,14 +885,14 @@ export interface Database {
       };
       get_movie_detail: {
         Args: {
-          movie_slug: string;
+          p_slug: string;
           requesting_user_id?: string;
         };
         Returns: Json;
       };
       get_tv_detail: {
         Args: {
-          series_slug: string;
+          p_slug: string;
           requesting_user_id?: string;
         };
         Returns: Json;
