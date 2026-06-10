@@ -1,8 +1,13 @@
 "use client";
 import { createBrowserClient } from "@supabase/ssr";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL)
+  throw new Error("NEXT_PUBLIC_SUPABASE_URL is required");
+if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  throw new Error("NEXT_PUBLIC_SUPABASE_ANON_KEY is required");
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 let client: ReturnType<typeof createBrowserClient> | null = null;
 

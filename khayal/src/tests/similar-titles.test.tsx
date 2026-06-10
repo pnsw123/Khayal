@@ -1,44 +1,40 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-
+import { describe, it, expect } from "vitest";
 import { SimilarTitles } from "@/components/similar-titles";
 import type { SimilarMovie, SimilarTv } from "@/lib/similar";
 
 type MovieItem = SimilarMovie & { kind: "movie" };
 type TvItem = SimilarTv & { kind: "tv" };
 
-const MOVIE_ITEMS: MovieItem[] = [
-  {
-    kind: "movie",
-    id: 1,
-    slug: "film-a",
-    title: "Film A",
-    poster_url: "https://example.com/a.jpg",
-    release_date: "2023-01-15",
-    genre_names: ["Drama"],
-  },
-  {
-    kind: "movie",
-    id: 2,
-    slug: "film-b",
-    title: "Film B",
-    poster_url: null,
-    release_date: null,
-    genre_names: [],
-  },
-];
+const movieItem: MovieItem = {
+  id: 1,
+  title: "Inception",
+  slug: "inception",
+  poster_url: "https://image.tmdb.org/t/p/w342/poster1.jpg",
+  release_date: "2010-07-16",
+  genre_names: ["Sci-Fi", "Thriller"],
+  kind: "movie",
+};
 
-const TV_ITEMS: TvItem[] = [
-  {
-    kind: "tv",
-    id: 10,
-    slug: "show-x",
-    title: "Show X",
-    poster_url: "https://example.com/x.jpg",
-    first_air_date: "2022-09-01",
-    genre_names: ["Thriller"],
-  },
-];
+const tvItem: TvItem = {
+  id: 2,
+  title: "Breaking Bad",
+  slug: "breaking-bad",
+  poster_url: "https://image.tmdb.org/t/p/w342/poster2.jpg",
+  first_air_date: "2008-01-20",
+  genre_names: ["Drama", "Crime"],
+  kind: "tv",
+};
+
+const movieNoPoster: MovieItem = {
+  id: 3,
+  title: "No Poster Film",
+  slug: "no-poster-film",
+  poster_url: null,
+  release_date: "2020-01-01",
+  genre_names: [],
+  kind: "movie",
+};
 
 describe("SimilarTitles", () => {
   it("renders nothing when items array is empty", () => {
@@ -46,50 +42,49 @@ describe("SimilarTitles", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("renders default heading when not provided", () => {
-    render(<SimilarTitles items={MOVIE_ITEMS} />);
-    expect(screen.getByText("You might also like")).toBeInTheDocument();
+  it("renders poster images for items with poster_url", () => {
+    render(<SimilarTitles items={[movieItem, tvItem]} />);
+    const imgs = screen.getAllByRole("img");
+    expect(imgs).toHaveLength(2);
+    expect(imgs[0]).toHaveAttribute("src", movieItem.poster_url);
+    expect(imgs[0]).toHaveAttribute("alt", movieItem.title);
+    expect(imgs[1]).toHaveAttribute("src", tvItem.poster_url);
+    expect(imgs[1]).toHaveAttribute("alt", tvItem.title);
   });
 
-  it("renders custom heading when provided", () => {
-    render(<SimilarTitles heading="More Like This" items={MOVIE_ITEMS} />);
-    expect(screen.getByText("More Like This")).toBeInTheDocument();
-  });
-
-  it("renders correct number of items", () => {
-    render(<SimilarTitles items={MOVIE_ITEMS} />);
-    const links = screen.getAllByRole("link");
-    expect(links).toHaveLength(MOVIE_ITEMS.length);
-  });
-
-  it("movie item links to /movies/[slug]", () => {
-    render(<SimilarTitles items={[MOVIE_ITEMS[0]]} />);
+  it("renders title links with correct hrefs for movies", () => {
+    render(<SimilarTitles items={[movieItem]} />);
     const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("href", "/movies/film-a");
+    expect(link).toHaveAttribute("href", `/movies/${movieItem.slug}`);
   });
 
-  it("tv item links to /tv/[slug]", () => {
-    render(<SimilarTitles items={TV_ITEMS} />);
+  it("renders title links with correct hrefs for tv series", () => {
+    render(<SimilarTitles items={[tvItem]} />);
     const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("href", "/tv/show-x");
+    expect(link).toHaveAttribute("href", `/tv/${tvItem.slug}`);
   });
 
-  it("renders poster image when poster_url provided", () => {
-    render(<SimilarTitles items={[MOVIE_ITEMS[0]]} />);
-    const img = screen.getByRole("img", { name: "Film A" });
-    expect(img).toHaveAttribute("src", "https://example.com/a.jpg");
-  });
-
-  it("renders fallback icon when poster_url is null", () => {
-    render(<SimilarTitles items={[MOVIE_ITEMS[1]]} />);
+  it("handles null poster_url gracefully — shows Film icon fallback, no img element", () => {
+    render(<SimilarTitles items={[movieNoPoster]} />);
     expect(screen.queryByRole("img")).toBeNull();
-    // Film icon rendered via lucide — no img tag present
+    // Link should still render
+    const link = screen.getByRole("link");
+    expect(link).toHaveAttribute("href", `/movies/${movieNoPoster.slug}`);
   });
 
-  it("renders mixed movie and tv items", () => {
-    const mixed = [...MOVIE_ITEMS, ...TV_ITEMS];
-    render(<SimilarTitles items={mixed} />);
+  it("renders default heading when no heading prop supplied", () => {
+    render(<SimilarTitles items={[movieItem]} />);
+    expect(screen.getByText("You might also like")).toBeTruthy();
+  });
+
+  it("renders custom heading when heading prop is supplied", () => {
+    render(<SimilarTitles items={[movieItem]} heading="Similar Films" />);
+    expect(screen.getByText("Similar Films")).toBeTruthy();
+  });
+
+  it("renders all items when given a mixed array of movies and tv", () => {
+    render(<SimilarTitles items={[movieItem, tvItem, movieNoPoster]} />);
     const links = screen.getAllByRole("link");
-    expect(links).toHaveLength(mixed.length);
+    expect(links).toHaveLength(3);
   });
 });
