@@ -175,14 +175,19 @@ recommendations
 
 ## Environment Variables
 
-Create `.env.local` from the table below:
+### Web app — required to run `npm run dev`
 
-| Variable | Required | Description |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon/public key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes (scripts) | Service role key for Python sync scripts |
-| `TMDB_API_KEY` | Yes (scripts) | TMDB API v3 key — [get one free](https://www.themoviedb.org/settings/api) |
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
+
+### Python scripts only — not needed for frontend dev
+
+| Variable | Description |
+|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key for Python sync scripts |
+| `TMDB_API_KEY` | TMDB API v3 key — [get one free](https://www.themoviedb.org/settings/api) |
 
 ---
 
@@ -196,9 +201,10 @@ cd Khayal
 # 2. Install dependencies
 npm install
 
-# 3. Configure environment
+# 3. Configure environment (web app only needs two vars)
 cp .env.example .env.local
-# Edit .env.local — fill in Supabase URL, anon key
+# Fill in: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+# SUPABASE_SERVICE_ROLE_KEY and TMDB_API_KEY only needed for Python sync scripts
 
 # 4. Start development server
 npm run dev
