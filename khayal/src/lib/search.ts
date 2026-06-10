@@ -21,18 +21,16 @@ export interface SearchResult {
   genre_names: string[] | null;
 }
 
-
-function rankResults(results: SearchResult[], query: string): SearchResult[] {
-  const q = query.toLowerCase();
-  return [...results].sort((a, b) => {
-    const aTitle = a.title.toLowerCase();
-    const bTitle = b.title.toLowerCase();
-    const aExact = aTitle === q ? 2 : aTitle.startsWith(q) ? 1 : 0;
-    const bExact = bTitle === q ? 2 : bTitle.startsWith(q) ? 1 : 0;
-    if (aExact !== bExact) return bExact - aExact;
-    if (a.type !== b.type) return a.type === "movie" ? -1 : 1;
-    return b.relevance - a.relevance;
-  });
+/** Map decade label → [year_start, year_end] for RPC params. */
+function decadeRange(year: string): { start: number | null; end: number | null } {
+  switch (year) {
+    case "2020s": return { start: 2020, end: null };
+    case "2010s": return { start: 2010, end: 2019 };
+    case "2000s": return { start: 2000, end: 2009 };
+    case "1990s": return { start: 1990, end: 1999 };
+    case "older":  return { start: null, end: 1989 };
+    default:       return { start: null, end: null };
+  }
 }
 
 export async function searchAll(
@@ -45,34 +43,23 @@ export async function searchAll(
   const { supabaseBrowser } = await import("@/lib/supabase-browser");
   const supabase = supabaseBrowser();
 
+  const { start: p_year_start, end: p_year_end } = filters.year
+    ? decadeRange(filters.year)
+    : { start: null, end: null };
+
   const { data, error } = await supabase.rpc("search_all", {
-    query_text: text,
-    page_size: filters.pageSize ?? 30,
-    page_offset: filters.pageOffset ?? 0,
+    query_text:   text,
+    page_size:    filters.pageSize ?? 30,
+    page_offset:  filters.pageOffset ?? 0,
+    p_type:       filters.type  || null,
+    p_year_start: p_year_start,
+    p_year_end:   p_year_end,
+    p_genre:      filters.genre || null,
   });
 
   if (error || !data) return [];
 
-  const rows = Array.isArray(data) ? (data as SearchResult[]) : [];
-
-  const filtered = rows.filter((r) => {
-    if (filters.type && r.type !== filters.type) return false;
-    if (filters.year) {
-      const yr = r.release_year ?? 0;
-      if (filters.year === "2020s" && !(yr >= 2020)) return false;
-      if (filters.year === "2010s" && !(yr >= 2010 && yr < 2020)) return false;
-      if (filters.year === "2000s" && !(yr >= 2000 && yr < 2010)) return false;
-      if (filters.year === "1990s" && !(yr >= 1990 && yr < 2000)) return false;
-      if (filters.year === "older" && !(yr < 1990)) return false;
-    }
-    if (filters.genre) {
-      const genres = r.genre_names ?? [];
-      if (!genres.some((g) => g.toLowerCase() === filters.genre!.toLowerCase())) return false;
-    }
-    return true;
-  });
-
-  return rankResults(filtered, text);
+  return Array.isArray(data) ? (data as SearchResult[]) : [];
 }
 
 export function buildSearchHref(

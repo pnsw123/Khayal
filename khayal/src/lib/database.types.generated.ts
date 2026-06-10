@@ -912,6 +912,10 @@ export interface Database {
           query_text: string;
           page_size?: number;
           page_offset?: number;
+          p_type?: string | null;
+          p_year_start?: number | null;
+          p_year_end?: number | null;
+          p_genre?: string | null;
         };
         Returns: {
           id: number;
@@ -922,6 +926,10 @@ export interface Database {
           poster_url: string | null;
           release_year: number | null;
           relevance: number;
+          age_rating: string | null;
+          original_language: string | null;
+          runtime_minutes: number | null;
+          genre_names: string[] | null;
         }[];
       };
       search_movies: {

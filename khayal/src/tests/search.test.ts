@@ -41,14 +41,18 @@ describe("searchAll", () => {
     expect(mockRpc).not.toHaveBeenCalled();
   });
 
-  it("calls search_all RPC for valid query", async () => {
+  it("calls search_all RPC for valid query with server-side filter defaults", async () => {
     mockRpc.mockResolvedValue({ data: [makeResult()], error: null });
     await searchAll("batman");
     expect(mockRpc).toHaveBeenCalledOnce();
     expect(mockRpc).toHaveBeenCalledWith("search_all", {
-      query_text: "batman",
-      page_size: 30,
-      page_offset: 0,
+      query_text:   "batman",
+      page_size:    30,
+      page_offset:  0,
+      p_type:       null,
+      p_year_start: null,
+      p_year_end:   null,
+      p_genre:      null,
     });
   });
 
@@ -78,30 +82,82 @@ describe("searchAll", () => {
     expect(call[1].page_offset).toBe(20);
   });
 
-  it("passes type filter by client-side filtering", async () => {
-    const movie = makeResult({ id: 1, type: "movie", title: "Batman" });
-    const tv = makeResult({ id: 2, type: "tv", title: "Batman TV", slug: "batman-tv" });
-    mockRpc.mockResolvedValue({ data: [movie, tv], error: null });
-    const results = await searchAll("batman", { type: "movie" });
-    expect(results.every((r) => r.type === "movie")).toBe(true);
-    expect(results.length).toBe(1);
+  it("passes p_type server-side for type filter", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { type: "movie" });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_type).toBe("movie");
   });
 
-  it("sorts movies before TV when type unspecified", async () => {
+  it("passes p_type=null when type filter is empty string", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { type: "" });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_type).toBeNull();
+  });
+
+  it("passes p_year_start for 2020s decade filter", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { year: "2020s" });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_year_start).toBe(2020);
+    expect(call[1].p_year_end).toBeNull();
+  });
+
+  it("passes correct range for 2010s decade filter", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { year: "2010s" });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_year_start).toBe(2010);
+    expect(call[1].p_year_end).toBe(2019);
+  });
+
+  it("passes correct range for 2000s decade filter", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { year: "2000s" });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_year_start).toBe(2000);
+    expect(call[1].p_year_end).toBe(2009);
+  });
+
+  it("passes correct range for 1990s decade filter", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { year: "1990s" });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_year_start).toBe(1990);
+    expect(call[1].p_year_end).toBe(1999);
+  });
+
+  it("passes correct range for older decade filter", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { year: "older" });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_year_start).toBeNull();
+    expect(call[1].p_year_end).toBe(1989);
+  });
+
+  it("passes p_genre server-side for genre filter", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { genre: "Action" });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_genre).toBe("Action");
+  });
+
+  it("passes p_genre=null when genre filter is empty string", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { genre: "" });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_genre).toBeNull();
+  });
+
+  it("returns RPC results directly without client-side re-sorting", async () => {
     const tv = makeResult({ id: 1, type: "tv", title: "Batman TV", slug: "batman-tv", relevance: 0.9 });
     const movie = makeResult({ id: 2, type: "movie", title: "Batman Film", slug: "batman-film", relevance: 0.5 });
+    // RPC returns tv first (server orders by relevance) — must be preserved
     mockRpc.mockResolvedValue({ data: [tv, movie], error: null });
     const results = await searchAll("batman");
-    expect(results[0].type).toBe("movie");
-    expect(results[1].type).toBe("tv");
-  });
-
-  it("sorts exact title match first", async () => {
-    const partial = makeResult({ id: 1, title: "Batman Returns", slug: "batman-returns", relevance: 0.9 });
-    const exact = makeResult({ id: 2, title: "batman", slug: "batman-2022", relevance: 0.5 });
-    mockRpc.mockResolvedValue({ data: [partial, exact], error: null });
-    const results = await searchAll("batman");
-    expect(results[0].title).toBe("batman");
+    expect(results[0].type).toBe("tv");
+    expect(results[1].type).toBe("movie");
   });
 
   it("handles empty results gracefully", async () => {
@@ -116,22 +172,16 @@ describe("searchAll", () => {
     expect(results).toEqual([]);
   });
 
-  it("filters by year decade", async () => {
-    const old = makeResult({ id: 1, release_year: 1989, slug: "batman-89" });
-    const modern = makeResult({ id: 2, release_year: 2022, slug: "batman-22" });
-    mockRpc.mockResolvedValue({ data: [old, modern], error: null });
-    const results = await searchAll("batman", { year: "2020s" });
-    expect(results.length).toBe(1);
-    expect(results[0].release_year).toBe(2022);
-  });
-
-  it("filters by genre", async () => {
-    const action = makeResult({ id: 1, genre_names: ["Action"], slug: "batman-action" });
-    const comedy = makeResult({ id: 2, genre_names: ["Comedy"], slug: "batman-comedy" });
-    mockRpc.mockResolvedValue({ data: [action, comedy], error: null });
-    const results = await searchAll("batman", { genre: "Action" });
-    expect(results.length).toBe(1);
-    expect(results[0].genre_names).toContain("Action");
+  it("passes all filters to RPC simultaneously", async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchAll("batman", { type: "movie", year: "2000s", genre: "Action", pageSize: 10, pageOffset: 20 });
+    const call = mockRpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(call[1].p_type).toBe("movie");
+    expect(call[1].p_year_start).toBe(2000);
+    expect(call[1].p_year_end).toBe(2009);
+    expect(call[1].p_genre).toBe("Action");
+    expect(call[1].page_size).toBe(10);
+    expect(call[1].page_offset).toBe(20);
   });
 });
 
