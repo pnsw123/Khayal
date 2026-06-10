@@ -51,3 +51,6 @@ __pycache__/
 *.pyd
 .pytest_cache/
 .mypy_cache/
+
+# Claude Code internal
+.claude/
