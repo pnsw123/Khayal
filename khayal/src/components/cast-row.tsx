@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { User, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState, useCallback, useEffect } from "react";
 
@@ -109,13 +110,14 @@ export function CastRow({ cast }: { cast: CastMember[] }) {
             {actors.map((a) => (
               <div key={a.person_id} className="w-[100px] shrink-0 group">
                 {/* Photo */}
-                <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-2 border-[var(--taupe)]/20 group-hover:border-[var(--saffron)]/50 transition-colors bg-[var(--ink-lift)] mb-2.5 mx-auto">
+                <div className="relative w-[100px] h-[100px] rounded-full overflow-hidden border-2 border-[var(--taupe)]/20 group-hover:border-[var(--saffron)]/50 transition-colors bg-[var(--ink-lift)] mb-2.5 mx-auto">
                   {a.profile_path ? (
-                    <img
+                    <Image
                       src={a.profile_path}
                       alt={a.name}
-                      className="w-full h-full object-cover object-top"
-                      loading="lazy"
+                      fill
+                      sizes="100px"
+                      className="object-cover object-top"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[var(--cream-muted)]">
