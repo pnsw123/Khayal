@@ -223,6 +223,33 @@ CREATE POLICY "user_list_tv_series_delete_own"
     )
   );
 
+-- ── tv_series_ratings ────────────────────────────────────────────────────────
+-- Identical structure to movie_ratings — owner-scoped on all four operations.
+-- Fix for issue #187: this table was missing RLS entirely.
+
+ALTER TABLE tv_series_ratings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "tv_series_ratings_select_own" ON tv_series_ratings;
+CREATE POLICY "tv_series_ratings_select_own"
+  ON tv_series_ratings FOR SELECT
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "tv_series_ratings_insert_own" ON tv_series_ratings;
+CREATE POLICY "tv_series_ratings_insert_own"
+  ON tv_series_ratings FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "tv_series_ratings_update_own" ON tv_series_ratings;
+CREATE POLICY "tv_series_ratings_update_own"
+  ON tv_series_ratings FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "tv_series_ratings_delete_own" ON tv_series_ratings;
+CREATE POLICY "tv_series_ratings_delete_own"
+  ON tv_series_ratings FOR DELETE
+  USING (auth.uid() = user_id);
+
 -- ── recommendations ───────────────────────────────────────────────────────────
 -- SELECT restricted to owner. INSERT/UPDATE/DELETE handled by service role only
 -- (ML pipeline writes via SUPABASE_SERVICE_ROLE_KEY, bypasses RLS).

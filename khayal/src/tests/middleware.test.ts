@@ -99,14 +99,46 @@ describe("middleware — /auth/callback rate limiting (Upstash)", () => {
     expect(mockLimit).not.toHaveBeenCalled();
   });
 
-  it("passes through all requests when env vars absent (no rate limiter)", async () => {
+  it("passes through all requests when env vars absent in dev (no rate limiter)", async () => {
     vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
     vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+    vi.stubEnv("NODE_ENV", "development");
     const middleware = await importMiddleware();
     const res = await middleware(makeCallbackRequest("1.2.3.4"));
     expect(res.status).not.toBe(429);
     // Restore so subsequent tests get a limiter instance.
     vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://fake.upstash.io");
     vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "fake-token");
+    vi.stubEnv("NODE_ENV", "test");
+  });
+});
+
+describe("middleware — production guard: throw when env vars absent", () => {
+  it("throws on cold-start in production when UPSTASH_REDIS_REST_URL is missing", async () => {
+    vi.resetModules();
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+    vi.stubEnv("NODE_ENV", "production");
+    await expect(import("@/middleware")).rejects.toThrow(
+      /FATAL.*UPSTASH_REDIS_REST_URL.*must be set in production/
+    );
+    // Restore env
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://fake.upstash.io");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "fake-token");
+    vi.stubEnv("NODE_ENV", "test");
+  });
+
+  it("throws on cold-start in production when UPSTASH_REDIS_REST_TOKEN is missing", async () => {
+    vi.resetModules();
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://real.upstash.io");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+    vi.stubEnv("NODE_ENV", "production");
+    await expect(import("@/middleware")).rejects.toThrow(
+      /FATAL.*must be set in production/
+    );
+    // Restore env
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://fake.upstash.io");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "fake-token");
+    vi.stubEnv("NODE_ENV", "test");
   });
 });
