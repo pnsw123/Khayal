@@ -76,6 +76,52 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 
 ---
 
+## Architecture
+
+```mermaid
+flowchart TD
+    Browser["Browser\n(User)"]
+
+    subgraph Vercel["Vercel — Edge / Serverless"]
+        Next["Next.js 16\nApp Router + API Routes"]
+    end
+
+    subgraph Supabase["Supabase (managed PostgreSQL)"]
+        Auth["Auth\n(email + OAuth)"]
+        RLS["Row-Level Security\nPolicies"]
+        DB["PostgreSQL\nTables · Views · RPCs"]
+    end
+
+    subgraph FlyIO["Fly.io — Python Workers"]
+        Sync["TMDB Sync\n(Python / httpx)"]
+        ML["ML Training\n(scikit-surprise · cornac)"]
+    end
+
+    TMDB["TMDB API\n(external)"]
+
+    GHA["GitHub Actions\nDaily Cron"]
+
+    Browser -->|"HTTPS requests"| Next
+    Next -->|"Supabase client\n(anon key + RLS)"| Auth
+    Next -->|"RPC calls\n(search_all · similar_*)"| DB
+    Auth -->|"JWT validates against"| RLS
+    RLS -->|"row-filtered reads/writes"| DB
+
+    GHA -->|"triggers daily"| Sync
+    GHA -->|"triggers daily"| ML
+    Sync -->|"fetch catalogue"| TMDB
+    Sync -->|"upsert movies · tv_series\ngenres · cast"| DB
+    ML -->|"read ratings"| DB
+    ML -->|"write recommendations"| DB
+```
+
+> **Data flow summary:**
+> 1. **Browser → Vercel** — all page loads and API calls go through Next.js on Vercel's edge/serverless network.
+> 2. **Next.js → Supabase** — frontend uses the Supabase JS client (anon key); every query is filtered by RLS policies before hitting PostgreSQL. Heavy reads use RPC functions (`search_all`, `similar_movies`, `similar_tv_series`).
+> 3. **GitHub Actions → Fly.io → TMDB → Supabase** — a daily cron triggers Python workers on Fly.io, which pull fresh catalogue data from the TMDB API and upsert it into PostgreSQL. A second worker reads user ratings and writes personalised recommendations back to the `recommendations` table.
+
+---
+
 ## Scale
 
 | Metric | Count |
