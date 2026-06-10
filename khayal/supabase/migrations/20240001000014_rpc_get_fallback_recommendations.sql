@@ -21,7 +21,7 @@ CREATE OR REPLACE FUNCTION get_fallback_recommendations(
   p_limit    int  DEFAULT 12
 )
 RETURNS TABLE (
-  id                number,
+  id                numeric,
   title             text,
   slug              text,
   release_date      text,
