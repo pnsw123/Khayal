@@ -70,14 +70,12 @@ export default async function HomePage({
         <GallerySection items={galleryItems} />
       </ScrollReveal>
 
-      {/* Section 3 — Stats */}
-      <ScrollReveal>
-        <StatsSection
-          filmCount={filmCount ?? 0}
-          ratingCount={ratingCount ?? 0}
-          reviewCount={reviewCount ?? 0}
-        />
-      </ScrollReveal>
+      {/* Section 3 — Stats (per-card spring reveal handled inside the section) */}
+      <StatsSection
+        filmCount={filmCount ?? 0}
+        ratingCount={ratingCount ?? 0}
+        reviewCount={reviewCount ?? 0}
+      />
 
       {/* Section 4 — CTA */}
       <ScrollReveal>

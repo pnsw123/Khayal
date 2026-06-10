@@ -2,6 +2,7 @@
 
 import { useInView, useMotionValue, useSpring } from "motion/react";
 import { useCallback, useEffect, useRef } from "react";
+import { SpringReveal } from "./spring-reveal";
 
 // ReactBits CountUp — verbatim TypeScript port
 function CountUp({
@@ -77,29 +78,42 @@ export function StatsSection(props: StatsSectionProps) {
         >
           By the numbers بالأرقام
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-0 md:divide-x divide-[var(--taupe)]/20">
-          {STATS.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center text-center px-8">
-              <p
-                className="font-display leading-none mb-4"
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-12">
+          {STATS.map((stat, i) => (
+            <SpringReveal
+              key={stat.label}
+              rotate={i === 0 ? -10 : i === 2 ? 10 : 0}
+              amount={0.8}
+              yFrom={300}
+            >
+              <div
+                className="flex flex-col items-center text-center px-8 py-10 rounded-2xl"
                 style={{
-                  fontSize: "clamp(4rem,8vw,7rem)",
-                  color: "var(--cream)",
-                  letterSpacing: "-0.04em",
+                  background: "var(--ink-lift)",
+                  border: "1px solid color-mix(in srgb, var(--taupe) 35%, transparent)",
                 }}
               >
-                <CountUp to={props[stat.key]} separator="," duration={2.5} />
-              </p>
-              <p
-                className="font-mono text-[11px] tracking-[0.3em] uppercase mb-1"
-                style={{ color: "var(--cream-muted)" }}
-              >
-                {stat.label}
-              </p>
-              <p className="font-arabic text-sm" style={{ color: "var(--saffron)", opacity: 0.6 }}>
-                {stat.arabic}
-              </p>
-            </div>
+                <p
+                  className="font-display leading-none mb-4"
+                  style={{
+                    fontSize: "clamp(4rem,8vw,7rem)",
+                    color: "var(--cream)",
+                    letterSpacing: "-0.04em",
+                  }}
+                >
+                  <CountUp to={props[stat.key]} separator="," duration={2.5} />
+                </p>
+                <p
+                  className="font-mono text-[11px] tracking-[0.3em] uppercase mb-1"
+                  style={{ color: "var(--cream-muted)" }}
+                >
+                  {stat.label}
+                </p>
+                <p className="font-arabic text-sm" style={{ color: "var(--saffron)", opacity: 0.6 }}>
+                  {stat.arabic}
+                </p>
+              </div>
+            </SpringReveal>
           ))}
         </div>
       </div>
