@@ -262,9 +262,11 @@ npm run lint
 
 ## Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fpnsw123%2FKhayal&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fpnsw123%2FKhayal&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,UPSTASH_REDIS_REST_URL,UPSTASH_REDIS_REST_TOKEN)
 
-Set environment variables in the Vercel dashboard after deploying.
+> **Rate limiting:** `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are required to enable the `/auth/callback` rate limiter in production. Without them the limiter silently disables itself. Create a free Redis database at [console.upstash.com](https://console.upstash.com) and paste the REST URL and token into the Vercel environment variables.
+
+Set all environment variables in the Vercel dashboard after deploying.
 
 ---
 
