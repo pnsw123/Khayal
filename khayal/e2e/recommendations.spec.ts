@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test("personalised shelf is hidden for logged-out users", async ({ page }) => {
   await page.goto("/browse");
-  const shelf = page.locator('[data-testid="personalised-shelf"]');
+  const shelf = page.locator('[data-testid="recommendations-shelf"]');
   await expect(shelf).not.toBeVisible();
 });
 

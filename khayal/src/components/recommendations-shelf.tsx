@@ -81,7 +81,7 @@ export async function RecommendationsShelf() {
   if (movies.length === 0) return null;
 
   return (
-    <section data-testid="personalised-shelf" className="mb-10">
+    <section data-testid="recommendations-shelf" className="mb-10">
       <div className="mb-4 flex items-baseline gap-3">
         <h2 className="font-display text-xl text-[var(--cream)]">Picked for you</h2>
         <span className="font-arabic text-sm text-[var(--cream-muted)]/60">مختار لك</span>

@@ -112,6 +112,7 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
     <div ref={containerRef} className="relative inline-block">
       <button
         onClick={() => setOpen((o) => !o)}
+        data-testid="add-to-list-button"
         className={cn(
           "inline-flex items-center gap-2 h-11 px-4 rounded-md text-sm transition-colors",
           inSomeList
@@ -134,6 +135,7 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
                 key={l.id}
                 onClick={() => toggle(l)}
                 disabled={pending}
+                data-testid={`list-item-${l.id}`}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-left text-[var(--cream)] hover:bg-[var(--ink-high)] transition-colors"
               >
                 <span className={cn(
@@ -181,6 +183,7 @@ export function AddToListButton({ userId, kind, targetId, slug, initialLists }: 
             ) : (
               <button
                 onClick={() => setCreating(true)}
+                data-testid="create-new-list-button"
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs tracking-wider uppercase font-mono text-[var(--saffron)] hover:bg-[var(--ink-high)] transition-colors"
               >
                 <Plus size={12} /> New list

@@ -27,8 +27,8 @@ describe("RecommendationsShelf source", () => {
     expect(src).toContain('"movies"');
   });
 
-  it("has testid personalised-shelf on section", () => {
-    expect(src).toContain('data-testid="personalised-shelf"');
+  it("has testid recommendations-shelf on section", () => {
+    expect(src).toContain('data-testid="recommendations-shelf"');
   });
 
   it("renders MovieCard components", () => {

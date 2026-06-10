@@ -92,6 +92,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
     return (
       <button
         onClick={() => setOpen(true)}
+        data-testid="review-open-button"
         className="w-full p-6 rounded-md bg-[var(--ink-lift)] border border-dashed border-[var(--taupe)]/30 text-left hover:border-[var(--saffron)]/50 transition-colors group"
       >
         <p className="font-display italic text-lg text-[var(--cream)] group-hover:text-[var(--saffron-glow)] transition-colors">
@@ -115,6 +116,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
             type="button"
             onClick={remove}
             disabled={pending}
+            data-testid="review-delete-button"
             className="inline-flex items-center gap-1.5 text-[10px] font-mono tracking-wider uppercase text-[var(--cream-muted)] hover:text-[var(--danger)]"
           >
             <Trash2 size={11} /> Delete
@@ -127,6 +129,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
         onChange={(e) => setHeadline(e.target.value)}
         placeholder="Headline (optional)"
         maxLength={120}
+        data-testid="review-headline-input"
         className="w-full h-11 px-3 rounded-md text-base bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus-visible:outline-none focus:border-[var(--saffron)]/60"
       />
 
@@ -136,6 +139,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
         onChange={(e) => setBody(e.target.value)}
         placeholder="What did you think?"
         rows={5}
+        data-testid="review-body-textarea"
         className="w-full p-3 rounded-md text-sm bg-[var(--ink)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus-visible:outline-none focus:border-[var(--saffron)]/60 resize-y"
       />
 
@@ -159,6 +163,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
         <button
           type="submit"
           disabled={pending}
+          data-testid="review-submit-button"
           className={cn(
             "inline-flex items-center gap-2 h-11 px-5 rounded-md text-sm font-medium",
             "bg-[var(--saffron)] text-[var(--ink)]",
@@ -175,6 +180,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
             type="button"
             onClick={() => setOpen(false)}
             disabled={pending}
+            data-testid="review-cancel-button"
             className="h-11 px-4 rounded-md text-xs tracking-wider uppercase font-mono text-[var(--cream-muted)] hover:text-[var(--cream)] border border-[var(--taupe)]/25 hover:border-[var(--taupe)]/50"
           >
             Cancel

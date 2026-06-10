@@ -100,7 +100,10 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-1.5">
-        <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[var(--cream-muted)] mr-3">
+        <span
+          data-testid="current-rating-display"
+          className="font-mono text-[10px] tracking-[0.3em] uppercase text-[var(--cream-muted)] mr-3"
+        >
           Your rating
         </span>
         {[1,2,3,4,5,6,7,8,9,10].map((n) => {
@@ -113,6 +116,7 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
               onMouseLeave={() => setHover(null)}
               disabled={pending}
               aria-label={`Rate ${n} out of 10`}
+              data-testid={`rate-button-${n}`}
               className={cn(
                 "h-9 w-9 rounded-md text-sm font-mono transition-all",
                 lit
@@ -128,6 +132,7 @@ export function RateWidget({ userId, kind, targetId, initialRating, slug }: Rate
           <button
             onClick={clear}
             disabled={pending}
+            data-testid="clear-rating-button"
             className="ml-3 text-[10px] font-mono tracking-wider uppercase text-[var(--cream-muted)] hover:text-[var(--danger)]"
           >
             Clear
