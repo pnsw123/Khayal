@@ -73,7 +73,7 @@ Browse, search, and track films and TV shows from a curated database of 7,400+ f
 | Frontend | Next.js 16.2.9, React 19, TypeScript 5 (strict mode) |
 | Styling | Tailwind CSS v4, CSS custom properties |
 | UI Components | ReactBits, Radix UI primitives |
-| Animation | Three.js, Framer Motion, Embla Carousel |
+| Animation | Three.js, Motion (motion/react), Embla Carousel |
 | Database | Supabase (PostgreSQL) — RLS, RPC functions, materialised views |
 | Auth | Supabase Auth (email + OAuth) |
 | Data sync | Python / TMDB API → Supabase (GitHub Actions daily cron) |
