@@ -79,6 +79,50 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
+  # ── Integration tests (Supabase local stack) ──────────────────────────────
+  # Runs on every push and PR. Spins up a local Supabase stack, applies all
+  # migrations from cold state, then runs the @integration-marked pytest suite.
+  # A missing migration (root cause of #204) will cause get_movie_detail /
+  # get_tv_detail RPC tests to fail here, before any deploy happens.
+  integration:
+    name: Integration tests (RPC / Supabase)
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Python deps
+        run: pip install -r scripts/requirements.txt -r scripts/requirements-dev.txt
+
+      - name: Install Supabase CLI
+        run: npm install -g supabase@latest
+
+      - name: Start local Supabase stack (applies all migrations)
+        run: supabase start
+        # supabase start runs db reset automatically on first boot,
+        # applying every migration in supabase/migrations/ from scratch.
+
+      - name: Export Supabase local credentials
+        run: |
+          SUPABASE_URL=$(supabase status --output json | jq -r '.API_URL')
+          SERVICE_ROLE_KEY=$(supabase status --output json | jq -r '.SERVICE_ROLE_KEY')
+          echo "SUPABASE_URL=${SUPABASE_URL}" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}" >> "$GITHUB_ENV"
+
+      - name: Run integration tests
+        run: pytest scripts/test_rpc_integration.py -m integration -v
+
+      - name: Stop local Supabase stack
+        if: always()
+        run: supabase stop
+
   # ── Deploy migrations ────────────────────────────────────────────────────
   # Runs only on pushes to main (not PRs) after the ci job passes.
   # Prevents the class of bug where merged code references a DB function
@@ -86,7 +130,7 @@ jobs:
   deploy-migrations:
     name: Push migrations to production
     runs-on: ubuntu-latest
-    needs: ci
+    needs: [ci, integration]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:

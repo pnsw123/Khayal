@@ -392,3 +392,124 @@ def test_fts_index_uses_gin(sb: Any, seeded_data: dict[str, Any]) -> None:
     assert "TO_TSVECTOR" in indexdef, (
         "idx_movies_fts does not index a tsvector expression"
     )
+
+
+# ---------------------------------------------------------------------------
+# get_movie_detail RPC
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.integration
+def test_get_movie_detail_returns_movie_stats_reviews(sb: Any, seeded_data: dict[str, Any]) -> None:
+    """get_movie_detail returns movie, stats, and reviews for a known slug.
+
+    This test catches the class of regression where the migration defining
+    get_movie_detail was written but never applied to the database: in that
+    case Supabase returns a PostgREST 404/error instead of a JSON payload,
+    and this assertion fails immediately.
+    """
+    # Pick the first seeded movie slug — guaranteed to exist.
+    sentinel = seeded_data["sentinel"]
+    slug = f"{sentinel}-movie-0"
+
+    result = sb.rpc("get_movie_detail", {"movie_slug": slug}).execute()
+
+    assert result.data is not None, (
+        f"get_movie_detail returned None for slug '{slug}'. "
+        "Likely cause: migration 20240001000007_rpc_get_movie_and_tv_detail.sql "
+        "has not been applied. Run `supabase db reset`."
+    )
+
+    data: dict[str, Any] = result.data  # type: ignore[assignment]
+
+    # --- movie sub-object ---------------------------------------------------
+    assert "movie" in data, f"Response missing 'movie' key: {data}"
+    movie = data["movie"]
+    assert isinstance(movie, dict), f"'movie' must be a dict, got {type(movie)}"
+    assert str(movie.get("slug")) == slug, (
+        f"Returned slug '{movie.get('slug')}' does not match requested slug '{slug}'"
+    )
+    # id must be present and a positive integer
+    assert isinstance(movie.get("id"), int) and movie["id"] > 0, (
+        f"'movie.id' must be a positive int, got {movie.get('id')!r}"
+    )
+
+    # --- stats sub-object ---------------------------------------------------
+    # Stats row may not exist if movie_stats view is empty (no ratings yet),
+    # but the key must always be present in the response.
+    assert "stats" in data, f"Response missing 'stats' key: {data}"
+
+    # --- reviews list -------------------------------------------------------
+    assert "reviews" in data, f"Response missing 'reviews' key: {data}"
+    assert isinstance(data["reviews"], list), (
+        f"'reviews' must be a list, got {type(data['reviews'])}"
+    )
+
+
+@pytest.mark.integration
+def test_get_movie_detail_returns_null_for_unknown_slug(  # noqa: E501
+    sb: Any,
+    seeded_data: dict[str, Any],
+) -> None:
+    """get_movie_detail returns None (not an error) for a slug that does not exist.
+
+    This distinguishes a legitimate "not found" from a missing-migration error:
+    - Missing migration  → PostgREST 404 / exception raised by supabase-py
+    - Found but no row  → result.data == None (SQL function returns NULL)
+    """
+    unknown_slug = f"__nonexistent__{uuid.uuid4().hex}"
+
+    result = sb.rpc("get_movie_detail", {"movie_slug": unknown_slug}).execute()
+
+    # The function itself must be callable (migration present).
+    # result.data == None means the SQL returned NULL — correct "not found" path.
+    assert result.data is None, (
+        f"Expected None for unknown slug, got: {result.data!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# get_tv_detail RPC
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.integration
+def test_get_tv_detail_returns_series(sb: Any, seeded_data: dict[str, Any]) -> None:
+    """get_tv_detail returns tv_series, stats, and reviews for a known slug.
+
+    Mirrors test_get_movie_detail_returns_movie_stats_reviews for the TV path.
+    A missing migration for get_tv_detail would have been invisible to the
+    existing test suite — this test makes such regressions immediately visible.
+    """
+    sentinel = seeded_data["sentinel"]
+    slug = f"{sentinel}-tv-0"
+
+    result = sb.rpc("get_tv_detail", {"series_slug": slug}).execute()
+
+    assert result.data is not None, (
+        f"get_tv_detail returned None for slug '{slug}'. "
+        "Likely cause: migration 20240001000007_rpc_get_movie_and_tv_detail.sql "
+        "has not been applied. Run `supabase db reset`."
+    )
+
+    data: dict[str, Any] = result.data  # type: ignore[assignment]
+
+    # --- tv_series sub-object -----------------------------------------------
+    assert "tv_series" in data, f"Response missing 'tv_series' key: {data}"
+    series = data["tv_series"]
+    assert isinstance(series, dict), f"'tv_series' must be a dict, got {type(series)}"
+    assert str(series.get("slug")) == slug, (
+        f"Returned slug '{series.get('slug')}' does not match requested slug '{slug}'"
+    )
+    assert isinstance(series.get("id"), int) and series["id"] > 0, (
+        f"'tv_series.id' must be a positive int, got {series.get('id')!r}"
+    )
+
+    # --- stats sub-object ---------------------------------------------------
+    assert "stats" in data, f"Response missing 'stats' key: {data}"
+
+    # --- reviews list -------------------------------------------------------
+    assert "reviews" in data, f"Response missing 'reviews' key: {data}"
+    assert isinstance(data["reviews"], list), (
+        f"'reviews' must be a list, got {type(data['reviews'])}"
+    )
