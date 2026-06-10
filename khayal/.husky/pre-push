@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# pre-push: block push when ESLint reports errors or warnings
+# Mirrors the CI gate at .github/workflows/ci.yml (Lint step)
+
+cd "$(git rev-parse --show-toplevel)/khayal" 2>/dev/null || cd "$(dirname "$0")/.."
+
+echo "Running ESLint (pre-push gate)..."
+npx eslint src/ --max-warnings 0
+status=$?
+
+if [ $status -ne 0 ]; then
+  echo ""
+  echo "ESLint failed. Fix all warnings/errors before pushing."
+  echo "Run: cd khayal && npx eslint src/ --max-warnings 0"
+  exit 1
+fi
+
+echo "ESLint passed."
