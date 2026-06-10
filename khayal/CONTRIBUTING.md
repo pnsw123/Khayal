@@ -11,7 +11,8 @@ Khayal is an academic project (Bilkent University CS436) that also aims for prod
 3. [Seeding the Database from TMDB](#3-seeding-the-database-from-tmdb)
 4. [Running the Full Test Stack](#4-running-the-full-test-stack)
 5. [Branch / PR / Commit Conventions](#5-branch--pr--commit-conventions)
-6. [File Naming Conventions](#6-file-naming-conventions)
+6. [Academic Files — Stay Outside the Repo](#6-academic-files--stay-outside-the-repo)
+7. [File Naming Conventions](#7-file-naming-conventions)
 
 ---
 
@@ -262,6 +263,59 @@ Khayal is also a Bilkent University CS436 course submission. The following files
 `.gitignore` blocks `*.pdf`, `*.docx`, `*.tex`, `*.aux`, `*.log`, `*.out`, `PRD.md`, `PROJECT_REQUIREMENTS.md`, and `khayal-report.*` at the repo root as a defense-in-depth measure. If you accidentally copy one of these into the repo directory, `git status` will not surface it and `git add -A` will skip it.
 
 **Never force-add these files** (`git add -f`). They contain personally identifiable student information and course-internal content not meant for the public repository.
+
+---
+
+## 7. File Naming Conventions
+
+Khayal uses different casing for file names vs. exported identifiers. This is the standard Next.js App Router convention — please follow it consistently.
+
+### Components
+
+| What | Convention | Example |
+|------|-----------|---------|
+| File name | `kebab-case.tsx` | `movie-card.tsx` |
+| Exported function / component | `PascalCase` | `export function MovieCard(...)` |
+
+All files under `src/components/` and `src/app/` follow this pattern. **Do not create `MovieCard.tsx` or `RateWidget.tsx` — the file must be lowercase-hyphenated.**
+
+```
+src/components/
+  movie-card.tsx        → export function MovieCard(...)
+  rate-widget.tsx       → export function RateWidget(...)
+  featured-reel.tsx     → export function FeaturedReel(...)
+```
+
+### Lib utilities
+
+| What | Convention | Example |
+|------|-----------|---------|
+| File name | `kebab-case.ts` | `supabase-client.ts` |
+| Exported names | `camelCase` functions / `PascalCase` types | `getSession`, `type UserProfile` |
+
+### Tests
+
+Every source file has a co-located test file inside `src/tests/`:
+
+| Source | Test file |
+|--------|-----------|
+| `src/hooks/use-X.ts` | `src/tests/use-X.test.ts` |
+| `src/components/X.tsx` | `src/tests/X.test.tsx` |
+| `src/app/api/X/route.ts` | `src/tests/X-api.test.ts` |
+| `src/lib/X.ts` | `src/tests/X.test.ts` |
+| `scripts/X.py` | `scripts/test_X.py` |
+| User flows | `e2e/X.spec.ts` |
+
+### API routes
+
+API routes always live at `src/app/api/[resource]/route.ts` — the file is always named `route.ts` regardless of the resource name:
+
+```
+src/app/api/
+  movies/route.ts
+  ratings/route.ts
+  search/route.ts
+```
 
 ---
 
