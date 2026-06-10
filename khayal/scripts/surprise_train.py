@@ -162,8 +162,8 @@ def generate_and_store_recommendations(
                 "user_id": uid,
                 "movie_id": iid,
                 "score": score,
-                "algo": algo_name,
-                "generated_at": generated_at,
+                "source": algo_name,
+                "created_at": generated_at,
             }
             for score, iid in top
         ]
@@ -172,7 +172,7 @@ def generate_and_store_recommendations(
             from typing import cast as _cast
             client.table("recommendations").upsert(
                 _cast(Any, rows),
-                on_conflict="user_id,movie_id,algo",
+                on_conflict="user_id,movie_id,source",
             ).execute()
             total_upserted += len(rows)
 
