@@ -84,8 +84,69 @@ def save_model(model: Any, path: str) -> None:
         pickle.dump(model, fh)
 
 
+def generate_and_store_recommendations(
+    model: Any,
+    user_ids: list[str],
+    item_ids: list[str],
+    supabase_url: str,
+    service_key: str,
+    algo: str = "cornac-bpr",
+    top_n: int = 50,
+) -> int:
+    """Generate top-N recommendations per user and upsert to Supabase.
+
+    Returns the total number of rows upserted.
+    """
+    try:
+        from supabase import create_client
+    except ImportError as exc:
+        raise RuntimeError("supabase is required: pip install supabase") from exc
+
+    from datetime import datetime, timezone
+
+    client = create_client(supabase_url, service_key)
+
+    unique_users = list(dict.fromkeys(user_ids))
+    unique_items = list(dict.fromkeys(item_ids))
+    generated_at = datetime.now(timezone.utc).isoformat()
+
+    total_upserted = 0
+    for uid in unique_users:
+        scored: list[tuple[float, str]] = []
+        for iid in unique_items:
+            try:
+                score = float(model.score(uid, iid))
+            except Exception:  # noqa: BLE001
+                continue
+            scored.append((score, iid))
+
+        scored.sort(reverse=True)
+        top = scored[:top_n]
+
+        rows = [
+            {
+                "user_id": uid,
+                "movie_id": iid,
+                "score": score,
+                "algo": algo,
+                "generated_at": generated_at,
+            }
+            for score, iid in top
+        ]
+
+        if rows:
+            client.table("recommendations").upsert(
+                rows,
+                on_conflict="user_id,movie_id,algo",
+            ).execute()
+            total_upserted += len(rows)
+
+    print(f"[train] upserted {total_upserted} recommendation rows (algo={algo})")
+    return total_upserted
+
+
 def run_training() -> None:
-    """Entry point — fetch ratings, train, save model."""
+    """Entry point — fetch ratings, train, save model, generate recommendations."""
     supabase_url = get_env("SUPABASE_URL")
     service_key = get_env("SUPABASE_SERVICE_KEY")
 
@@ -101,6 +162,17 @@ def run_training() -> None:
     model_path = os.environ.get("MODEL_PATH", "/tmp/bpr_model.pkl")
     save_model(model, model_path)
     print(f"[train] model saved to {model_path}")
+
+    top_n = int(os.environ.get("RECS_TOP_N", "50"))
+    generate_and_store_recommendations(
+        model,
+        user_ids,
+        item_ids,
+        supabase_url,
+        service_key,
+        algo="cornac-bpr",
+        top_n=top_n,
+    )
 
 
 if __name__ == "__main__":

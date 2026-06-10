@@ -99,8 +99,83 @@ def save_model(model: Any, path: str) -> None:
         pickle.dump(model, fh)
 
 
+def generate_and_store_recommendations(
+    algo: Any,
+    ratings: list[dict[str, Any]],
+    supabase_url: str,
+    service_key: str,
+    algo_name: str = "surprise-svd",
+    top_n: int = 50,
+) -> int:
+    """Generate top-N recommendations per user and upsert to Supabase.
+
+    Returns the total number of rows upserted.
+    """
+    try:
+        from supabase import create_client
+    except ImportError as exc:
+        raise RuntimeError("supabase is required: pip install supabase") from exc
+
+    from datetime import datetime, timezone
+
+    client = create_client(supabase_url, service_key)
+
+    # Build unique user/item sets from raw rating rows
+    unique_users: list[str] = list(
+        dict.fromkeys(
+            str(r.get("user_id", ""))
+            for r in ratings
+            if r.get("user_id") and float(r.get("rating", 0)) > 0
+        )
+    )
+    unique_items: list[str] = list(
+        dict.fromkeys(
+            str(r.get("media_id", ""))
+            for r in ratings
+            if r.get("media_id") and float(r.get("rating", 0)) > 0
+        )
+    )
+
+    generated_at = datetime.now(timezone.utc).isoformat()
+    total_upserted = 0
+
+    for uid in unique_users:
+        scored: list[tuple[float, str]] = []
+        for iid in unique_items:
+            try:
+                pred = algo.predict(uid, iid)
+                score = float(pred.est)
+            except Exception:  # noqa: BLE001
+                continue
+            scored.append((score, iid))
+
+        scored.sort(reverse=True)
+        top = scored[:top_n]
+
+        rows = [
+            {
+                "user_id": uid,
+                "movie_id": iid,
+                "score": score,
+                "algo": algo_name,
+                "generated_at": generated_at,
+            }
+            for score, iid in top
+        ]
+
+        if rows:
+            client.table("recommendations").upsert(
+                rows,
+                on_conflict="user_id,movie_id,algo",
+            ).execute()
+            total_upserted += len(rows)
+
+    print(f"[svd] upserted {total_upserted} recommendation rows (algo={algo_name})")
+    return total_upserted
+
+
 def run_svd_training() -> None:
-    """Entry point — fetch ratings, train SVD, save model."""
+    """Entry point — fetch ratings, train SVD, save model, generate recommendations."""
     supabase_url = get_env("SUPABASE_URL")
     service_key = get_env("SUPABASE_SERVICE_KEY")
 
@@ -116,6 +191,16 @@ def run_svd_training() -> None:
     model_path = os.environ.get("SVD_MODEL_PATH", "/tmp/svd_model.pkl")
     save_model(model, model_path)
     print(f"[svd] model saved to {model_path}")
+
+    top_n = int(os.environ.get("RECS_TOP_N", "50"))
+    generate_and_store_recommendations(
+        model,
+        ratings,
+        supabase_url,
+        service_key,
+        algo_name="surprise-svd",
+        top_n=top_n,
+    )
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ import pytest
 
 from surprise_train import (
     clamp_rating,
+    generate_and_store_recommendations,
     get_env,
 )
 
@@ -177,6 +178,149 @@ def test_build_surprise_dataset_clamps_ratings() -> None:
 
     rows_passed = mock_pd.DataFrame.call_args[0][0]
     assert rows_passed[0][2] == 10.0  # clamped from 15.0
+
+
+# ---------------------------------------------------------------------------
+# generate_and_store_recommendations — mocked
+# ---------------------------------------------------------------------------
+
+
+def _make_supabase_mock() -> tuple[Any, Any]:
+    """Return (mock_supabase_module, mock_client)."""
+    mock_client = MagicMock()
+    (
+        mock_client.table.return_value
+        .upsert.return_value
+        .execute.return_value
+    ) = MagicMock()
+    mock_supabase_mod = MagicMock()
+    mock_supabase_mod.create_client.return_value = mock_client
+    return mock_supabase_mod, mock_client
+
+
+def _make_pred(est: float) -> Any:
+    pred = MagicMock()
+    pred.est = est
+    return pred
+
+
+_SAMPLE_RATINGS: list[dict[str, Any]] = [
+    {"user_id": "u1", "media_id": "m1", "rating": 8.0},
+    {"user_id": "u1", "media_id": "m2", "rating": 6.0},
+    {"user_id": "u2", "media_id": "m1", "rating": 7.0},
+]
+
+
+def test_svd_generate_and_store_calls_upsert() -> None:
+    mock_supabase_mod, mock_client = _make_supabase_mock()
+
+    mock_algo = MagicMock()
+    mock_algo.predict.side_effect = lambda u, i: _make_pred(float(abs(hash(u + i)) % 10))
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
+        total = generate_and_store_recommendations(
+            mock_algo,
+            _SAMPLE_RATINGS,
+            "https://x.supabase.co",
+            "key",
+            algo_name="surprise-svd",
+            top_n=2,
+        )
+
+    # 2 unique users × top_n=2 = 4 rows
+    assert total == 4
+    assert mock_client.table.return_value.upsert.call_count == 2
+
+
+def test_svd_generate_and_store_skips_predict_errors() -> None:
+    mock_supabase_mod, mock_client = _make_supabase_mock()
+
+    mock_algo = MagicMock()
+    mock_algo.predict.side_effect = ValueError("cold start")
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
+        total = generate_and_store_recommendations(
+            mock_algo,
+            _SAMPLE_RATINGS,
+            "https://x.supabase.co",
+            "key",
+        )
+
+    assert total == 0
+    mock_client.table.return_value.upsert.assert_not_called()
+
+
+def test_svd_generate_and_store_respects_top_n() -> None:
+    mock_supabase_mod, mock_client = _make_supabase_mock()
+
+    ratings: list[dict[str, Any]] = [
+        {"user_id": "u1", "media_id": f"m{j}", "rating": float(j + 1)}
+        for j in range(10)
+    ]
+    mock_algo = MagicMock()
+    mock_algo.predict.side_effect = lambda u, i: _make_pred(float(i[1:]))
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
+        total = generate_and_store_recommendations(
+            mock_algo,
+            ratings,
+            "https://x.supabase.co",
+            "key",
+            top_n=4,
+        )
+
+    assert total == 4
+    rows = mock_client.table.return_value.upsert.call_args[0][0]
+    assert len(rows) == 4
+
+
+def test_svd_generate_and_store_algo_name_in_rows() -> None:
+    mock_supabase_mod, mock_client = _make_supabase_mock()
+
+    mock_algo = MagicMock()
+    mock_algo.predict.return_value = _make_pred(7.5)
+
+    ratings: list[dict[str, Any]] = [
+        {"user_id": "u1", "media_id": "m1", "rating": 8.0},
+    ]
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
+        generate_and_store_recommendations(
+            mock_algo,
+            ratings,
+            "https://x.supabase.co",
+            "key",
+            algo_name="surprise-svd",
+        )
+
+    rows = mock_client.table.return_value.upsert.call_args[0][0]
+    assert rows[0]["algo"] == "surprise-svd"
+    assert rows[0]["user_id"] == "u1"
+    assert rows[0]["movie_id"] == "m1"
+    assert rows[0]["score"] == 7.5
+
+
+def test_svd_generate_and_store_filters_zero_ratings() -> None:
+    """Rows with rating <= 0 must not contribute users or items."""
+    mock_supabase_mod, mock_client = _make_supabase_mock()
+
+    mock_algo = MagicMock()
+    mock_algo.predict.return_value = _make_pred(5.0)
+
+    ratings: list[dict[str, Any]] = [
+        {"user_id": "u_zero", "media_id": "m_zero", "rating": 0.0},
+    ]
+
+    with patch.dict("sys.modules", {"supabase": mock_supabase_mod}):
+        total = generate_and_store_recommendations(
+            mock_algo,
+            ratings,
+            "https://x.supabase.co",
+            "key",
+        )
+
+    assert total == 0
+    mock_client.table.return_value.upsert.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
