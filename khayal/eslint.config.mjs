@@ -26,6 +26,8 @@ const eslintConfig = [
       "@typescript-eslint/no-unused-vars": "off",
       "no-unused-expressions": "off",
       "@typescript-eslint/no-unused-expressions": "off",
+      // Disallow all console.* in production source; warn causes --max-warnings 0 to fail
+      "no-console": "warn",
     },
   },
   {

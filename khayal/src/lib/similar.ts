@@ -28,7 +28,6 @@ export async function getSimilarMovies(
     p_limit: limit,
   });
   if (error) {
-    console.error("[similar_movies]", error.message);
     return [];
   }
   return (data ?? []) as SimilarMovie[];
@@ -44,7 +43,6 @@ export async function getSimilarTvSeries(
     p_limit: limit,
   });
   if (error) {
-    console.error("[similar_tv_series]", error.message);
     return [];
   }
   return (data ?? []) as SimilarTv[];
