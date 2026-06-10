@@ -42,3 +42,11 @@ next-env.d.ts
 
 # Local test/scratch files
 TEST_PLAN.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
