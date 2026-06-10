@@ -72,6 +72,9 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 |---|---|
 | **Frontend** | Next.js 16 App Router, React 19, TypeScript 5 (strict mode) |
 | **Styling** | Tailwind CSS v4, CSS custom properties |
+| **UI Components** | [ReactBits](https://www.reactbits.dev) (human-designed components — exclusive UI source), Radix UI primitives |
+| **3D / Animation** | Three.js + @react-three/fiber + @react-three/drei, Framer Motion |
+| **Carousel** | Embla Carousel |
 | **Database** | Supabase (PostgreSQL) — RLS, RPC functions, materialised views |
 | **Auth** | Supabase Auth (email + OAuth) |
 | **Data sync** | Python scripts — TMDB API → Supabase (GitHub Actions daily cron) |
