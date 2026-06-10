@@ -318,6 +318,78 @@ Set all environment variables in the Vercel dashboard after deploying.
 
 ---
 
+## Deploy Python Workers to Fly.io
+
+The TMDB sync and ML training workers run as separate processes on [Fly.io](https://fly.io). They are **not** part of the Next.js frontend — deploy them independently.
+
+### Prerequisites
+
+```bash
+# Install flyctl
+brew install flyctl        # macOS
+# or: curl -L https://fly.io/install.sh | sh
+
+# Authenticate
+fly auth login
+```
+
+### Deploy
+
+```bash
+# First-time setup (only once — fly.toml is already committed)
+fly launch --no-deploy
+
+# Deploy / redeploy
+fly deploy
+```
+
+> `fly.toml` is committed at the repo root. It targets `app = "khayal"`, region `iad` (US East), on a `shared-cpu-1x` / 512 MB machine.
+
+### Set secrets (required before first deploy)
+
+The workers need three environment variables. Set them as Fly.io secrets so they are never stored in source:
+
+```bash
+fly secrets set \
+  SUPABASE_URL="https://<your-project-ref>.supabase.co" \
+  SUPABASE_SERVICE_ROLE_KEY="<service-role-key>" \
+  TMDB_API_KEY="<tmdb-v3-api-key>"
+```
+
+| Secret | Where to get it |
+|---|---|
+| `SUPABASE_URL` | Supabase dashboard → Project Settings → API → Project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase dashboard → Project Settings → API → `service_role` (keep secret) |
+| `TMDB_API_KEY` | [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api) — free v3 key |
+
+### Install Python dependencies
+
+```bash
+fly ssh console
+# Inside the machine:
+pip install -r scripts/requirements.txt
+pip install -r scripts/requirements-ml.txt   # only needed for ML training
+```
+
+### Run workers manually
+
+```bash
+# One-off TMDB sync (movies + TV shows catalogue)
+fly ssh console --command "python scripts/daily_sync.py"
+
+# ML model training — cornac (BPR / MF)
+fly ssh console --command "python scripts/train_recommendations.py"
+
+# ML model training — scikit-surprise variant
+fly ssh console --command "python scripts/surprise_train.py"
+```
+
+### Scheduled sync (GitHub Actions)
+
+The daily TMDB sync is also wired as a GitHub Actions cron (`.github/workflows/daily-sync.yml`). That workflow runs `daily_sync.py` directly — no Fly.io machine is needed for the cron job itself. The Fly.io deployment is used when you need a long-running or on-demand worker outside GitHub Actions (e.g. a manual ML retraining run, or running the sync on a private schedule).
+
+---
+
 ## Academic Context
 
 Khayal was built as the capstone project for **CS436 — Database Systems** at [Bilkent University](https://www.bilkent.edu.tr). The project demonstrates:
