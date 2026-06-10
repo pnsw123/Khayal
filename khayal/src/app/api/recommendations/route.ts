@@ -36,7 +36,15 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     recQuery = recQuery.eq("source", algoFilter);
   }
 
-  const { data: recRows } = await recQuery;
+  const { data: recRows, error: recError } = await recQuery;
+
+  if (recError) {
+    console.error("[recommendations] recQuery error:", recError.message);
+    return NextResponse.json(
+      { error: `Supabase query failed: ${recError.message}` },
+      { status: 500 },
+    );
+  }
 
   const algo = recRows?.[0]?.source ?? algoFilter ?? "cornac-als";
   const generated_at = recRows?.[0]?.created_at ?? new Date().toISOString();
@@ -44,10 +52,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   if (recRows && recRows.length > 0) {
     const movieIds = recRows.map((r) => r.movie_id as number);
 
-    const { data: movies } = await sb
+    const { data: movies, error: moviesError } = await sb
       .from("movies")
       .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language")
       .in("id", movieIds);
+
+    if (moviesError) {
+      console.error("[recommendations] movies fetch error:", moviesError.message);
+      return NextResponse.json(
+        { error: `Supabase query failed: ${moviesError.message}` },
+        { status: 500 },
+      );
+    }
 
     const movieMap = new Map<number, Movie>((movies ?? []).map((m) => [m.id, m as Movie]));
     const ordered = movieIds
@@ -58,18 +74,34 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   // Fallback — top-rated movies not yet seen by the user
-  const { data: seenRows } = await sb
+  const { data: seenRows, error: seenError } = await sb
     .from("movie_ratings")
     .select("movie_id")
     .eq("user_id", user.id);
 
+  if (seenError) {
+    console.error("[recommendations] seenRows error:", seenError.message);
+    return NextResponse.json(
+      { error: `Supabase query failed: ${seenError.message}` },
+      { status: 500 },
+    );
+  }
+
   const seenSet = new Set<number>((seenRows ?? []).map((r) => r.movie_id as number));
 
-  const { data: statRows } = await sb
+  const { data: statRows, error: statsError } = await sb
     .from("movie_stats")
     .select("movie_id, avg_rating")
     .order("avg_rating", { ascending: false })
     .limit(limit * 10);
+
+  if (statsError) {
+    console.error("[recommendations] statRows error:", statsError.message);
+    return NextResponse.json(
+      { error: `Supabase query failed: ${statsError.message}` },
+      { status: 500 },
+    );
+  }
 
   const candidateIds = (statRows ?? [])
     .map((r) => r.movie_id as number)
@@ -80,10 +112,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ movies: [], algo: "fallback", generated_at: new Date().toISOString() });
   }
 
-  const { data: fallbackMovies } = await sb
+  const { data: fallbackMovies, error: fallbackError } = await sb
     .from("movies")
     .select("id, title, slug, release_date, poster_url, runtime_minutes, age_rating, original_language")
     .in("id", candidateIds);
+
+  if (fallbackError) {
+    console.error("[recommendations] fallbackMovies error:", fallbackError.message);
+    return NextResponse.json(
+      { error: `Supabase query failed: ${fallbackError.message}` },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({
     movies: fallbackMovies ?? [],

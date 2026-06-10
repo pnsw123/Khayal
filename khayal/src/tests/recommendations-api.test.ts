@@ -9,7 +9,7 @@ vi.mock("next/headers", () => ({
 const mockGetUser = vi.fn();
 
 // Build a thennable query chain that resolves to { data, error }
-function makeChain(resolveValue: { data: unknown; error: null }) {
+function makeChain(resolveValue: { data: unknown; error: { message: string } | null }) {
   const chain: Record<string, unknown> = {};
   const methods = ["select", "eq", "order", "limit", "in", "not"];
   methods.forEach((m) => {
@@ -19,6 +19,10 @@ function makeChain(resolveValue: { data: unknown; error: null }) {
   chain.then = (resolve: (v: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
   chain.catch = (reject: (v: unknown) => unknown) => Promise.resolve(resolveValue).catch(reject);
   return chain;
+}
+
+function makeErrorChain(message: string) {
+  return makeChain({ data: null, error: { message } });
 }
 
 const mockFrom = vi.fn();
@@ -220,5 +224,87 @@ describe("GET /api/recommendations", () => {
     const body = await res.json();
     expect(body.algo).toBe("fallback");
     expect(body.movies).toEqual([]);
+  });
+
+  // ── Error-propagation tests (issue #239) ─────────────────────────────────
+
+  it("returns 500 when recommendations query errors", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-5" } } });
+    mockFrom.mockImplementation(() => makeErrorChain("RLS policy violation"));
+
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toMatch(/RLS policy violation/);
+  });
+
+  it("returns 500 when movies fetch errors after recommendations found", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-6" } } });
+
+    const recRows = [{ movie_id: 1, score: 9.1, source: "cornac-als", created_at: "2026-01-01T00:00:00Z" }];
+
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return makeChain({ data: recRows, error: null });
+      return makeErrorChain("movies table not found");
+    });
+
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toMatch(/movies table not found/);
+  });
+
+  it("returns 500 when movie_ratings fetch errors during fallback", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-7" } } });
+
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs → fallback
+      return makeErrorChain("movie_ratings unavailable");
+    });
+
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toMatch(/movie_ratings unavailable/);
+  });
+
+  it("returns 500 when movie_stats fetch errors during fallback", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-8" } } });
+
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs
+      if (callCount === 2) return makeChain({ data: [], error: null }); // no seen
+      return makeErrorChain("movie_stats view missing");
+    });
+
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toMatch(/movie_stats view missing/);
+  });
+
+  it("returns 500 when fallback movies fetch errors", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-9" } } });
+
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs
+      if (callCount === 2) return makeChain({ data: [], error: null }); // no seen
+      if (callCount === 3)
+        return makeChain({ data: [{ movie_id: 10, avg_rating: 8 }], error: null }); // stats
+      return makeErrorChain("network timeout on fallback movies");
+    });
+
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toMatch(/network timeout on fallback movies/);
   });
 });
