@@ -2,7 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseServer } from "@/lib/supabase-server";
-import type { Movie } from "@/lib/supabase";
+import type { MovieWithGenresRow } from "@/lib/database.types";
 
 // Re-export pure helpers so callers can still import from "@/lib/browse"
 export {
@@ -20,12 +20,12 @@ const SHELF_SELECT =
 
 export interface GenreRow {
   name: string;
-  items: Movie[];
+  items: MovieWithGenresRow[];
 }
 
 export interface BrowseRows {
-  topRated: Movie[];
-  newThisWeek: Movie[];
+  topRated: MovieWithGenresRow[];
+  newThisWeek: MovieWithGenresRow[];
   genreRows: GenreRow[];
   ratingByMovie: Map<number, number>;
 }
@@ -96,10 +96,14 @@ export async function loadBrowseRows(): Promise<BrowseRows> {
     loadQualifiedGenreNames(),
   ]);
 
-  const topRated: Movie[] = (topRatedResult.data ?? []).map(
-    (r: { movies_with_genres: unknown }) => r.movies_with_genres as unknown as Movie,
+  // movie_stats → movies_with_genres join is not expressed in DB schema types,
+  // so Supabase infers SelectQueryError for this cross-view query.
+  // The join works at runtime; the cast is explicitly documented here.
+  type TopRatedJoinRow = { movie_id: number | null; avg_rating: number | null; movies_with_genres: MovieWithGenresRow };
+  const topRated: MovieWithGenresRow[] = (topRatedResult.data as unknown as TopRatedJoinRow[] ?? []).map(
+    (r) => r.movies_with_genres,
   );
-  const newThisWeek: Movie[] = (newThisWeekResult.data ?? []) as unknown as Movie[];
+  const newThisWeek: MovieWithGenresRow[] = (newThisWeekResult.data as MovieWithGenresRow[] ?? []);
 
   // Fetch items for each qualified genre in parallel
   const genreItemResults = await Promise.all(
@@ -117,16 +121,18 @@ export async function loadBrowseRows(): Promise<BrowseRows> {
   const genreRows: GenreRow[] = qualifiedGenreNames
     .map((name, i) => ({
       name,
-      items: (genreItemResults[i].data ?? []) as unknown as Movie[],
+      items: (genreItemResults[i].data as MovieWithGenresRow[] ?? []),
     }))
     .filter((r) => r.items.length > 0);
 
-  // Build ratingByMovie map covering all shelves
-  const allIds = [
+  // Build ratingByMovie map covering all shelves.
+  // movies_with_genres is a view — Supabase types all its columns as nullable.
+  // Filter out any null ids before building the lookup.
+  const allIds: number[] = [
     ...topRated.map((m) => m.id),
     ...newThisWeek.map((m) => m.id),
     ...genreRows.flatMap((r) => r.items.map((m) => m.id)),
-  ];
+  ].filter((id): id is number => id != null);
   const uniqueIds = [...new Set(allIds)];
 
   const { data: statsData } = await sb
@@ -135,8 +141,10 @@ export async function loadBrowseRows(): Promise<BrowseRows> {
     .in("movie_id", uniqueIds.length ? uniqueIds : [-1]);
 
   const ratingByMovie = new Map<number, number>();
-  (statsData ?? []).forEach((s: { movie_id: number; avg_rating: number | null }) => {
-    if (s.avg_rating != null) ratingByMovie.set(s.movie_id, Number(s.avg_rating));
+  (statsData ?? []).forEach((s) => {
+    if (s.movie_id != null && s.avg_rating != null) {
+      ratingByMovie.set(s.movie_id, Number(s.avg_rating));
+    }
   });
 
   return { topRated, newThisWeek, genreRows, ratingByMovie };

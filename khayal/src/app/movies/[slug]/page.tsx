@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Clock, Globe, CalendarDays, ArrowLeft, Film, Star } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import type { MovieDetail } from "@/lib/supabase";
-import type { MovieCreditRow, MovieWithGenresRow } from "@/lib/database.types";
+import type { MovieCreditWithPeopleRow, MovieWithGenresRow } from "@/lib/database.types";
 import type { UserList } from "@/components/add-to-list";
 import { currentUser } from "@/lib/auth";
 import { year, runtime } from "@/lib/utils";
@@ -27,7 +27,7 @@ export const revalidate = 0;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const sb = await supabaseServer();
-  const { data } = await sb.rpc("get_movie_detail", { p_slug: slug });
+  const { data } = await sb.rpc("get_movie_detail", { movie_slug: slug });
   if (!data) return {};
   const m = (data as MovieDetail).movie;
   const yr = m.release_date ? `(${m.release_date.split("-")[0]})` : "";
@@ -68,7 +68,7 @@ export default async function MovieDetailPage({
 }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const sb = await supabaseServer();
-  const { data, error } = await sb.rpc("get_movie_detail", { p_slug: slug });
+  const { data, error } = await sb.rpc("get_movie_detail", { movie_slug: slug });
 
   if (error) throw new Error(error.message);
   if (!data) notFound();
@@ -115,14 +115,14 @@ export default async function MovieDetailPage({
     myLists = lists ?? [];
   }
 
-  const cast: CastMember[] = (castResult.data as unknown as MovieCreditRow[] ?? []).map((c) => ({
+  const cast: CastMember[] = (castResult.data as MovieCreditWithPeopleRow[] ?? []).map((c) => ({
     person_id:      c.person_id,
     name:           c.people?.name ?? "Unknown",
     character_name: c.character_name,
     profile_path:   c.people?.profile_path ?? null,
     role:           c.role,
     job:            c.job,
-    credit_order:   c.credit_order,
+    credit_order:   c.credit_order ?? 0,
   }));
 
   const avgRating = stats?.avg_rating ? Number(stats.avg_rating) : null;

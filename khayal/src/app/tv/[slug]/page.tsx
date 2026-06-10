@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CalendarDays, ArrowLeft, Film } from "lucide-react";
 import { supabaseServer } from "@/lib/supabase-server";
 import type { TvDetail } from "@/lib/supabase";
+import type { TvCreditWithPeopleRow } from "@/lib/database.types";
 import { currentUser } from "@/lib/auth";
 import { year } from "@/lib/utils";
 import { RateWidget } from "@/components/rate-widget";
@@ -26,7 +27,7 @@ export const revalidate = 0;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const sb = await supabaseServer();
-  const { data } = await sb.rpc("get_tv_detail", { p_slug: slug });
+  const { data } = await sb.rpc("get_tv_detail", { series_slug: slug });
   if (!data) return {};
   const s = (data as TvDetail).tv_series;
   const yr = s.first_air_date ? `(${s.first_air_date.split("-")[0]})` : "";
@@ -61,7 +62,7 @@ export default async function TvDetailPage({
 }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const sb = await supabaseServer();
-  const { data, error } = await sb.rpc("get_tv_detail", { p_slug: slug });
+  const { data, error } = await sb.rpc("get_tv_detail", { series_slug: slug });
   if (error) throw new Error(error.message);
   if (!data) notFound();
 
@@ -106,23 +107,14 @@ export default async function TvDetailPage({
     myLists = lists ?? [];
   }
 
-  type CastRow = {
-    person_id: number;
-    role: "cast" | "crew";
-    character_name: string | null;
-    job: string | null;
-    credit_order: number;
-    people: { name: string; profile_path: string | null } | null;
-  };
-
-  const cast: CastMember[] = (castResult.data as unknown as CastRow[] ?? []).map((c) => ({
+  const cast: CastMember[] = (castResult.data as TvCreditWithPeopleRow[] ?? []).map((c) => ({
     person_id:      c.person_id,
     name:           c.people?.name ?? "Unknown",
     character_name: c.character_name,
     profile_path:   c.people?.profile_path ?? null,
     role:           c.role,
     job:            c.job,
-    credit_order:   c.credit_order,
+    credit_order:   c.credit_order ?? 0,
   }));
 
   const seasons: Season[] = (seasonsResult.data ?? []) as Season[];

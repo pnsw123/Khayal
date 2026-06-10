@@ -1,15 +1,32 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import type { Movie } from "@/lib/supabase";
 import { MovieCard } from "./movie-card";
 import { year } from "@/lib/utils";
 
-export type MovieWithGenres = Movie & { genre_names?: string[] | null };
+/**
+ * Minimal shape required by Shelf — satisfied by both Movie and MovieWithGenresRow.
+ * id/title/slug are nullable to match Supabase view column inference even though
+ * rows always carry real values at runtime.
+ */
+export type ShelfItem = {
+  id: number | null;
+  title: string | null;
+  slug: string | null;
+  release_date: string | null;
+  poster_url: string | null;
+  runtime_minutes: number | null;
+  age_rating: string | null;
+  original_language: string | null;
+  genre_names?: string[] | null;
+};
+
+/** @deprecated Use ShelfItem directly — kept for any external callers during migration. */
+export type MovieWithGenres = ShelfItem;
 
 export interface ShelfProps {
   title: string;
   kicker?: string;      // small Arabic/eyebrow label
-  items: MovieWithGenres[];
+  items: ShelfItem[];
   /** Optional "view all" URL with filters applied. */
   viewAllHref?: string;
   /** Ratings map: movieId -> avg_rating. */
@@ -45,13 +62,13 @@ export function Shelf({ title, kicker, items, viewAllHref, ratingByMovie }: Shel
 
       <div className="relative -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto scroll-smooth snap-x [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
         <div className="flex gap-4 md:gap-5 min-w-max pb-4">
-          {items.map((m) => (
+          {items.filter((m) => m.id != null && m.slug != null).map((m) => (
             <div key={m.id} className="w-[150px] md:w-[170px] shrink-0 snap-start">
               <MovieCard
-                title={m.title}
+                title={m.title ?? ""}
                 year={year(m.release_date)}
                 posterUrl={m.poster_url}
-                rating={ratingByMovie?.get(m.id) ?? null}
+                rating={ratingByMovie?.get(m.id!) ?? null}
                 href={`/movies/${m.slug}`}
                 genres={m.genre_names ?? []}
                 language={m.original_language}

@@ -69,11 +69,11 @@ export default async function ProfilePage() {
   };
 
   const displayName = profile?.display_name || profile?.username || user.email?.split("@")[0] || "you";
-  type RawMovieReview = { id: number; headline: string | null; body: string; created_at: string; movies: unknown };
-  type RawTvReview = { id: number; headline: string | null; body: string; created_at: string; tv_series: unknown };
+  type RawMovieReview = { id: number; headline: string | null; body: string; created_at: string; movies: { title: string; slug: string } };
+  type RawTvReview = { id: number; headline: string | null; body: string; created_at: string; tv_series: { title: string; slug: string } };
   const allReviews: ReviewWithTarget[] = [
-    ...(movieReviews as unknown as RawMovieReview[] ?? []).map((r) => ({ ...r, kind: "movie" as const, target: r.movies as { title: string; slug: string } })),
-    ...(tvReviews as unknown as RawTvReview[] ?? []).map((r) => ({ ...r, kind: "tv_series" as const, target: r.tv_series as { title: string; slug: string } })),
+    ...(movieReviews as RawMovieReview[] ?? []).map((r) => ({ ...r, kind: "movie" as const, target: r.movies })),
+    ...(tvReviews as RawTvReview[] ?? []).map((r) => ({ ...r, kind: "tv_series" as const, target: r.tv_series })),
   ].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)).slice(0, 6);
 
   return (
@@ -172,7 +172,7 @@ export default async function ProfilePage() {
         <section>
           <h2 className="font-display text-2xl text-[var(--cream)] mb-6">Recently rated</h2>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {(ratedMovies as unknown as { rating: number; movies: { title: string; slug: string; poster_url: string | null } }[] ?? []).map((r) => (
+            {(ratedMovies as { rating: number; movies: { title: string; slug: string; poster_url: string | null } }[] ?? []).map((r) => (
               <Link
                 key={r.movies.slug}
                 href={`/movies/${r.movies.slug}`}
