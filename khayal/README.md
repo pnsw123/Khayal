@@ -5,7 +5,7 @@
 **A cinematic discovery platform — 7,400+ films · 2,800+ TV shows**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-movie--db--one--psi.vercel.app-black?style=for-the-badge&logo=vercel)](https://movie-db-one-psi.vercel.app)
-[![Next.js](https://img.shields.io/badge/Next.js-16.2.9-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-15.x%20(canary%2016)-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19.2.4-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
@@ -70,7 +70,7 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | Next.js 16 App Router, React 19, TypeScript 5 (strict mode) |
+| **Frontend** | Next.js canary (16.2.9 / based on 15.x stable), React 19, TypeScript 5 (strict mode) |
 | **Styling** | Tailwind CSS v4, CSS custom properties |
 | **UI Components** | [ReactBits](https://www.reactbits.dev) (human-designed components — exclusive UI source), Radix UI primitives |
 | **3D / Animation** | Three.js + @react-three/fiber + @react-three/drei, Framer Motion |
@@ -90,7 +90,7 @@ flowchart TD
     Browser["Browser\n(User)"]
 
     subgraph Vercel["Vercel — Edge / Serverless"]
-        Next["Next.js 16\nApp Router + API Routes"]
+        Next["Next.js canary\nApp Router + API Routes"]
     end
 
     subgraph Supabase["Supabase (managed PostgreSQL)"]
