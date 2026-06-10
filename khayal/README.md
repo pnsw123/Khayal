@@ -33,9 +33,7 @@ Khayal is a full-stack cinematic discovery platform. Browse, search, and track f
 
 | Browse | Detail | Search |
 |--------|--------|--------|
-| [Browse page →](https://movie-db-one-psi.vercel.app/browse) | [Film detail →](https://movie-db-one-psi.vercel.app/movies) | [Search →](https://movie-db-one-psi.vercel.app/search) |
-
-> Visit the live demo to see the full UI. The app is deployed on Vercel with real data.
+| [![Browse](docs/screenshots/browse.png)](https://movie-db-one-psi.vercel.app/browse) | [![Detail](docs/screenshots/detail.png)](https://movie-db-one-psi.vercel.app/movies/the-shawshank-redemption-1994) | [![Search](docs/screenshots/search.png)](https://movie-db-one-psi.vercel.app/search?q=inception) |
 
 ---
 
