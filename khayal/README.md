@@ -207,6 +207,8 @@ npm run dev
 open http://localhost:3000
 ```
 
+> For full local setup including database seeding, Supabase local dev, and the test stack, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ---
 
 ## Deploy to Vercel
