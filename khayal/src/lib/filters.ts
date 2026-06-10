@@ -1,5 +1,5 @@
 // ─── Filter constants tied to what's actually in the DB ───────────────────
-// See queries in /Users/yazeed/Desktop/DB/supabase/migrations/... and live
+// See queries in supabase/migrations/ and live
 // distribution as of seed. Arabic is excluded — 0 movies, no fake chips.
 
 export const LANGUAGES = [
