@@ -17,8 +17,16 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('scripts/requirements.txt', 'scripts/requirements-ml.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install sync dependencies
-        run: pip install python-dotenv supabase tmdbv3api python-slugify
+        run: pip install -r scripts/requirements.txt
 
       - name: Run daily sync
         run: python scripts/daily_sync.py
@@ -27,18 +35,17 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           TMDB_API_KEY:         ${{ secrets.TMDB_API_KEY }}
 
+      - name: Install ML dependencies
+        run: pip install -r scripts/requirements-ml.txt
+
       - name: Train recommendation model
-        run: |
-          pip install cornac pandas supabase python-dotenv
-          python scripts/train_recommendations.py
+        run: python scripts/train_recommendations.py
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
       - name: Run SVD recommendation training (scikit-surprise)
-        run: |
-          pip install "scikit-surprise" "pandas" "supabase" "python-dotenv" "numpy<2"
-          python scripts/surprise_train.py
+        run: python scripts/surprise_train.py
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

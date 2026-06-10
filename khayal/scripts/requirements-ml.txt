@@ -1,0 +1,9 @@
+# ML training dependencies — pinned for reproducibility
+# Used by: train_recommendations.py, surprise_train.py
+# numpy<2 required by scikit-surprise
+numpy<2
+pandas==2.2.3
+supabase==2.10.0
+python-dotenv==1.0.1
+cornac==2.2.2
+scikit-surprise==1.1.4

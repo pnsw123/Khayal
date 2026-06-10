@@ -3,6 +3,7 @@ import { Playfair_Display, DM_Sans, JetBrains_Mono, Reem_Kufi } from "next/font/
 import "./globals.css";
 import { Nav } from "@/components/nav";
 import { NavGuard } from "@/components/nav-guard";
+import { TmdbAttribution } from "@/components/tmdb-attribution";
 import { currentUser } from "@/lib/auth";
 
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-fraunces", display: "swap", style: ["normal","italic"] });
@@ -42,10 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 : <a href="/login"   className="hover:text-[var(--saffron)] transition-colors">Sign In</a>
               }
             </div>
-            <p className="text-xs text-[var(--cream-muted)]/50 font-mono">
-              Data from <a href="https://www.themoviedb.org" className="hover:text-[var(--saffron)] transition-colors">TMDB</a>
-              {" · "}© {new Date().getFullYear()} KHAYAL
-            </p>
+            <TmdbAttribution />
           </div>
         </footer>
       </body>
