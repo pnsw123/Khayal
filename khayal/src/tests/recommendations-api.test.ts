@@ -164,4 +164,61 @@ describe("GET /api/recommendations", () => {
     expect(body.algo).toBe("fallback");
     expect(Array.isArray(body.movies)).toBe(true);
   });
+
+  it("fallback excludes seen movies via Set (O(1) lookup)", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-3" } } });
+
+    // movie_id 1 already seen — must not appear in fallback
+    const seenMovieId = 1;
+
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs
+      if (callCount === 2) return makeChain({ data: [{ movie_id: seenMovieId }], error: null }); // rated
+      if (callCount === 3)
+        return makeChain({
+          data: [
+            { movie_id: seenMovieId, avg_rating: 9.5 }, // seen — must be excluded
+            { movie_id: 2, avg_rating: 8.0 },
+          ],
+          error: null,
+        }); // stats
+      return makeChain({ data: [MOCK_MOVIES[1]], error: null }); // only unseen movie fetched
+    });
+
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.algo).toBe("fallback");
+    const returnedIds: number[] = (body.movies as Array<{ id: number }>).map((m) => m.id);
+    expect(returnedIds).not.toContain(seenMovieId);
+  });
+
+  it("fallback returns empty array when all top-rated movies already seen", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-4" } } });
+
+    let callCount = 0;
+    mockFrom.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return makeChain({ data: [], error: null }); // no recs
+      if (callCount === 2)
+        return makeChain({ data: [{ movie_id: 1 }, { movie_id: 2 }], error: null }); // both seen
+      if (callCount === 3)
+        return makeChain({
+          data: [
+            { movie_id: 1, avg_rating: 9.5 },
+            { movie_id: 2, avg_rating: 8.0 },
+          ],
+          error: null,
+        }); // stats — all seen
+      return makeChain({ data: [], error: null });
+    });
+
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.algo).toBe("fallback");
+    expect(body.movies).toEqual([]);
+  });
 });

@@ -60,19 +60,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     .select("movie_id")
     .eq("user_id", user.id);
 
-  const seenIds = (seenRows ?? []).map((r) => r.movie_id as number);
+  const seenSet = new Set<number>((seenRows ?? []).map((r) => r.movie_id as number));
 
-  let fallbackQuery = sb
+  const { data: statRows } = await sb
     .from("movie_stats")
     .select("movie_id, avg_rating")
     .order("avg_rating", { ascending: false })
-    .limit(limit * 2);
-
-  const { data: statRows } = await fallbackQuery;
+    .limit(limit * 10);
 
   const candidateIds = (statRows ?? [])
     .map((r) => r.movie_id as number)
-    .filter((id) => !seenIds.includes(id))
+    .filter((id) => !seenSet.has(id))
     .slice(0, limit);
 
   if (candidateIds.length === 0) {
