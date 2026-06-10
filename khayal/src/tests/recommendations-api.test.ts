@@ -259,7 +259,7 @@ describe("GET /api/recommendations", () => {
   it("returns 500 when movies fetch errors after recommendations found", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "user-6" } } });
 
-    const recRows = [{ movie_id: 1, score: 9.1, source: "cornac-als", created_at: "2026-01-01T00:00:00Z" }];
+    const recRows = [{ movie_id: 1, score: 9.1, source: "cornac-bpr", created_at: "2026-01-01T00:00:00Z" }];
 
     let callCount = 0;
     mockFrom.mockImplementation(() => {
