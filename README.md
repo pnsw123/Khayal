@@ -1,127 +1,86 @@
 # KHAYAL · خيال
-### A Cinema Index — Database Systems Class Project
 
-**Live:** [movie-db-one-psi.vercel.app](https://movie-db-one-psi.vercel.app) &nbsp;|&nbsp; **Code:** [github.com/pnsw123/Movie-DB](https://github.com/pnsw123/Movie-DB)
+**Live:** [movie-db-one-psi.vercel.app](https://movie-db-one-psi.vercel.app) &nbsp;|&nbsp; **Code:** [github.com/pnsw123/Khayal](https://github.com/pnsw123/Khayal)
 
-> Browse 7,400+ real films and 2,800+ TV series, rate them, write reviews, build watchlists, and run your own SQL queries against a live database.
+Film & TV discovery platform — 7,400+ films, 2,800+ TV series. Rate, review, build watchlists, get ML recommendations. Nightly TMDB sync via GitHub Actions.
 
 ---
 
 ## Screenshots
 
-| Browse | Search |
-|:---:|:---:|
-| ![Browse](screenshots/browse.png) | ![Search](screenshots/search.png) |
+![Hero](screenshots/hero.jpg)
 
-| Movie Detail | Sign In |
+| Browse | Movie Detail |
 |:---:|:---:|
-| ![Detail](screenshots/detail.png) | ![Login](screenshots/login.png) |
+| ![Browse](screenshots/browse.jpg) | ![Detail](screenshots/detail.jpg) |
+
+![Login](screenshots/login.jpg)
 
 ---
 
 ## Tech Stack
 
-[![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![TMDB](https://img.shields.io/badge/TMDB_API-01B4E4?style=for-the-badge&logo=themoviedatabase&logoColor=white)](https://www.themoviedb.org)
-[![Google Stitch](https://img.shields.io/badge/Google_Stitch-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://stitch.withgoogle.com)
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/features/actions)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
 
-| Tool | Role |
+| Layer | Tools |
 |---|---|
-| **Next.js 15** + TypeScript | Frontend framework — server-rendered pages, App Router |
-| **Tailwind CSS** | Styling |
-| **Supabase** (PostgreSQL) | Database + authentication + Row-Level Security |
-| **TMDB API** | Source of all movie & TV data — posters, trailers, metadata |
-| **Google Stitch** | UI design & prototyping before any code was written |
-| **GitHub Actions** | Nightly cloud sync — fetches new movies every night at 3 AM UTC |
-| **Vercel** | Hosting — auto-deploys on every push to `main` |
-| **Python** | Data pipeline — seeds and syncs 10,000+ titles from TMDB |
+| Frontend | Next.js 16 · React 19 · TypeScript strict · Tailwind CSS v4 |
+| Animation | motion/react · GSAP · Three.js (WebGL wave) |
+| Backend | Supabase (PostgreSQL) · Row-Level Security · RPC functions |
+| Auth | Supabase Auth — email/password + magic link |
+| Data | TMDB API → Python sync scripts → Supabase |
+| ML | scikit-surprise SVD · cornac · GIN full-text search |
+| CI/CD | GitHub Actions (nightly sync at 3 AM UTC) · Vercel |
+| Testing | Vitest (933 tests) · Playwright (visual regression) · Semgrep |
 
 ---
 
-## Where the Data Comes From
+## Database Schema
 
-All titles, posters, backdrops, and trailers come from **[TMDB](https://www.themoviedb.org/)** — the same API used by Plex and Letterboxd.
+**12 tables.** Row-Level Security on all user-owned data.
 
-```
-TMDB API → Python scripts → Supabase (PostgreSQL) → Next.js app
-```
-
-A Python script fetches movies and TV shows and loads them into the database. A **GitHub Actions** cron job runs this automatically every night at 3 AM UTC — no computer needed.
+| Table | Contents |
+|---|---|
+| `movies` | 7,400+ films — title, poster, runtime, age rating, trailer |
+| `tv_series` | 2,800+ shows + status (ongoing / ended) |
+| `movie_ratings` / `tv_series_ratings` | One rating (1–10) per user per title |
+| `movie_reviews` / `tv_series_reviews` | Reviews with spoiler toggle |
+| `user_lists` | Watchlists — public or private |
+| `recommendations` | Pre-computed ML similar titles |
+| `profiles` | One row per signed-in user |
 
 ---
 
 ## Project Structure
 
 ```
-KHAYAL/
-├── khayal/               ← Next.js frontend (everything users see)
-│   └── src/
-│       ├── app/          ← Pages: /browse  /search  /movies/[slug]  /profile…
-│       ├── components/   ← movie-card, shelf, rate-widget, trailer, nav…
-│       └── lib/          ← Supabase clients, auth helpers
-│
-├── scripts/              ← Python data pipeline
-│   ├── daily_sync.py     ← Nightly sync (runs on GitHub Actions cloud)
-│   ├── test_daily_sync.py← 54 automated tests
-│   └── seed_tmdb.py      ← Initial bulk load from TMDB
-│
-├── supabase/migrations/  ← All SQL schema changes in order
-└── .github/workflows/    ← daily-sync.yml — cloud cron job
+khayal/
+├── src/
+│   ├── app/          ← Pages: /browse  /movies/[slug]  /tv/[slug]  /search  /profile
+│   ├── components/   ← movie-card, shelf, trailer, nav, landing sections
+│   └── lib/          ← Supabase clients, auth helpers, search API
+├── scripts/          ← Python TMDB sync + ML training (scikit-surprise, cornac)
+├── supabase/
+│   └── migrations/   ← 17 SQL migrations in order
+└── .github/workflows/← daily-sync.yml — cloud cron job
 ```
 
 ---
 
-## Database — Supabase (PostgreSQL)
+## Cloud Automation
 
-**12 tables total.**
-
-| Table | Contents |
-|---|---|
-| `movies` | 7,400+ films — title, poster, runtime, age rating, trailer |
-| `tv_series` | 2,800+ shows — same fields + status (ongoing / ended) |
-| `movie_ratings` | One rating (1–10) per user per movie |
-| `tv_series_ratings` | Same for TV series |
-| `movie_reviews` | User reviews for movies with spoiler toggle |
-| `tv_series_reviews` | Same for TV series |
-| `user_lists` | Watchlists — public or private |
-| `user_list_movies` | Movies inside each watchlist |
-| `user_list_tv_series` | TV series inside each watchlist |
-| `profiles` | One row per signed-in user |
-| `recommendations` | Pre-computed similar titles |
-| `saved_queries` | User's saved SQL queries from the explorer |
-
-**Security:** Row-Level Security (RLS) ensures users can only edit their own data. The SQL explorer tab only allows `SELECT` — no one can modify the database from the browser.
-
----
-
-## UI Design — Google Stitch
-
-[Google Stitch](https://stitch.withgoogle.com) is a Google Labs AI design tool that generates full UI screens from text prompts — color systems, typography, layouts, and components in one shot.
-
-![KHAYAL designed in Google Stitch](screenshots/stitch-khayal-canvas.png)
-
-*The KHAYAL design system and landing page variations generated inside the Stitch canvas.*
-
----
-
-## Cloud Automation — GitHub Actions
-
-[![GitHub Actions](https://img.shields.io/badge/Runs_every_night_at_3AM_UTC-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/pnsw123/Movie-DB/actions)
-
-Every night GitHub's servers automatically:
-1. Fetch movies released in the last 2 days from TMDB
-2. Skip anything already in the database
-3. Insert new titles with posters and metadata
-4. Run 54 tests to confirm nothing broke
-
-No local machine needed — fully independent of any computer.
+Every night GitHub Actions:
+1. Fetches titles released in the last 2 days from TMDB
+2. Skips anything already in the database
+3. Inserts new titles with posters, trailers, metadata
+4. Runs the test suite — blocks merge on failure
 
 ---
 
