@@ -5,6 +5,7 @@ export default defineConfig({
   timeout: 60_000,
   retries: 2,
   workers: 2,
+  snapshotPathTemplate: "{testDir}/__snapshots__/{testFilePath}/{arg}{ext}",
   use: {
     baseURL: "http://localhost:3000",
   },
