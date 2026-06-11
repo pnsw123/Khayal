@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, ExternalLink, X } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface TrailerProps {
@@ -35,7 +35,6 @@ export function Trailer({ youtubeId, title, year, className }: TrailerProps) {
           className,
         )}
       >
-        <Play size={12} className="fill-current" />
         Find trailer
         <ExternalLink size={11} className="ml-1 opacity-70 group-hover:opacity-100" />
       </a>
@@ -53,7 +52,6 @@ export function Trailer({ youtubeId, title, year, className }: TrailerProps) {
           className,
         )}
       >
-        <Play size={12} className="fill-current" />
         Watch trailer
       </button>
     );

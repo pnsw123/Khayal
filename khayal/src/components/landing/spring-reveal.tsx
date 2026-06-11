@@ -26,15 +26,14 @@ export function SpringReveal({
   rotate = 0,
   amount = 0.6,
   yFrom = 120,
+  delay = 0,
 }: {
   children: React.ReactNode;
   className?: string;
-  /** Resting tilt in degrees on entry. Use -10 for cards, 0–-3 for wide blocks. */
   rotate?: number;
-  /** Fraction of the element that must be visible before it springs in. */
   amount?: number;
-  /** How far below it starts (px). The motion.dev demo uses 300 for tall cards. */
   yFrom?: number;
+  delay?: number;
 }) {
   const prefersReduced = useReducedMotion();
 
@@ -48,7 +47,7 @@ export function SpringReveal({
       y: 0,
       rotate,
       opacity: 1,
-      transition: { type: "spring", bounce: 0.4, duration: 0.8 },
+      transition: { type: "spring", bounce: 0.4, duration: 0.8, delay },
     },
   };
 

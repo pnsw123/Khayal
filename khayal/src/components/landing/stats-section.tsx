@@ -3,6 +3,7 @@
 import { useInView, useMotionValue, useSpring } from "motion/react";
 import { useCallback, useEffect, useRef } from "react";
 import { SpringReveal } from "./spring-reveal";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 // ReactBits CountUp — verbatim TypeScript port
 function CountUp({
@@ -85,14 +86,16 @@ export function StatsSection(props: StatsSectionProps) {
               rotate={i === 0 ? -10 : i === 2 ? 10 : 0}
               amount={0.8}
               yFrom={300}
+              delay={i * 0.15}
             >
               <div
-                className="flex flex-col items-center text-center px-8 py-10 rounded-2xl"
+                className="relative flex flex-col items-center text-center px-8 py-10 rounded-2xl"
                 style={{
                   background: "var(--ink-lift)",
                   border: "1px solid color-mix(in srgb, var(--taupe) 35%, transparent)",
                 }}
               >
+                <GlowingEffect spread={40} glow proximity={64} inactiveZone={0.01} />
                 <p
                   className="font-display leading-none mb-4"
                   style={{
