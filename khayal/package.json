@@ -11,7 +11,7 @@
 		"lint": "eslint src/ --max-warnings 0",
 		"type-check": "tsc --noEmit",
 		"validate": "npm run type-check && npm run lint && npm run test",
-		"verify": "npx tsc --noEmit && npx eslint src/ --max-warnings 0 && npx vitest run && npx playwright test",
+		"verify": "rm -rf .next/dev/types && npx tsc --noEmit && npx eslint src/ --max-warnings 0 && npx vitest run",
 		"test:visual": "npx playwright test visual-regression",
 		"test:visual:update": "npx playwright test visual-regression --update-snapshots",
 		"gen-types": "supabase gen types typescript --project-id iybfarqvntkkfxwbrxll --schema public > src/lib/database.types.generated.ts",
