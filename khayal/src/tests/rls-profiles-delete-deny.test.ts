@@ -18,7 +18,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 const MIGRATIONS_DIR = resolve(process.cwd(), "supabase/migrations");
-const FILENAME = "20240001000013_rls_profiles_delete_deny.sql";
+const FILENAME = "20240001000016_rls_profiles_delete_deny.sql";
 
 let sql: string;
 let sqlUpper: string;
@@ -30,7 +30,7 @@ beforeAll(() => {
 
 // ── File health ───────────────────────────────────────────────────────────────
 
-describe("migration file: 20240001000013_rls_profiles_delete_deny.sql", () => {
+describe("migration file: 20240001000016_rls_profiles_delete_deny.sql", () => {
   it("file exists and is non-empty", () => {
     expect(sql.length).toBeGreaterThan(50);
   });

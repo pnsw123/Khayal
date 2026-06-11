@@ -141,11 +141,11 @@ describe("migration file naming", () => {
 // call sites use { p_slug: slug }.  These tests lock the param name to p_slug
 // across both migrations so a future edit cannot silently re-introduce the mismatch.
 
-describe("migration 00007: get_movie_detail + get_tv_detail use p_slug param", () => {
+describe("migration 00009: get_movie_detail + get_tv_detail use p_slug param", () => {
   let sql: string;
 
   beforeAll(() => {
-    sql = readMigration("20240001000007_rpc_get_movie_and_tv_detail.sql");
+    sql = readMigration("20240001000009_rpc_get_movie_and_tv_detail.sql");
   });
 
   it("get_movie_detail param is named p_slug", () => {
@@ -166,11 +166,11 @@ describe("migration 00007: get_movie_detail + get_tv_detail use p_slug param", (
   });
 });
 
-describe("migration 00008: search_path fix preserves p_slug param name", () => {
+describe("migration 00010: search_path fix preserves p_slug param name", () => {
   let sql: string;
 
   beforeAll(() => {
-    sql = readMigration("20240001000008_fix_search_path_security_definer.sql");
+    sql = readMigration("20240001000010_fix_search_path_security_definer.sql");
   });
 
   it("get_movie_detail uses p_slug (not movie_slug)", () => {

@@ -14,7 +14,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 const MIGRATIONS_DIR = resolve(process.cwd(), "supabase/migrations");
-const FILENAME = "20240001000005_profiles_insert_policy.sql";
+const FILENAME = "20240001000006_profiles_insert_policy.sql";
 
 let sql: string;
 let sqlUpper: string;
@@ -26,7 +26,7 @@ beforeAll(() => {
 
 // ── File health ───────────────────────────────────────────────────────────────
 
-describe("migration file: 20240001000005_profiles_insert_policy.sql", () => {
+describe("migration file: 20240001000006_profiles_insert_policy.sql", () => {
   it("file exists and is non-empty", () => {
     expect(sql.length).toBeGreaterThan(50);
   });

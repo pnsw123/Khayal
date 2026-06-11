@@ -1,5 +1,5 @@
 /**
- * Structural tests for migration 20240001000007_rls_profiles_role_protect.sql
+ * Structural tests for migration 20240001000008_rls_profiles_role_protect.sql
  * (issue #201 — privilege escalation via profiles UPDATE RLS).
  *
  * Verifies offline (no live DB) that:
@@ -13,7 +13,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 const MIGRATIONS_DIR = resolve(process.cwd(), "supabase/migrations");
-const FILENAME = "20240001000007_rls_profiles_role_protect.sql";
+const FILENAME = "20240001000008_rls_profiles_role_protect.sql";
 
 let sql: string;
 let sqlUpper: string;
@@ -23,7 +23,7 @@ beforeAll(() => {
   sqlUpper = sql.toUpperCase();
 });
 
-describe("migration: 20240001000007_rls_profiles_role_protect.sql", () => {
+describe("migration: 20240001000008_rls_profiles_role_protect.sql", () => {
   it("file exists and is non-empty", () => {
     expect(sql.length).toBeGreaterThan(50);
   });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Search, LoaderCircle, Film, Tv } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
@@ -16,6 +16,7 @@ interface Result {
 }
 
 export function NavSearch() {
+  const pathname = usePathname();
   const router = useRouter();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Result[]>([]);
@@ -26,6 +27,7 @@ export function NavSearch() {
 
   // Fetch results whenever q changes
   useEffect(() => {
+    if (pathname === "/login") return;
     const text = q.trim();
     if (text.length < 2) {
       setResults([]);
@@ -51,7 +53,7 @@ export function NavSearch() {
       }
     }, 200);
     return () => clearTimeout(timer);
-  }, [q]);
+  }, [q, pathname]);
 
   // Close on outside click
   useEffect(() => {
@@ -61,6 +63,8 @@ export function NavSearch() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  if (pathname === "/login") return null;
 
   const goFull = (query = q) => {
     const t = query.trim();

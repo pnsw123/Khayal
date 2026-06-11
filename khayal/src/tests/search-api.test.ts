@@ -5,7 +5,9 @@ import { NextRequest } from "next/server";
 // ---------------------------------------------------------------------------
 // Mock supabase-server so tests run without real DB credentials
 // ---------------------------------------------------------------------------
-const mockRpc = vi.fn();
+// vi.mock() is hoisted above variable declarations, so mockRpc must be
+// declared via vi.hoisted() to be available inside the factory.
+const { mockRpc } = vi.hoisted(() => ({ mockRpc: vi.fn() }));
 
 vi.mock("@/lib/supabase-server", () => ({
   supabaseServer: vi.fn().mockResolvedValue({ rpc: mockRpc }),

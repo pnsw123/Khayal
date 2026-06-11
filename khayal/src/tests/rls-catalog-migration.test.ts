@@ -16,7 +16,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 const MIGRATIONS_DIR = resolve(process.cwd(), "supabase/migrations");
-const FILENAME = "20240001000004_rls_catalog_and_saved_queries.sql";
+const FILENAME = "20240001000005_rls_catalog_and_saved_queries.sql";
 
 let sql: string;
 let sqlUpper: string;
@@ -28,7 +28,7 @@ beforeAll(() => {
 
 // ── Migration file ────────────────────────────────────────────────────────────
 
-describe("migration file: 20240001000004_rls_catalog_and_saved_queries.sql", () => {
+describe("migration file: 20240001000005_rls_catalog_and_saved_queries.sql", () => {
   it("file exists and is non-empty", () => {
     expect(sql.length).toBeGreaterThan(100);
   });

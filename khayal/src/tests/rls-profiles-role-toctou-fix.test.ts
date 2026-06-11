@@ -1,5 +1,5 @@
 /**
- * Structural tests for migration 20240001000011_rls_profiles_role_toctou_fix.sql
+ * Structural tests for migration 20240001000013_rls_profiles_role_toctou_fix.sql
  * (issue #243 — TOCTOU race in profiles_update_own RLS policy)
  *
  * Verifies offline (no live DB) that:
@@ -17,7 +17,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 const MIGRATIONS_DIR = resolve(process.cwd(), "supabase/migrations");
-const FILENAME = "20240001000011_rls_profiles_role_toctou_fix.sql";
+const FILENAME = "20240001000013_rls_profiles_role_toctou_fix.sql";
 
 let sql: string;
 let sqlUpper: string;
@@ -33,7 +33,7 @@ beforeAll(() => {
   sqlNoComments = sql.replace(/--[^\n]*/g, "");
 });
 
-describe("migration: 20240001000011_rls_profiles_role_toctou_fix.sql", () => {
+describe("migration: 20240001000013_rls_profiles_role_toctou_fix.sql", () => {
   it("file exists and is non-empty", () => {
     expect(sql.length).toBeGreaterThan(100);
   });

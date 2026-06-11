@@ -289,8 +289,8 @@ describe("recommendations table: SELECT owner only", () => {
 
 // ── recommendations deny migration (issue #257) ───────────────────────────────
 
-describe("recommendations deny migration: 20240001000013_rls_recommendations_deny.sql", () => {
-  const DENY_FILENAME = "20240001000013_rls_recommendations_deny.sql";
+describe("recommendations deny migration: 20240001000017_rls_recommendations_deny.sql", () => {
+  const DENY_FILENAME = "20240001000017_rls_recommendations_deny.sql";
   let denySql: string;
 
   beforeAll(() => {
