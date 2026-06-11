@@ -29,7 +29,7 @@ if [ "$UI_CHANGED" -gt "0" ]; then
   echo "======================================================="
   echo ""
 
-  npx playwright test visual-regression
+  node "$(node -e "require.resolve('@playwright/test/cli')")" test visual-regression
   VISUAL_STATUS=$?
 
   if [ $VISUAL_STATUS -ne 0 ]; then
@@ -38,7 +38,7 @@ if [ "$UI_CHANGED" -gt "0" ]; then
     echo "  PUSH BLOCKED -- Gate 13 (visual regression) failed."
     echo ""
     echo "  If this is expected (intentional UI change):"
-    echo "    npx playwright test visual-regression --update-snapshots"
+    echo "    node "$(node -e "require.resolve('@playwright/test/cli')")" test visual-regression --update-snapshots"
     echo "    git add e2e/__snapshots__"
     echo "    git commit -m 'chore: update visual snapshots'"
     echo "======================================================="
