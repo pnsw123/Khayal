@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { MovieCard } from "./movie-card";
 import { year } from "@/lib/utils";
 
@@ -37,30 +37,30 @@ export interface ShelfProps {
 export function Shelf({ title, kicker, items, viewAllHref, ratingByMovie }: ShelfProps) {
   if (items.length === 0) return null;
   return (
-    <section className="mb-14">
-      <header className="flex items-baseline justify-between gap-4 mb-5">
-        <div className="flex items-baseline gap-3">
-          <h2 className="font-display text-xl md:text-2xl text-[var(--cream)]">
+    <section className="mb-10 md:mb-12">
+      <header className="flex items-baseline justify-between gap-4 mb-4">
+        <div className="flex items-baseline gap-3 min-w-0">
+          <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-[var(--cream)] underline decoration-[var(--saffron)] decoration-2 underline-offset-[7px]">
             {title}
           </h2>
           {kicker && (
-            <span className="font-arabic text-sm text-[var(--cream-muted)]/50">{kicker}</span>
+            <span className="font-arabic text-sm text-[var(--cream-muted)]/60">{kicker}</span>
           )}
         </div>
         {viewAllHref && (
           <Link
             href={viewAllHref}
-            className="inline-flex items-center gap-1.5 text-[11px] font-mono tracking-[0.2em] uppercase text-[var(--cream-muted)] hover:text-[var(--saffron)] transition-colors"
+            className="shrink-0 inline-flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors duration-150"
           >
-            View all <ArrowRight size={11} />
+            View all <ChevronRight size={14} />
           </Link>
         )}
       </header>
 
-      <div className="relative -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto scroll-smooth snap-x [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-        <div className="flex gap-4 md:gap-5 min-w-max pb-4">
+      <div className="relative -mx-4 md:-mx-6 lg:-mx-12 px-4 md:px-6 lg:px-12 overflow-x-auto scroll-smooth snap-x [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+        <div className="flex gap-3 md:gap-4 min-w-max pt-1 pb-4">
           {items.filter((m) => m.id != null && m.slug != null).map((m) => (
-            <div key={m.id} className="w-[150px] md:w-[170px] shrink-0 snap-start">
+            <div key={m.id} className="w-[132px] md:w-[164px] shrink-0 snap-start">
               <MovieCard
                 title={m.title ?? ""}
                 year={year(m.release_date)}

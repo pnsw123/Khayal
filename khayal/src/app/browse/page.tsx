@@ -14,6 +14,7 @@ import { LANGUAGES, RATINGS, YEARS, SCORES, SORT_OPTIONS, hasAnyFilter } from "@
 import { buildBrowseQuery, loadBrowseRows } from "@/lib/browse";
 import { year } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
+import { PageGlow } from "@/components/backgrounds/page-glow";
 
 export const revalidate = 300;
 
@@ -112,26 +113,33 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   ];
 
   return (
-    <div className="min-h-screen" data-testid="browse-page">
-      {/* ─── Filter bar ─── */}
-      <div className="bg-[var(--ink)]">
-        <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-2.5 flex items-center gap-2 flex-wrap">
+    <div className="relative isolate min-h-screen -mt-20 pt-20" data-testid="browse-page">
+      <PageGlow />
+
+      {/* ─── Title + filter bar ─── */}
+      <div className="mx-auto max-w-[1600px] px-4 md:px-6 lg:px-12 pt-6 md:pt-10">
+        <div className="flex items-end justify-between gap-4 flex-wrap mb-5">
+          <h1 className="font-display text-3xl md:text-4xl text-white">
+            {browseRows ? "Browse films" : "Filtered results"}
+            <span className="ml-3 font-arabic font-normal text-xl md:text-2xl text-white/50">تصفّح</span>
+          </h1>
+          {filtersActive && (
+            <Link href="/browse" className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-[var(--glass)] border border-[var(--glass-line)] text-sm text-white/80 hover:text-white hover:bg-[var(--glass-strong)] transition-colors duration-150">
+              <X size={13} /> Clear filters
+            </Link>
+          )}
+        </div>
+        <div className="-mx-4 px-4 md:mx-0 md:px-0 flex items-center gap-2 overflow-x-auto md:flex-wrap [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
           <FilterDropdown label="Genre"    items={genres}        activeCode={activeGenre}  paramKey="genre"  searchParams={usp} />
           <FilterDropdown label="Year"     items={YEARS}         activeCode={activeYear}   paramKey="year"   searchParams={usp} />
           <FilterDropdown label="Language" items={LANGUAGES}     activeCode={activeLang}   paramKey="lang"   searchParams={usp} />
           <FilterDropdown label="Score"    items={SCORES}        activeCode={activeScore}  paramKey="score"  searchParams={usp} />
           <FilterDropdown label="Rating"   items={RATINGS}       activeCode={activeRating} paramKey="rating" searchParams={usp} />
           <FilterDropdown label="Sort"     items={SORT_OPTIONS}  activeCode={activeSort}   paramKey="sort"   searchParams={usp} />
-          {filtersActive && (
-            <Link href="/browse" className="inline-flex items-center gap-1 h-8 px-2.5 text-[11px] font-mono text-[var(--cream-muted)] hover:text-[var(--cream)] transition-colors">
-              <X size={10} /> Clear
-            </Link>
-          )}
         </div>
       </div>
 
-
-      <div className="mx-auto max-w-[1600px] px-4 md:px-6 py-8">
+      <div className="mx-auto max-w-[1600px] px-4 md:px-6 lg:px-12 py-8">
         {/* ─── Personalised shelf — streams from server, no pop-in ─── */}
         <Suspense fallback={<RecommendationsSkeleton />}>
           <RecommendationsShelf />
@@ -140,18 +148,14 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         {browseRows ? (
           /* ─── Unfiltered: Netflix-style genre rows ─── */
           <>
-            <div className="mb-8">
-              <h1 className="font-display text-2xl md:text-3xl text-[var(--cream)]">Browse films</h1>
-            </div>
-
             {/* ─── Tonight's Projections — FeaturedReel hero cards ─── */}
             {featuredMovies.length > 0 && (
               <section className="mb-12" data-testid="featured-reels">
-                <div className="mb-5 flex items-baseline gap-3">
-                  <h2 className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--saffron)]">
-                    TONIGHT&apos;S PROJECTIONS
+                <div className="mb-4 flex items-baseline gap-3">
+                  <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-[var(--cream)] underline decoration-[var(--saffron)] decoration-2 underline-offset-[7px]">
+                    Tonight&apos;s projections
                   </h2>
-                  <span className="font-arabic text-sm text-[var(--saffron)]/60">عروض الليلة</span>
+                  <span className="font-arabic text-sm text-[var(--cream-muted)]/60">عروض الليلة</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {featuredMovies.map((m, i) => (
@@ -170,6 +174,14 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
                   ))}
                 </div>
               </section>
+            )}
+
+            {browseRows.topRated.length === 0 && browseRows.newThisWeek.length === 0 && browseRows.genreRows.length === 0 && (
+              <EmptyState
+                arabicLabel="لا خيال هنا"
+                title="Nothing to show yet."
+                subtitle="The catalogue could not be loaded. Try again shortly."
+              />
             )}
 
             {browseRows.topRated.length > 0 && (
@@ -213,12 +225,6 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         ) : (
           /* ─── Filtered: existing grid ─── */
           <>
-            <div className="mb-8">
-              <h1 className="font-display text-2xl md:text-3xl text-[var(--cream)]">
-                Filtered results
-              </h1>
-            </div>
-
             <section id="films" data-testid="filtered-grid">
               {grid.length === 0 ? (
                 <EmptyState
@@ -228,7 +234,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
                 />
               ) : (
                 <>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-x-4 gap-y-6">
                     {grid
                       .filter((m): m is typeof m & { id: number; title: string; slug: string } => m.id != null && m.title != null && m.slug != null)
                       .map((m) => (
@@ -280,34 +286,34 @@ function Pagination({
   for (let i = start; i <= end; i++) withGaps.push(i);
 
   return (
-    <nav className="mt-10 pt-6 border-t border-[var(--ink-high)] flex items-center justify-center gap-0.5">
+    <nav className="mt-12 flex items-center justify-center gap-1 flex-wrap">
       {current > 1 ? (
-        <Link href={href(current - 1)} className="h-9 px-3 rounded text-[12px] font-mono border border-[var(--taupe)]/20 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--taupe)]/50 transition-colors flex items-center gap-1">
+        <Link href={href(current - 1)} className="h-9 px-3.5 rounded-full text-sm bg-[var(--glass)] border border-[var(--glass-line)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--glass-strong)] transition-colors duration-150 flex items-center gap-1">
           ‹ Prev
         </Link>
       ) : (
-        <span className="h-9 px-3 rounded text-[12px] font-mono border border-[var(--taupe)]/10 text-[var(--cream-muted)]/25 flex items-center">‹ Prev</span>
+        <span className="h-9 px-3.5 rounded-full text-sm border border-[var(--glass-line)] text-[var(--cream-muted)]/30 flex items-center">‹ Prev</span>
       )}
       {withGaps.map((p) => (
         <Link
           key={p}
           href={href(p)}
           className={
-            "h-9 min-w-9 px-2.5 rounded text-[12px] font-mono flex items-center justify-center transition-colors " +
+            "h-9 min-w-9 px-2.5 rounded-full text-sm tabular-nums flex items-center justify-center transition-colors duration-150 " +
             (p === current
-              ? "bg-[var(--accent)] text-[var(--ink)] font-semibold"
-              : "text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--ink-lift)]")
+              ? "bg-white text-black font-semibold"
+              : "text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--glass)]")
           }
         >
           {p}
         </Link>
       ))}
       {current < total ? (
-        <Link href={href(current + 1)} className="h-9 px-3 rounded text-[12px] font-mono border border-[var(--taupe)]/20 text-[var(--cream-muted)] hover:text-[var(--cream)] hover:border-[var(--taupe)]/50 transition-colors flex items-center gap-1">
+        <Link href={href(current + 1)} className="h-9 px-3.5 rounded-full text-sm bg-[var(--glass)] border border-[var(--glass-line)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--glass-strong)] transition-colors duration-150 flex items-center gap-1">
           Next ›
         </Link>
       ) : (
-        <span className="h-9 px-3 rounded text-[12px] font-mono border border-[var(--taupe)]/10 text-[var(--cream-muted)]/25 flex items-center">Next ›</span>
+        <span className="h-9 px-3.5 rounded-full text-sm border border-[var(--glass-line)] text-[var(--cream-muted)]/30 flex items-center">Next ›</span>
       )}
     </nav>
   );

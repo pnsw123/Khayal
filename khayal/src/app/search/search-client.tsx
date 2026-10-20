@@ -22,7 +22,7 @@ export function SearchClient({ defaultQueries }: { defaultQueries: SavedQuery[] 
   const [tab, setTab] = useState<Tab>("find");
   return (
     <div>
-      <div className="flex gap-1 border-b border-[var(--taupe)]/15 mb-8">
+      <div className="mx-auto w-fit flex gap-1 p-1 rounded-[14px] bg-[var(--glass)] border border-[var(--glass-line)] mb-8">
         <TabBtn active={tab === "find"} onClick={() => setTab("find")} icon={<Search size={14} />} label="Find" />
         <TabBtn active={tab === "sql"}  onClick={() => setTab("sql")}  icon={<Table2 size={14} />} label="SQL" />
       </div>
@@ -36,12 +36,11 @@ function TabBtn({ active, onClick, icon, label }: { active: boolean; onClick: ()
     <button
       onClick={onClick}
       className={cn(
-        "relative inline-flex items-center gap-2 px-5 py-3 text-sm tracking-wide transition-colors",
-        active ? "text-[var(--cream)]" : "text-[var(--cream-muted)] hover:text-[var(--cream)]"
+        "inline-flex items-center gap-2 h-9 px-4 rounded-[10px] text-sm font-medium transition-colors duration-150",
+        active ? "text-white bg-[var(--glass-strong)]" : "text-[var(--cream-muted)] hover:text-[var(--cream)]"
       )}
     >
       {icon} {label}
-      {active && <span className="absolute left-3 right-3 -bottom-[1px] h-[2px] bg-[var(--accent)]" />}
     </button>
   );
 }
@@ -64,10 +63,10 @@ function ChipRow<T extends string>({
           key={opt.code}
           onClick={() => onChange(opt.code)}
           className={cn(
-            "h-8 px-3 rounded-full text-xs transition-colors border",
+            "h-8 px-3.5 rounded-full text-sm transition-colors duration-150 border",
             value === opt.code
-              ? "bg-[var(--accent)] text-[var(--ink)] border-[var(--accent)]"
-              : "bg-transparent text-[var(--cream-muted)] border-[var(--taupe)]/30 hover:text-[var(--cream)] hover:border-[var(--taupe)]/60"
+              ? "bg-white text-black border-white"
+              : "bg-[var(--glass)] text-[var(--cream-muted)] border-[var(--glass-line)] hover:text-[var(--cream)] hover:bg-[var(--glass-strong)]"
           )}
         >
           {opt.label}
@@ -146,15 +145,15 @@ function FindTab() {
 
   return (
     <div>
-      <form onSubmit={(e) => e.preventDefault()} className="relative mb-6">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--cream-muted)]" />
+      <form onSubmit={(e) => e.preventDefault()} className="relative mx-auto max-w-2xl mb-6">
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-[var(--cream-muted)]" />
         <input
           autoFocus
           data-testid="search-input"
           value={q}
           onChange={(e) => handleQChange(e.target.value)}
           placeholder="Title, phrase, idea…"
-          className="w-full h-11 pl-11 pr-11 rounded-md text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] placeholder:text-[var(--cream-muted)]/60 focus-visible:outline-none focus:border-[var(--accent-dim)] transition-colors"
+          className="w-full h-12 pl-12 pr-11 rounded-2xl text-base bg-[var(--glass)] backdrop-blur-md border border-[var(--glass-line)] text-[var(--cream)] placeholder:text-[var(--cream-muted)]/70 focus-visible:outline-none focus:border-[var(--saffron)]/60 focus:bg-[var(--glass-strong)] transition-colors duration-150"
         />
         {isLoading && (
           <LoaderCircle
@@ -164,13 +163,13 @@ function FindTab() {
         )}
       </form>
 
-      <div className="flex flex-wrap gap-4 mb-8">
+      <div className="flex flex-wrap md:justify-center gap-x-6 gap-y-4 mb-10">
         <div>
-          <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--cream-muted)] mb-2">Type</p>
+          <p className="text-xs text-[var(--cream-muted)] mb-2">Type</p>
           <ChipRow options={MEDIA_TYPES} value={typeFilter} onChange={handleTypeChange} testId="filter-type" />
         </div>
         <div>
-          <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--cream-muted)] mb-2">Decade</p>
+          <p className="text-xs text-[var(--cream-muted)] mb-2">Decade</p>
           <ChipRow
             options={YEARS}
             value={yearFilter}
@@ -181,7 +180,7 @@ function FindTab() {
       </div>
 
       {!touched && (
-        <p className="text-sm text-[var(--cream-muted)]">
+        <p className="mx-auto max-w-xl text-center text-sm text-[var(--cream-muted)]">
           Full-text search across 7,400+ films and 2,800+ TV series. Matches across titles and overviews,
           ranked by relevance. Just start typing.
         </p>
@@ -263,7 +262,7 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
             <li key={dq.id}>
               <button
                 onClick={() => setSql(dq.query_text)}
-                className="text-left w-full px-3 py-2 text-sm rounded-md border border-transparent text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--ink-lift)] hover:border-[var(--taupe)]/25 transition-colors"
+                className="text-left w-full px-3 py-2 text-sm rounded-xl border border-transparent text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--glass)] hover:border-[var(--glass-line)] transition-colors duration-150"
               >
                 {dq.title}
               </button>
@@ -281,11 +280,11 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
             value={sql}
             onChange={(e) => setSql(e.target.value)}
             spellCheck={false}
-            className="w-full h-44 p-4 rounded-md font-mono text-sm bg-[var(--ink-lift)] border border-[var(--taupe)]/25 text-[var(--cream)] focus-visible:outline-none focus:border-[var(--accent-dim)] transition-colors resize-y"
+            className="w-full h-44 p-4 rounded-2xl font-code text-sm bg-[var(--ink-lift)] border border-[var(--glass-line)] text-[var(--cream)] focus-visible:outline-none focus:border-[var(--saffron)]/60 transition-colors resize-y"
           />
           <button
             onClick={run}
-            className="absolute bottom-3 right-3 h-9 px-4 rounded-md bg-[var(--accent)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--cream)] inline-flex items-center gap-2"
+            className="absolute bottom-3 right-3 h-9 px-4 rounded-full bg-white text-black text-sm font-medium hover:bg-white/85 inline-flex items-center gap-2"
           >
             {pending ? <LoaderCircle size={13} className="animate-spin" /> : <Play size={13} />} Run
           </button>
@@ -302,7 +301,7 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
         )}
 
         {rows.length > 0 && (
-          <div className="border border-[var(--taupe)]/15 rounded-md overflow-hidden">
+          <div className="border border-[var(--glass-line)] rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-[var(--ink-lift)]">
@@ -318,7 +317,7 @@ function SqlTab({ defaultQueries }: { defaultQueries: SavedQuery[] }) {
                   {rows.map((row, i) => (
                     <tr key={i} className="border-b border-[var(--taupe)]/10 last:border-b-0 hover:bg-[var(--ink-lift)]/50">
                       {cols.map((c) => (
-                        <td key={c} className="px-4 py-3 text-[var(--cream)] font-mono text-xs align-top">
+                        <td key={c} className="px-4 py-3 text-[var(--cream)] font-code text-xs align-top">
                           {formatCell(row[c])}
                         </td>
                       ))}

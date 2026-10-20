@@ -87,7 +87,7 @@ export function CastRow({ cast }: { cast: CastMember[] }) {
       {director && (
         <div className="flex items-center gap-2 mb-5">
           <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--cream-muted)]">Directed by</span>
-          <span className="px-3 py-1 rounded-sm bg-[var(--ink-lift)] border border-[var(--saffron)]/30 text-sm text-[var(--cream)] font-display italic">
+          <span className="px-3 py-1 rounded-sm bg-[var(--ink-lift)] border border-[var(--saffron)]/30 text-sm text-[var(--cream)] font-display font-semibold">
             {director.name}
           </span>
         </div>

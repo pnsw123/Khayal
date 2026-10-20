@@ -37,14 +37,14 @@ export function FeaturedReel({
     >
       <Link
         href={href}
-        className={`group relative block overflow-hidden rounded-sm border border-[var(--taupe)]/15 hover:border-[var(--saffron)]/40 transition-colors ${aspect}`}
+        className={`group relative block overflow-hidden rounded-2xl border border-[var(--glass-line)] hover:border-[var(--saffron)]/50 transition-colors duration-150 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${aspect}`}
       >
         {backdropUrl ? (
           <img
             src={backdropUrl}
             alt=""
             aria-hidden
-            className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-55 group-hover:scale-[1.03] transition-all duration-[900ms] ease-out"
+            className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-65 group-hover:scale-[1.04] transition-all duration-500 ease-out"
           />
         ) : posterUrl ? (
           <img
@@ -58,13 +58,12 @@ export function FeaturedReel({
         {/* Ink gradient + saffron edge glow on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink)]/98 via-[var(--ink)]/70 to-[var(--ink)]/20" />
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--ink)]/40 via-transparent to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-[var(--accent)]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
+        
         <div className="relative h-full p-5 md:p-7 flex flex-col">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-[var(--saffron)]">{kicker}</p>
-              <p className="mt-1 font-arabic text-sm text-[var(--saffron)]/70">{kickerArabic}</p>
+              <span className="inline-flex items-center h-7 px-2.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-xs font-medium tracking-wide text-white">{kicker}</span>
+              <p className="mt-2 font-arabic text-sm text-[var(--saffron-glow)]/80">{kickerArabic}</p>
             </div>
             <ArrowUpRight
               size={18}
@@ -80,7 +79,7 @@ export function FeaturedReel({
             }`}>
               {title}
             </h3>
-            <div className="mt-3 flex items-center gap-3 font-mono text-[10px] tracking-[0.22em] uppercase text-[var(--cream-muted)]">
+            <div className="mt-3 flex items-center gap-3 text-xs text-white/60">
               <span>{year ?? "—"}</span>
               <span className="h-px w-6 bg-[var(--taupe)]/40" />
               <span>view reel</span>

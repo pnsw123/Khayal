@@ -144,20 +144,20 @@ export default async function TvDetailPage({
   return (
     <div className="min-h-screen">
       {/* ── Full-bleed backdrop ── */}
-      <div className="relative h-[55vh] min-h-[400px] overflow-hidden">
+      <div className="relative -mt-20 h-[62vh] min-h-[460px] overflow-hidden">
         {t.backdrop_url ? (
           <>
             <img src={t.backdrop_url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-[50%_20%] scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--ink)] via-[var(--ink)]/70 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink)] via-[var(--ink)]/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/40" />
           </>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-b from-[var(--ink-lift)] to-[var(--ink)]" />
         )}
-        <div className="absolute top-6 left-0 right-0">
+        <div className="absolute top-24 left-0 right-0">
           <div className="mx-auto max-w-[1400px] px-6">
-            <Link href="/browse" className="inline-flex items-center gap-2 text-[11px] font-mono tracking-[0.25em] uppercase text-[var(--cream-muted)] hover:text-[var(--cream)] transition-colors">
-              <ArrowLeft size={12} /> Back
+            <Link href="/browse" className="inline-flex items-center gap-2 h-9 px-3.5 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-sm text-white/85 hover:text-white hover:bg-black/50 transition-colors duration-150">
+              <ArrowLeft size={15} /> Back
             </Link>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default async function TvDetailPage({
         <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] xl:grid-cols-[360px_1fr] 2xl:grid-cols-[400px_1fr] gap-8 lg:gap-12 items-end mb-12">
 
           {/* Poster */}
-          <div className="relative aspect-[2/3] rounded-lg overflow-hidden border border-white/10 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.9)] self-end">
+          <div className="relative aspect-[2/3] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.9)] self-end">
             {t.poster_url ? (
               <img src={t.poster_url} alt={t.title} className="w-full h-full object-cover" />
             ) : (
@@ -179,8 +179,8 @@ export default async function TvDetailPage({
 
           {/* Info */}
           <div className="min-w-0 pb-2">
-            <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-[var(--accent-dim)] mb-4">Series · مسلسل</p>
-            <h1 className="font-display text-[clamp(2rem,5vw,4.5rem)] leading-[0.92] text-[var(--cream)] mb-5">
+            <p className="mb-4 inline-flex items-center h-7 px-3 rounded-full bg-[var(--saffron)]/20 border border-[var(--saffron)]/40 text-xs font-medium text-[var(--saffron-glow)]">Series · <span className="font-arabic ml-1">مسلسل</span></p>
+            <h1 className="font-display text-[clamp(2rem,5vw,4.25rem)] leading-[0.95] text-[var(--cream)] mb-5">
               {t.title}
             </h1>
 
