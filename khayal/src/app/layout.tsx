@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { Playfair_Display, DM_Sans, JetBrains_Mono, Reem_Kufi } from "next/font/google";
+import { Geist, Geist_Mono, Reem_Kufi } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/nav";
-import { NavGuard } from "@/components/nav-guard";
 import { SiteFooter } from "@/components/site-footer";
 import { currentUser } from "@/lib/auth";
 
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-fraunces", display: "swap", style: ["normal","italic"] });
-const dmSans   = DM_Sans({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const jbm      = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jbm", display: "swap" });
+const geist    = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 const reem     = Reem_Kufi({ subsets: ["arabic", "latin"], variable: "--font-reem", display: "swap", weight: ["400","500","600","700"] });
 
 export const metadata: Metadata = {
@@ -20,15 +18,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await currentUser();
 
   return (
-    <html lang="en" className={`h-full antialiased ${playfair.variable} ${dmSans.variable} ${jbm.variable} ${reem.variable}`}>
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/gh/dreampulse/computer-modern-web-font@master/fonts.css"
-        />
-      </head>
-      <body className="min-h-full flex flex-col bg-[var(--ink)] text-[var(--cream)]">
-        <NavGuard><Nav /></NavGuard>
+    <html lang="en" className={`h-full antialiased ${geist.variable} ${geistMono.variable} ${reem.variable}`}>
+      <body className="min-h-full flex flex-col bg-[var(--ink)] text-[var(--cream)] pb-20 sm:pb-0">
+        <Nav />
         <main className="flex-1">{children}</main>
         <SiteFooter signedIn={!!user} />
       </body>

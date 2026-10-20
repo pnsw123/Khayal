@@ -62,7 +62,8 @@ ALTER TABLE profiles
 
 ALTER TABLE profiles
   ADD CONSTRAINT profiles_role_valid
-    CHECK (role IN ('user', 'admin', 'moderator'));
+    -- role may be the user_role enum (no 'moderator' label), so compare as text
+    CHECK (role::text IN ('user', 'admin', 'moderator'));
 
 -- ── Step 2: Trigger function — role change guard ──────────────────────────────
 

@@ -150,7 +150,7 @@ export default async function MovieDetailPage({
     <div className="relative min-h-screen">
       <AmbientBackdrop posterUrl={movie.poster_url} />
       {/* ── Full-bleed backdrop ── */}
-      <div className="relative h-[55vh] min-h-[400px] overflow-hidden">
+      <div className="relative -mt-20 h-[62vh] min-h-[460px] overflow-hidden">
         {movie.backdrop_url ? (
           <>
             <img
@@ -159,21 +159,21 @@ export default async function MovieDetailPage({
               aria-hidden
               className="absolute inset-0 w-full h-full object-cover object-[50%_20%] scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--ink)] via-[var(--ink)]/70 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink)] via-[var(--ink)]/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/40" />
           </>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-b from-[var(--ink-lift)] to-[var(--ink)]" />
         )}
 
         {/* Back link sits in the backdrop */}
-        <div className="absolute top-6 left-0 right-0">
+        <div className="absolute top-24 left-0 right-0">
           <div className="mx-auto max-w-[1400px] px-6">
             <Link
               href="/browse"
-              className="inline-flex items-center gap-2 text-[11px] font-mono tracking-[0.25em] uppercase text-[var(--cream-muted)] hover:text-[var(--cream)] transition-colors"
+              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-sm text-white/85 hover:text-white hover:bg-black/50 transition-colors duration-150"
             >
-              <ArrowLeft size={12} /> Back
+              <ArrowLeft size={15} /> Back
             </Link>
           </div>
         </div>
@@ -184,7 +184,7 @@ export default async function MovieDetailPage({
         <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] xl:grid-cols-[360px_1fr] 2xl:grid-cols-[400px_1fr] gap-8 lg:gap-12 items-end mb-12">
 
           {/* Poster */}
-          <div className="relative aspect-[2/3] rounded-lg overflow-hidden border border-white/10 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.9)] self-end">
+          <div className="relative aspect-[2/3] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.9)] self-end">
             {movie.poster_url ? (
               <img src={movie.poster_url} alt={movie.title} className="w-full h-full object-cover" />
             ) : (
@@ -203,7 +203,7 @@ export default async function MovieDetailPage({
                   <Link
                     key={g}
                     href={`/browse?genre=${encodeURIComponent(g)}`}
-                    className="px-3 py-1 rounded-md text-[10px] font-mono tracking-[0.1em] uppercase bg-[var(--ink-high)] text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--taupe)]/40 transition-colors"
+                    className="h-8 inline-flex items-center px-3 rounded-full text-sm bg-[var(--glass)] border border-[var(--glass-line)] text-[var(--cream)] hover:bg-[var(--glass-strong)] transition-colors duration-150"
                   >
                     {g}
                   </Link>
@@ -211,7 +211,7 @@ export default async function MovieDetailPage({
               </div>
             )}
 
-            <h1 className="font-display text-[clamp(2rem,5vw,4.5rem)] leading-[0.92] text-[var(--cream)] mb-5">
+            <h1 className="font-display text-[clamp(2rem,5vw,4.25rem)] leading-[0.95] text-[var(--cream)] mb-5">
               {movie.title}
             </h1>
 
@@ -231,7 +231,7 @@ export default async function MovieDetailPage({
               {movie.age_rating && (
                 <span className="flex items-center gap-1.5 text-sm text-[var(--cream-muted)]">
                   <span className="text-[var(--cream-muted)]/40">·</span>
-                  <span className="px-2 py-0.5 rounded border border-[var(--taupe)]/40 text-[11px] font-mono tracking-wider uppercase">
+                  <span className="px-2 h-6 inline-flex items-center rounded-full border border-white/20 text-xs font-medium uppercase">
                     {movie.age_rating}
                   </span>
                 </span>

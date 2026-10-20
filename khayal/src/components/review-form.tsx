@@ -38,7 +38,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
     return (
       <div className="p-6 rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/20 flex items-center justify-between gap-4">
         <p className="text-sm text-[var(--cream-muted)]">
-          <span className="font-display italic text-[var(--cream)] text-base">Have thoughts?</span> Sign in to write your review.
+          <span className="font-display font-semibold text-[var(--cream)] text-base">Have thoughts?</span> Sign in to write your review.
         </p>
         <Link
           href={`/login?next=${encodeURIComponent(kind === "movie" ? `/movies/${slug}` : `/tv/${slug}`)}`}
@@ -95,7 +95,7 @@ export function ReviewForm({ userId, kind, targetId, slug, existing }: ReviewFor
         data-testid="review-open-button"
         className="w-full p-6 rounded-md bg-[var(--ink-lift)] border border-dashed border-[var(--taupe)]/30 text-left hover:border-[var(--saffron)]/50 transition-colors group"
       >
-        <p className="font-display italic text-lg text-[var(--cream)] group-hover:text-[var(--saffron-glow)] transition-colors">
+        <p className="font-display font-semibold text-lg text-[var(--cream)] group-hover:text-[var(--saffron-glow)] transition-colors">
           Write a review…
         </p>
         <p className="mt-1 text-xs text-[var(--cream-muted)]">

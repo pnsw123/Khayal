@@ -21,7 +21,7 @@ export function SiteFooter({ signedIn }: SiteFooterProps) {
               خيال
             </span>
           </p>
-          <p className="font-display text-sm italic" style={{ color: "var(--cream-muted)" }}>
+          <p className="text-sm" style={{ color: "var(--cream-muted)" }}>
             A library of imagination.
           </p>
         </div>

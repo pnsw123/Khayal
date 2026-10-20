@@ -42,10 +42,10 @@ export function PosterCarousel({ title, items }: PosterCarouselProps) {
   if (items.length === 0) return null;
 
   return (
-    <section className="mb-14" data-testid="poster-carousel">
+    <section className="mb-10 md:mb-12" data-testid="poster-carousel">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5 px-4 md:px-6">
-        <h2 className="font-display text-xl md:text-2xl text-[var(--cream)]">{title}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-[var(--cream)] underline decoration-[var(--saffron)] decoration-2 underline-offset-[7px]">{title}</h2>
         <div className="flex gap-2">
           <button
             onClick={scrollPrev}
@@ -79,24 +79,24 @@ export function PosterCarousel({ title, items }: PosterCarouselProps) {
       </div>
 
       {/* Embla viewport */}
-      <div className="overflow-hidden -mx-4 md:-mx-6 px-4 md:px-6" ref={emblaRef}>
-        <div className="flex gap-4 md:gap-5">
+      <div className="overflow-hidden -mx-4 md:-mx-6 lg:-mx-12 px-4 md:px-6 lg:px-12" ref={emblaRef}>
+        <div className="flex gap-3 md:gap-4 pt-1">
           {items.map((item) => (
             <Link
               key={item.slug}
               href={item.href}
               data-testid="poster-slide"
-              className="group shrink-0 w-[140px] md:w-[160px] block"
+              className="group shrink-0 w-[132px] md:w-[164px] block rounded-2xl transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               {/* Poster */}
-              <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-[var(--ink-lift)]">
+              <div className="relative aspect-[2/3] rounded-2xl overflow-hidden bg-[var(--ink-high)]">
                 {item.poster_url ? (
                   <Image
                     src={item.poster_url}
                     alt={item.title}
                     fill
-                    sizes="(max-width: 768px) 140px, 160px"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 768px) 132px, 164px"
+                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -107,7 +107,7 @@ export function PosterCarousel({ title, items }: PosterCarouselProps) {
                 )}
                 {/* Title overlay on hover */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end p-2">
-                  <span className="text-[var(--cream)] text-xs font-display leading-tight line-clamp-2">
+                  <span className="text-[var(--cream)] text-xs font-medium leading-tight line-clamp-2">
                     {item.title}
                   </span>
                 </div>

@@ -32,14 +32,14 @@ export function FilterDropdown({ label, items, activeCode, paramKey, searchParam
       <Popover.Trigger asChild>
         <button
           className={cn(
-            "inline-flex items-center gap-1.5 h-8 px-3 rounded text-[11px] font-mono tracking-[0.08em] uppercase transition-colors",
+            "shrink-0 inline-flex items-center gap-2 h-9 pl-3 pr-2.5 rounded-[14px] text-sm whitespace-nowrap border transition-colors duration-150",
             isFiltered
-              ? "bg-[var(--accent)]/12 text-[var(--accent)] border border-[var(--accent)]/25"
-              : "text-[var(--cream-muted)] border border-[var(--taupe)]/20 hover:border-[var(--taupe)]/50 hover:text-[var(--cream)]"
+              ? "bg-[var(--saffron)]/20 text-white border-[var(--saffron)]/50"
+              : "bg-[var(--glass)] text-[var(--cream)] border-[var(--glass-line)] hover:bg-[var(--glass-strong)]"
           )}
         >
           {isFiltered ? active?.label ?? label : label}
-          <ChevronDown size={11} className="opacity-60" />
+          <ChevronDown size={14} className="opacity-60" />
         </button>
       </Popover.Trigger>
 
@@ -47,7 +47,7 @@ export function FilterDropdown({ label, items, activeCode, paramKey, searchParam
         <Popover.Content
           align="start"
           sideOffset={6}
-          className="z-50 min-w-[180px] max-h-[320px] overflow-y-auto rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/20 shadow-[0_8px_32px_-8px_rgb(0_0_0/0.6)] py-1 [&::-webkit-scrollbar]:hidden"
+          className="z-50 min-w-[200px] max-h-[340px] overflow-y-auto rounded-2xl bg-[var(--ink-lift)]/95 backdrop-blur-xl border border-[var(--glass-line)] shadow-[0_12px_40px_-8px_rgb(0_0_0/0.8)] p-1.5 [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: "none" }}
         >
           {items.map((item) => {
@@ -57,14 +57,14 @@ export function FilterDropdown({ label, items, activeCode, paramKey, searchParam
                 key={item.code}
                 onClick={() => navigate(item.code)}
                 className={cn(
-                  "w-full flex items-center justify-between px-3 py-2 text-[12px] font-mono tracking-wide text-left transition-colors",
+                  "w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm text-left transition-colors duration-150",
                   selected
-                    ? "text-[var(--accent)] bg-[var(--accent)]/8"
-                    : "text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--ink-high)]"
+                    ? "text-white bg-[var(--saffron)]/20"
+                    : "text-[var(--cream-muted)] hover:text-[var(--cream)] hover:bg-[var(--glass)]"
                 )}
               >
                 {item.label}
-                {selected && <Check size={11} className="shrink-0" />}
+                {selected && <Check size={14} className="shrink-0 text-[var(--saffron-glow)]" />}
               </button>
             );
           })}

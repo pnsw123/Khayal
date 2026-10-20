@@ -415,7 +415,7 @@ Results auto-committed to `k6/results/search-browse-summary.json` by the [load-t
 
 ## Academic Context
 
-Khayal was built as a **Bilkent University CS436** Database Systems course project. The most technically interesting component is the dual-algorithm recommendation pipeline, described below for academic reviewers.
+Khayal was built as a **UMass Boston CS436** databases course project. The most technically interesting component is the dual-algorithm recommendation pipeline, described below for academic reviewers.
 
 ### Recommendation Pipeline
 

@@ -73,6 +73,7 @@
 /* Upstream theme re-sizes `text-xs` / `text-xl` line-heights by 2px.
    Pin Tailwind's defaults so the rest of the app is untouched. */
 @theme {
+  --font-body: var(--font-geist), system-ui, sans-serif;
   --text-xs--line-height: calc(1 / 0.75);
   --text-xl--line-height: calc(1.75 / 1.25);
 }

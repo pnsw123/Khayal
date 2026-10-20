@@ -1,6 +1,9 @@
 -- Replace search_all RPC to include metadata fields needed by MovieCard
 -- Adds: age_rating, original_language, runtime_minutes, genre_names[]
 
+-- return columns changed, so the old version must be dropped first
+drop function if exists public.search_all(text, int, int);
+
 create or replace function public.search_all(
   query_text  text  default '',
   page_size   int   default 12,

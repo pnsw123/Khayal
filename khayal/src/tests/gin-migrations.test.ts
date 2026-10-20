@@ -5,9 +5,9 @@
  * correctness — table name, column name, index type, safety flags.
  * They run entirely offline (no live DB required).
  *
- * Why this matters: a malformed migration (wrong table, missing CONCURRENTLY,
- * wrong column) would silently not fix the performance issue and could lock
- * a production table during deployment.
+ * Why this matters: a malformed migration (wrong table, wrong column, or
+ * CONCURRENTLY inside the migration transaction) would fail to apply or
+ * silently not fix the performance issue.
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
@@ -45,8 +45,8 @@ describe("migration: idx_movies_genre_names (GIN on genre_names array)", () => {
     expect(sql).toContain("GENRE_NAMES");
   });
 
-  it("uses CONCURRENTLY to avoid table lock on live DB", () => {
-    expect(sql).toContain("CONCURRENTLY");
+  it("uses plain CREATE INDEX (CONCURRENTLY can't run inside a migration transaction)", () => {
+    expect(sql).not.toContain("INDEX CONCURRENTLY");
   });
 
   it("uses IF NOT EXISTS for idempotency", () => {
@@ -99,8 +99,8 @@ describe("migration: idx_movies_fts (GIN on tsvector)", () => {
     expect(sql).toContain("COALESCE");
   });
 
-  it("uses CONCURRENTLY to avoid table lock on live DB", () => {
-    expect(sql).toContain("CONCURRENTLY");
+  it("uses plain CREATE INDEX (CONCURRENTLY can't run inside a migration transaction)", () => {
+    expect(sql).not.toContain("INDEX CONCURRENTLY");
   });
 
   it("uses IF NOT EXISTS for idempotency", () => {

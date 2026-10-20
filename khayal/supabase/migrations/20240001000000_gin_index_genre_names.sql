@@ -5,8 +5,8 @@
 -- across 7400+ rows. With 15-25 genre shelves loaded in parallel on each browse
 -- page load, this is 15-25 sequential scans per request.
 --
--- CONCURRENTLY: safe to run on a live production database without locking.
+-- No CONCURRENTLY: migrations run inside a transaction, where it is not allowed.
 -- IF NOT EXISTS: idempotent — safe to re-run if migration is applied twice.
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_movies_genre_names
+CREATE INDEX IF NOT EXISTS idx_movies_genre_names
   ON movies USING GIN(genre_names);

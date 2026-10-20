@@ -15,15 +15,14 @@ test("hero section is present", async ({ page }) => {
   await expect(page.getByTestId("hero-section")).toBeVisible({ timeout: 12000 });
 });
 
-test("poster wall renders real posters that link to film pages", async ({ page }) => {
+test("landing poster rows link to film pages", async ({ page }) => {
   await page.goto("/");
-  const wall = page.getByTestId("poster-wall");
-  await expect(wall).toBeAttached({ timeout: 15000 });
+  const rows = page.getByTestId("landing-rows");
+  await expect(rows).toBeAttached({ timeout: 15000 });
 
-  const links = wall.getByTestId("poster-link");
+  const links = rows.locator('a[href^="/movies/"]');
   await expect(links.first()).toBeAttached({ timeout: 15000 });
   expect(await links.count()).toBeGreaterThanOrEqual(6);
-  await expect(links.first()).toHaveAttribute("href", /^\/movies\/.+/);
 });
 
 test("numbers section shows three counts", async ({ page }) => {
