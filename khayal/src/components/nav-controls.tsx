@@ -13,10 +13,10 @@ export function TicketEnter({ className }: { className?: string }) {
     <Link
       href="/login"
       className={cn(
-        "inline-flex items-center gap-2 h-9 px-4",
-        "text-[11px] font-mono tracking-[0.2em] uppercase font-semibold",
-        "text-[var(--ink)] bg-[var(--accent)] rounded-md",
-        "hover:bg-[var(--cream)] transition-colors duration-200",
+        "inline-flex items-center gap-2 h-9 px-4 whitespace-nowrap",
+        "text-sm font-medium",
+        "text-black bg-[var(--accent)] rounded-full",
+        "hover:bg-white transition-colors duration-150",
         className,
       )}
     >
@@ -59,7 +59,7 @@ export function ProfileStub({
   }
 
   return (
-    <div ref={ref} className="relative ml-2">
+    <div ref={ref} className="relative ml-1">
       {/* Avatar */}
       <button
         onClick={() => setOpen((v) => !v)}
@@ -68,9 +68,9 @@ export function ProfileStub({
           "flex items-center justify-center w-9 h-9 rounded-full select-none",
           "bg-[var(--ink-high)] text-[var(--cream)]",
           "font-display text-sm",
-          "ring-1 ring-[var(--taupe)]/40 hover:ring-[var(--accent)]/60",
+          "ring-1 ring-[var(--glass-line)] hover:ring-[var(--saffron)]/70",
           "transition-all duration-200",
-          open && "ring-[var(--accent)]/80",
+          open && "ring-[var(--saffron)]",
         )}
       >
         {avatarUrl ? (
@@ -83,9 +83,9 @@ export function ProfileStub({
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 mt-2.5 w-56 z-50
-            bg-[var(--ink-lift)] border border-[var(--taupe)]/20
-            rounded-lg shadow-2xl shadow-black/80"
+          className="absolute right-0 mt-3 w-56 z-50 overflow-hidden
+            bg-[var(--ink-lift)]/90 backdrop-blur-xl border border-[var(--glass-line)]
+            rounded-2xl shadow-2xl shadow-black/80"
         >
           {/* Signed in as */}
           <div className="px-4 pt-3 pb-3 border-b border-[var(--taupe)]/15">

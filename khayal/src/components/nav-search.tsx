@@ -74,7 +74,7 @@ export function NavSearch() {
   };
 
   return (
-    <div ref={wrapRef} className="relative flex-1 min-w-0 max-w-xl">
+    <div ref={wrapRef} className="relative w-full min-w-0">
       <div className="relative flex items-center">
         <Search size={13} className="absolute left-3 text-[var(--cream-muted)] pointer-events-none z-10" />
         <input
@@ -86,7 +86,9 @@ export function NavSearch() {
           onKeyDown={(e) => { if (e.key === "Enter") goFull(); if (e.key === "Escape") setOpen(false); }}
           autoComplete="off"
           spellCheck={false}
-          className="w-full h-8 pl-9 pr-8 rounded-md bg-[var(--ink-lift)] border border-[var(--ink-high)] text-sm text-[var(--cream)] focus-visible:outline-none focus:border-[var(--taupe)]/50 transition-colors"
+          placeholder="Search titles…"
+          aria-label="Search films and series"
+          className="w-full h-9 pl-9 pr-8 rounded-full bg-[var(--glass)] border border-[var(--glass-line)] text-sm text-[var(--cream)] placeholder:text-[var(--cream-muted)]/70 focus-visible:outline-none focus:border-[var(--saffron)]/60 focus:bg-[var(--glass-strong)] transition-colors duration-150"
         />
         {pending && (
           <LoaderCircle size={12} className="absolute right-3 animate-spin text-[var(--cream-muted)]" />
@@ -94,7 +96,7 @@ export function NavSearch() {
       </div>
 
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 z-[100] rounded-md bg-[var(--ink-lift)] border border-[var(--taupe)]/20 shadow-[0_16px_48px_-8px_rgb(0_0_0/0.8)] overflow-hidden">
+        <div className="absolute top-full left-0 w-[min(22rem,calc(100vw-2rem))] mt-3 z-[100] rounded-2xl bg-[var(--ink-lift)]/95 backdrop-blur-xl border border-[var(--glass-line)] shadow-[0_16px_48px_-8px_rgb(0_0_0/0.8)] overflow-hidden">
           {results.length === 0 ? (
             <p className="px-4 py-3 text-sm text-[var(--cream-muted)]">No results for &ldquo;{q}&rdquo;</p>
           ) : (
@@ -106,7 +108,7 @@ export function NavSearch() {
                   onClick={() => { setOpen(false); setQ(""); }}
                   className="flex items-center gap-3 px-3 py-2 hover:bg-[var(--ink-high)] transition-colors"
                 >
-                  <div className="w-8 h-12 shrink-0 rounded overflow-hidden bg-[var(--ink-high)]">
+                  <div className="w-8 h-12 shrink-0 rounded-md overflow-hidden bg-[var(--ink-high)]">
                     {r.poster_url ? (
                       <img src={r.poster_url} alt="" className="w-full h-full object-cover" />
                     ) : (

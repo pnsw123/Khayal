@@ -25,9 +25,9 @@ describe("RootLayout source contract", () => {
     expect(src).toContain("export default async function RootLayout");
   });
 
-  it("wraps Nav with NavGuard", () => {
-    expect(src).toContain("NavGuard");
-    expect(src).toContain("Nav");
+  it("renders the Nav on every page (landing included)", () => {
+    expect(src).toContain("<Nav />");
+    expect(src).not.toContain("NavGuard");
   });
 
   it("renders the SiteFooter component, telling it whether a user is signed in", () => {
@@ -39,8 +39,9 @@ describe("RootLayout source contract", () => {
     expect(src).not.toContain("<footer");
   });
 
-  it("uses Playfair Display font", () => {
-    expect(src).toContain("Playfair_Display");
+  it("uses Geist as the single Latin typeface", () => {
+    expect(src).toContain("Geist");
+    expect(src).not.toContain("Playfair_Display");
   });
 
   it("uses Reem Kufi for Arabic", () => {
