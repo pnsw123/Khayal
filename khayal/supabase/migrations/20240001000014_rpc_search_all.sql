@@ -98,6 +98,10 @@ AS $$
   OFFSET page_offset;
 $$;
 
+-- An existing search_all(text, int, int) may return different columns/types,
+-- which CREATE OR REPLACE cannot change. Drop it first.
+DROP FUNCTION IF EXISTS search_all(text, int, int);
+
 CREATE OR REPLACE FUNCTION search_all(
   query_text  text,
   page_size   int DEFAULT 30,

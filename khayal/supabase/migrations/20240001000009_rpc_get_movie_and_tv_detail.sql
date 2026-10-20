@@ -11,6 +11,11 @@
 -- CREATE OR REPLACE is a true in-place replace (not a new overload).
 -- Call sites use { p_slug: slug } consistently.
 
+-- A project that only has the one-arg version would otherwise get a second
+-- overload, and { p_slug } calls would become ambiguous. Drop it first.
+DROP FUNCTION IF EXISTS get_movie_detail(text);
+DROP FUNCTION IF EXISTS get_tv_detail(text);
+
 -- ── get_movie_detail ──────────────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION get_movie_detail(

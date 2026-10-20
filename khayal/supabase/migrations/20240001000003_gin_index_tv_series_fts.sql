@@ -9,8 +9,8 @@
 -- tsvector construction for tv_series exactly:
 --   to_tsvector('english', title || ' ' || COALESCE(overview, ''))
 --
--- CONCURRENTLY: safe to run on a live production database without locking.
+-- No CONCURRENTLY: migrations run inside a transaction, where it is not allowed.
 -- IF NOT EXISTS: idempotent — safe to re-run if migration is applied twice.
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_tv_series_fts
+CREATE INDEX IF NOT EXISTS idx_tv_series_fts
   ON tv_series USING GIN(to_tsvector('english', title || ' ' || COALESCE(overview, '')));

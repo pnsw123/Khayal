@@ -12,6 +12,10 @@
 -- Also adds missing return columns (age_rating, original_language,
 -- runtime_minutes, genre_names) to match the actual migration 11 SQL.
 
+-- Replace, not overload: with the 3-arg version still present, calls that pass
+-- only query_text/page_size would match both and PostgREST would reject them.
+DROP FUNCTION IF EXISTS search_all(text, int, int);
+
 CREATE OR REPLACE FUNCTION search_all(
   query_text   text,
   page_size    int  DEFAULT 30,

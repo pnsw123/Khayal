@@ -7,8 +7,8 @@
 --
 -- Fixes issue #191.
 --
--- CONCURRENTLY: safe to run on a live production database without locking.
+-- No CONCURRENTLY: migrations run inside a transaction, where it is not allowed.
 -- IF NOT EXISTS: idempotent — safe to re-run if migration is applied twice.
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_tv_series_genre_names
+CREATE INDEX IF NOT EXISTS idx_tv_series_genre_names
   ON tv_series USING GIN(genre_names);

@@ -19,6 +19,11 @@
 --
 -- Safe to run on live DB: CREATE OR REPLACE, no data modifications, no locks.
 
+-- A project may already have bigint-arg versions. Same param names, so
+-- PostgREST could not pick between the overloads. Drop them first.
+DROP FUNCTION IF EXISTS similar_movies(bigint, int);
+DROP FUNCTION IF EXISTS similar_tv_series(bigint, int);
+
 -- ── similar_movies ────────────────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION similar_movies(
