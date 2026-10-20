@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
-import { getLandingData, POSTER_LIMIT } from "@/lib/landing";
+import { getLandingData, POSTER_LIMIT, FEATURED_LIMIT } from "@/lib/landing";
 
 interface MovieRow {
   id: number;
@@ -81,10 +81,30 @@ describe("getLandingData", () => {
     expect(data.backdrop).toEqual({ url: "https://image.tmdb.org/b2.jpg", title: "No Slug" });
   });
 
+  it("builds hero slides only from rows with both a slug and a backdrop", async () => {
+    const { client } = fakeSb(ROWS, {});
+    const data = await getLandingData(client);
+    expect(data.featured).toEqual([
+      { id: 3, title: "Tayuan 2", slug: "tayuan-2", year: null, overview: null, runtime: null, ageRating: null, backdropUrl: "https://image.tmdb.org/b3.jpg" },
+    ]);
+  });
+
+  it("caps hero slides at FEATURED_LIMIT", async () => {
+    const many = Array.from({ length: 9 }, (_, i) => ({
+      id: i, title: `T${i}`, slug: `t-${i}`, release_date: "2024-01-01",
+      poster_url: `https://image.tmdb.org/p${i}.jpg`, backdrop_url: `https://image.tmdb.org/b${i}.jpg`,
+    }));
+    const { client } = fakeSb(many, {});
+    const data = await getLandingData(client);
+    expect(data.featured).toHaveLength(FEATURED_LIMIT);
+    expect(data.featured[0].year).toBe("2024");
+  });
+
   it("returns null backdrop and empty posters when nothing comes back", async () => {
     const { client } = fakeSb([], {});
     const data = await getLandingData(client);
     expect(data.posters).toEqual([]);
+    expect(data.featured).toEqual([]);
     expect(data.backdrop).toBeNull();
     expect(data.counts).toEqual({ films: 0, series: 0, people: 0 });
   });
