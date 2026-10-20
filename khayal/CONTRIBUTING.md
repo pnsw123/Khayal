@@ -1,6 +1,6 @@
 # Contributing to Khayal
 
-Khayal is an academic project (Bilkent University CS436) that also aims for production-grade open-source quality. Contributions — bug reports, fixes, documentation improvements — are welcome.
+Khayal is an academic project (UMass Boston CS436) that also aims for production-grade open-source quality. Contributions — bug reports, fixes, documentation improvements — are welcome.
 
 ---
 
@@ -250,7 +250,7 @@ A PR is mergeable when:
 
 ## 6. Academic Files — Stay Outside the Repo
 
-Khayal is also a Bilkent University CS436 course submission. The following files live in the **parent directory** (`../`) by design and **must never be committed**:
+Khayal is also a UMass Boston CS436 course submission. The following files live in the **parent directory** (`../`) by design and **must never be committed**:
 
 | File | Why it stays out |
 |------|-----------------|
